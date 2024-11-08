@@ -38,7 +38,12 @@ struct OpcodeBase
     struct base_type
     {
         bf op : 7;
-        bf d0 : 25;
+        bf data : 25;
+
+        bf value() const
+        {
+            return 0;
+        }
     };
     static_assert(sizeof(base_type) == sizeof(opcode_t));
     struct r_type
@@ -46,9 +51,14 @@ struct OpcodeBase
         bf op : 7;
         bf rd : 5;
         bf f3 : 3;
-        bf r1 : 5;
-        bf r2 : 5;
+        bf rs1 : 5;
+        bf rs2 : 5;
         bf f7 : 7;
+
+        bf value() const
+        {
+            return 0;
+        }
     };
     static_assert(sizeof(r_type) == sizeof(opcode_t));
 
@@ -57,30 +67,47 @@ struct OpcodeBase
         bf op : 7;
         bf rd : 5;
         bf f3 : 3;
-        bf r1 : 5;
-        bf i0 : 12;
+        bf rs1 : 5;
+        bf i_11_0 : 12;
+
+        bf value() const
+        {
+            return i_11_0;
+        }
     };
     static_assert(sizeof(i_type) == sizeof(opcode_t));
 
     struct s_type
     {
         bf op : 7;
-        bf i0 : 5;
+        bf i_4_0 : 5;
         bf f3 : 3;
-        bf r1 : 5;
-        bf r2 : 5;
-        bf i1 : 7;
+        bf rs1 : 5;
+        bf rs2 : 5;
+        bf i_11_5 : 7;
+
+        bf value() const
+        {
+            return (i_11_5 << 5) | i_4_0;
+        }
     };
     static_assert(sizeof(s_type) == sizeof(opcode_t));
 
     struct b_type
     {
         bf op : 7;
-        bf i0 : 5;
+        bf i_11 : 1;
+        bf i_4_1 : 4;
         bf f3 : 3;
-        bf r1 : 5;
-        bf r2 : 5;
-        bf i1 : 7;
+        bf rs1 : 5;
+        bf rs2 : 5;
+        bf i_10_5 : 6;
+        bf i_12 : 1;
+
+        bf value() const
+        {
+            return (i_12 << 12) | (i_11 << 11) | (i_10_5 << 5) | (i_4_1 << 1) | 0; // OoO
+        }
     };
     static_assert(sizeof(b_type) == sizeof(opcode_t));
 
@@ -88,7 +115,12 @@ struct OpcodeBase
     {
         bf op : 7;
         bf rd : 5;
-        bf i0 : 20;
+        bf i_31_12 : 20;
+
+        bf value() const
+        {
+            return (i_31_12 << 12) | 0b0000'0000'0000;
+        }
     };
     static_assert(sizeof(u_type) == sizeof(opcode_t));
 
@@ -96,7 +128,15 @@ struct OpcodeBase
     {
         bf op : 7;
         bf rd : 5;
-        bf i0 : 20;
+        bf i_19_12 : 8;
+        bf i_11 : 1;
+        bf i_10_1 : 10;
+        bf i_20 : 1;
+
+        bf value() const
+        {
+            return (i_20 << 20) | (i_19_12 << 12) | (i_11 << 11) | (i_10_1 << 1) | 0;
+        }
     };
     static_assert(sizeof(j_type) == sizeof(opcode_t));
 
