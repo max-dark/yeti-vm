@@ -30,60 +30,98 @@ namespace opcode
 using opcode_t = std::uint32_t;
 using function_t = std::uint32_t;
 using data_t = std::uint32_t;
-enum class Type: std::uint8_t
-{
-    UNKNOWN,
-    R,
-    I,
-    S,
-    B,
-    U,
-    J,
-};
-Type get_type(opcode_t code)
-{
-    return Type::UNKNOWN;
-}
 
 struct OpcodeBase
 {
-    opcode_t code;
-};
+    using bf = opcode_t;
 
-template<Type type>
-struct Opcode: public OpcodeBase
+    struct base_type
+    {
+        bf op : 7;
+        bf d0 : 25;
+    };
+    static_assert(sizeof(base_type) == sizeof(opcode_t));
+    struct r_type
+    {
+        bf op : 7;
+        bf rd : 5;
+        bf f3 : 3;
+        bf r1 : 5;
+        bf r2 : 5;
+        bf f7 : 7;
+    };
+    static_assert(sizeof(r_type) == sizeof(opcode_t));
+
+    struct i_type
+    {
+        bf op : 7;
+        bf rd : 5;
+        bf f3 : 3;
+        bf r1 : 5;
+        bf i0 : 12;
+    };
+    static_assert(sizeof(i_type) == sizeof(opcode_t));
+
+    struct s_type
+    {
+        bf op : 7;
+        bf i0 : 5;
+        bf f3 : 3;
+        bf r1 : 5;
+        bf r2 : 5;
+        bf i1 : 7;
+    };
+    static_assert(sizeof(s_type) == sizeof(opcode_t));
+
+    struct b_type
+    {
+        bf op : 7;
+        bf i0 : 5;
+        bf f3 : 3;
+        bf r1 : 5;
+        bf r2 : 5;
+        bf i1 : 7;
+    };
+    static_assert(sizeof(b_type) == sizeof(opcode_t));
+
+    struct u_type
+    {
+        bf op : 7;
+        bf rd : 5;
+        bf i0 : 20;
+    };
+    static_assert(sizeof(u_type) == sizeof(opcode_t));
+
+    struct j_type
+    {
+        bf op : 7;
+        bf rd : 5;
+        bf i0 : 20;
+    };
+    static_assert(sizeof(j_type) == sizeof(opcode_t));
+
+    union
+    {
+        opcode_t code;
+        base_type base;
+        r_type r;
+        i_type i;
+        s_type s;
+        b_type b;
+        u_type u;
+        j_type j;
+    };
+};
+static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
+
+constexpr opcode_t make_opcode(opcode_t i65, opcode_t i42)
 {
-   static constexpr inline Type get_type() { return type; }
-};
-
-struct OpcodeR : public Opcode<Type::R>
-{
-    register_no rd;
-    function_t f3;
-    register_no rs1;
-    register_no rs2;
-    function_t f7;
-};
-
-struct OpcodeI : public Opcode<Type::I>
-{
-    register_no rd;
-    function_t f3;
-    register_no rs1;
-    data_t imm; // [11:0]
-};
-
-struct OpcodeS : public Opcode<Type::S>
-{};
-
-struct OpcodeB : public Opcode<Type::B>
-{};
-
-struct OpcodeU : public Opcode<Type::U>
-{};
-
-struct OpcodeJ : public Opcode<Type::J>
-{};
+    return (i65 << 5) | (i42 << 2) | 0b011;
+}
+static_assert(make_opcode(0b11, 0b111) == 0b011'111'11);
+static_assert(make_opcode(0b11, 0b110) == 0b011'110'11);
+static_assert(make_opcode(0b10, 0b111) == 0b010'111'11);
+static_assert(make_opcode(0b10, 0b110) == 0b010'110'11);
 
 } // namespace opcode
 } // namespace vm
