@@ -9,6 +9,7 @@ set(APP_NAME risc-vm)
 
 set(APP_SOURCES
     main.cxx
+    stdlib.hxx
 )
 
 add_executable(${APP_NAME})
