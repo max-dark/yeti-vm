@@ -1,0 +1,4 @@
+#!/bin/sh
+
+riscv64-unknown-elf-g++ -march=rv32i -mabi=ilp32 -mcmodel=medany -nostdlib "$@"
+
