@@ -189,40 +189,40 @@ static_assert(make_opcode(0b10, 0b110) == 0b010'110'11);
 
 enum OpcodeType: opcode_t
 {
-    LOAD   = make_opcode(0b00, 0b000),
-    STORE  = make_opcode(0b01, 0b000),
-    MADD   = make_opcode(0b10, 0b000),
-    BRANCH = make_opcode(0b11, 0b000),
+    LOAD   = make_opcode(0b00, 0b000), // read value from memory
+    STORE  = make_opcode(0b01, 0b000), // write value to memory
+    MADD   = make_opcode(0b10, 0b000), // "Multiple and Add"(float/double)
+    BRANCH = make_opcode(0b11, 0b000), // conditional jump
 
-    LOAD_FP  = make_opcode(0b00, 0b001),
-    STORE_FP = make_opcode(0b01, 0b001),
-    MSUB     = make_opcode(0b10, 0b001),
-    JALR     = make_opcode(0b11, 0b001),
+    LOAD_FP  = make_opcode(0b00, 0b001), // read value from memory(float/double)
+    STORE_FP = make_opcode(0b01, 0b001), // write value to memory(float/double)
+    MSUB     = make_opcode(0b10, 0b001), // "Multiple and Sub"(float/double)
+    JALR     = make_opcode(0b11, 0b001), // jump to offset from register
 
-    CUSTOM_0 = make_opcode(0b00, 0b010),
-    CUSTOM_1 = make_opcode(0b01, 0b010),
-    NMSUB = make_opcode(0b01, 0b010),
+    CUSTOM_0 = make_opcode(0b00, 0b010), // for extensions
+    CUSTOM_1 = make_opcode(0b01, 0b010), // for extensions
+    NMSUB    = make_opcode(0b01, 0b010), // "Multiple and Sub"(float/double)
     // R_11_010 = make_opcode(0b11, 0b010), // reserved
 
-    MISC_MEM = make_opcode(0b00, 0b011),
-    AMO = make_opcode(0b01, 0b011),
-    NMADD = make_opcode(0b01, 0b011),
-    JAL = make_opcode(0b11, 0b011),
+    MISC_MEM = make_opcode(0b00, 0b011), // sync, barriers, etc
+    AMO      = make_opcode(0b01, 0b011), // atomic ops
+    NMADD    = make_opcode(0b01, 0b011), // "Multiple and Add"(float/double)
+    JAL      = make_opcode(0b11, 0b011), // jump to offset
 
-    OP_IMM = make_opcode(0b00, 0b100),
-    OP = make_opcode(0b01, 0b100),
-    OP_FP = make_opcode(0b01, 0b100),
-    SYSTEM = make_opcode(0b11, 0b100),
+    OP_IMM = make_opcode(0b00, 0b100), // op with const
+    OP     = make_opcode(0b01, 0b100), // op with registers
+    OP_FP  = make_opcode(0b01, 0b100), // op with registers(float/double)
+    SYSTEM = make_opcode(0b11, 0b100), // CSR(Control and Status Registers), counters, debug, SysCals
 
-    AUIPC = make_opcode(0b00, 0b101),
-    LUI = make_opcode(0b01, 0b101),
+    AUIPC = make_opcode(0b00, 0b101), // "Add upper immediate to PC"
+    LUI   = make_opcode(0b01, 0b101), // "Load upper immediate"
     // R_10_101 = make_opcode(0b01, 0b101), // reserved
     // R_11_101 = make_opcode(0b11, 0b101), // reserved
 
-    OP_IMM_32 = make_opcode(0b00, 0b011),
-    OP_32 = make_opcode(0b01, 0b011),
-    CUSTOM_2 = make_opcode(0b01, 0b011),
-    CUSTOM_3 = make_opcode(0b11, 0b011),
+    OP_IMM_32 = make_opcode(0b00, 0b110), // only for 64bit
+    OP_32     = make_opcode(0b01, 0b110), // only for 64bit
+    CUSTOM_2  = make_opcode(0b01, 0b110), // for extensions
+    CUSTOM_3  = make_opcode(0b11, 0b110), // for extensions
 };
 
 } // namespace opcode
