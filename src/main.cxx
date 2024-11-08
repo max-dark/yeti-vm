@@ -31,9 +31,20 @@ using opcode_t = std::uint32_t;
 using function_t = std::uint32_t;
 using data_t = std::uint32_t;
 
+data_t extend_sign(data_t value, opcode_t code)
+{
+    data_t sign = code & (1u << 31);
+    while (sign != (value & sign))
+    {
+        value |= sign;
+        sign >>= 1;
+    }
+    return value;
+}
+
 struct OpcodeBase
 {
-    using bf = opcode_t;
+    using bf = data_t;
 
     struct base_type
     {
