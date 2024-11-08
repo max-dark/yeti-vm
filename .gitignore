@@ -1,6 +1,10 @@
 .idea/
 .vscode/
 *-build-*/
-buiild/
+build/
 
 *.user
+*.elf
+*.exe
+*.o
+*.bin
