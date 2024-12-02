@@ -1,0 +1,35 @@
+#!/bin/sh
+
+CC=riscv64-unknown-elf-gcc
+CXX=riscv64-unknown-elf-g++
+OBJCOPY=riscv64-unknown-elf-objcopy
+OBJDUMP=riscv64-unknown-elf-objdump
+
+BUILD_FLAGS="-march=rv32i -mabi=ilp32 -mcmodel=medany -nostdlib"
+C_FLAGS=$BUILD_FLAGS
+CXX_FLAGS=$BUILD_FLAGS
+
+compile_c()
+{
+  echo $CC $BUILD_FLAGS "$@"
+  $CC $BUILD_FLAGS "$@"
+}
+
+compile_cxx()
+{
+  echo $CXX $BUILD_FLAGS "$@"
+  $CXX $BUILD_FLAGS "$@"
+}
+
+make_bin()
+{
+  echo $OBJCOPY -O binary "$@"
+  $OBJCOPY -O binary "$@"
+}
+
+ELF_NAME="${1}.elf"
+BIN_NAME="${1}.bin"
+shift
+
+compile_c "$@" -o ${ELF_NAME}
+make_bin ${ELF_NAME} ${BIN_NAME}
