@@ -544,6 +544,183 @@ struct registry
     base_map handlers;
 };
 
+namespace rv32i
+{
+
+struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {};
+struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {};
+
+struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {};
+struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {};
+
+template<opcode::opcode_t Type>
+struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {};
+
+struct beq : branch<0b0000> {};
+struct bne : branch<0b0001> {};
+struct blt : branch<0b0100> {};
+struct bge : branch<0b0101> {};
+struct bltu: branch<0b0110> {};
+struct bgeu: branch<0b0111> {};
+
+void add_branch(registry* r)
+{
+    r->register_handler<beq>();
+    r->register_handler<bne>();
+    r->register_handler<blt>();
+    r->register_handler<bge>();
+    r->register_handler<bltu>();
+    r->register_handler<bgeu>();
+}
+
+template<opcode::opcode_t Type>
+struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {};
+
+struct lb : load<0b0000> {};
+struct lh : load<0b0001> {};
+struct lw : load<0b0010> {};
+struct lbu: load<0b0100> {};
+struct lhu: load<0b0101> {};
+
+void add_load(registry* r)
+{
+    r->register_handler<lb>();
+    r->register_handler<lh>();
+    r->register_handler<lw>();
+    r->register_handler<lbu>();
+    r->register_handler<lhu>();
+}
+
+template<opcode::opcode_t Type>
+struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {};
+
+struct sb: store<0b0000> {};
+struct sh: store<0b0001> {};
+struct sw: store<0b0010> {};
+
+void add_store(registry* r)
+{
+    r->register_handler<sb>();
+    r->register_handler<sh>();
+    r->register_handler<sw>();
+}
+
+template<opcode::opcode_t Type>
+struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {};
+
+struct sli : int_imm<0b0010> {};
+struct sliu: int_imm<0b0011> {};
+struct xori: int_imm<0b0100> {};
+struct ori : int_imm<0b0110> {};
+struct andi: int_imm<0b0111> {};
+
+void add_int_imm(registry* r)
+{
+    r->register_handler<sli>();
+    r->register_handler<sliu>();
+    r->register_handler<xori>();
+    r->register_handler<ori>();
+    r->register_handler<andi>();
+}
+
+template<opcode::opcode_t Type, opcode::opcode_t Variant>
+struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {};
+
+struct slli: shift_imm<0b0001, 0> {};
+struct srli: shift_imm<0b0101, 0> {};
+struct srai: shift_imm<0b0101, 1> {};
+
+void add_shift_imm(registry* r)
+{
+    r->register_handler<slli>();
+    r->register_handler<srli>();
+    r->register_handler<srai>();
+}
+
+template<opcode::opcode_t Type, opcode::opcode_t Variant>
+struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {};
+
+struct add_r : int_r<0b0000, 0> {};
+struct sub_r : int_r<0b0000, 1> {};
+struct sll_r : int_r<0b0001, 0> {};
+struct slt_r : int_r<0b0010, 0> {};
+struct sltu_r: int_r<0b0011, 0> {};
+struct xor_r : int_r<0b0100, 0> {};
+struct srl_r : int_r<0b0101, 0> {};
+struct sra_r : int_r<0b0101, 1> {};
+struct or_r  : int_r<0b0110, 0> {};
+struct and_r : int_r<0b0111, 0> {};
+
+void add_int(registry* r)
+{
+    r->register_handler<add_r>();
+    r->register_handler<sub_r>();
+    r->register_handler<sll_r>();
+    r->register_handler<sll_r>();
+    r->register_handler<slt_r>();
+    r->register_handler<sltu_r>();
+    r->register_handler<xor_r>();
+    r->register_handler<srl_r>();
+    r->register_handler<sra_r>();
+    r->register_handler<or_r>();
+    r->register_handler<and_r>();
+}
+
+template<opcode::opcode_t Type>
+struct misc_mem: public instruction_base<opcode::MISC_MEM, opcode::I_TYPE, Type> {};
+
+struct fence  : misc_mem<0b0000> {};
+struct fence_i: misc_mem<0b0001> {};
+
+void add_misc(registry* r)
+{
+    r->register_handler<fence>();
+    r->register_handler<fence_i>();
+}
+
+// ECALL / EBREAK
+struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {};
+
+template<opcode::opcode_t Type>
+struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {};
+
+struct csrrw : csr<0b0001> {};
+struct csrrs : csr<0b0010> {};
+struct csrrc : csr<0b0011> {};
+struct csrrwi: csr<0b0101> {};
+struct csrrsi: csr<0b0110> {};
+struct csrrci: csr<0b0111> {};
+
+void add_system(registry* r)
+{
+    r->register_handler<env_call>();
+    r->register_handler<csrrw>();
+    r->register_handler<csrrs>();
+    r->register_handler<csrrc>();
+    r->register_handler<csrrwi>();
+    r->register_handler<csrrsi>();
+    r->register_handler<csrrci>();
+}
+
+void add_all(registry* r)
+{
+    r->register_handler<lui>();
+    r->register_handler<auipc>();
+    r->register_handler<jal>();
+    r->register_handler<jalr>();
+
+    add_branch(r);
+    add_load(r);
+    add_store(r);
+    add_int_imm(r);
+    add_shift_imm(r);
+    add_int(r);
+    add_misc(r);
+    add_system(r);
+}
+
+} // namespace rv32i
+
 } // namespace detail
 } // namespace vm
 
