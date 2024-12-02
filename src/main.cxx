@@ -1,9 +1,6 @@
 #include <iostream>
 #include "stdlib.hxx"
 
-
-void disasm(const fs::path &program_file);
-
 namespace fs = std::filesystem;
 
 using program = std::vector<std::uint8_t>;
@@ -304,6 +301,7 @@ std::string_view get_op_id(OpcodeType code)
 } // namespace vm
 
 void disasm(const fs::path &program_file);
+void disasm(const program &code);
 
 int main(int argc, char** argv)
 {
@@ -325,14 +323,19 @@ void disasm(const fs::path &program_file)
 
     if (bin)
     {
-        using op_type = vm::opcode::OpcodeBase;
-        for (size_t i = 0; i < bin->size(); i+= sizeof(op_type)) {
-            const auto *p = bin->data() + i;
-            auto *op = reinterpret_cast<const op_type*>(p);
-            std::cout << std::hex
-                << std::setw(8) << std::setfill('0') << std::right << op->code
-                << std::setw(10) << std::setfill(' ') << std::right << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(op->base.op))
-                << std::endl;
-        }
+        disasm(*bin);
+    }
+}
+
+void disasm(const program &code)
+{
+    using op_type = vm::opcode::OpcodeBase;
+    for (size_t i = 0; i < code.size(); i+= sizeof(op_type)) {
+        const auto *p = code.data() + i;
+        auto *op = reinterpret_cast<const op_type*>(p);
+        std::cout << std::hex
+                  << std::setw(8) << std::setfill('0') << std::right << op->code
+                  << std::setw(10) << std::setfill(' ') << std::right << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(op->base.op))
+                  << std::endl;
     }
 }
