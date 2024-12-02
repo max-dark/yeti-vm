@@ -215,17 +215,17 @@ enum OpcodeType: opcode_t
 
     CUSTOM_0 = make_opcode(0b00, 0b010), // for extensions
     CUSTOM_1 = make_opcode(0b01, 0b010), // for extensions
-    NMSUB    = make_opcode(0b01, 0b010), // "Multiple and Sub"(float/double)
+    NMSUB    = make_opcode(0b10, 0b010), // "Multiple and Sub"(float/double)
     // R_11_010 = make_opcode(0b11, 0b010), // reserved
 
     MISC_MEM = make_opcode(0b00, 0b011), // sync, barriers, etc
     AMO      = make_opcode(0b01, 0b011), // atomic ops
-    NMADD    = make_opcode(0b01, 0b011), // "Multiple and Add"(float/double)
+    NMADD    = make_opcode(0b10, 0b011), // "Multiple and Add"(float/double)
     JAL      = make_opcode(0b11, 0b011), // jump to offset
 
     OP_IMM = make_opcode(0b00, 0b100), // op with const
     OP     = make_opcode(0b01, 0b100), // op with registers
-    OP_FP  = make_opcode(0b01, 0b100), // op with registers(float/double)
+    OP_FP  = make_opcode(0b10, 0b100), // op with registers(float/double)
     SYSTEM = make_opcode(0b11, 0b100), // CSR(Control and Status Registers), counters, debug, SysCals
 
     AUIPC = make_opcode(0b00, 0b101), // "Add upper immediate to PC"
@@ -287,6 +287,12 @@ std::string_view get_op_id(OpcodeType code)
             return "CUSTOM_3";
         case CUSTOM_2:
             return "CUSTOM_2";
+        case NMSUB:
+            return "NMSUB";
+        case NMADD:
+            return "NMADD";
+        case OP_FP:
+            return "OP_FP";
     }
     return "UNKNOWN";
 }
