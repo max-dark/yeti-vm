@@ -508,7 +508,8 @@ struct instruction_base : public interface
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
-        return opcode::get_op_id(get_code_base());
+        auto code = opcode::OpcodeType{get_code_base()};
+        return opcode::get_op_id(code);
     }
     [[nodiscard]]
     opcode::BaseFormat get_type() const final
