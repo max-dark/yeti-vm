@@ -396,6 +396,16 @@ std::string_view get_op_id(OpcodeType code)
     return "UNKNOWN";
 }
 
+enum BaseFormat: opcode_t
+{
+    R_TYPE,
+    I_TYPE,
+    S_TYPE,
+    B_TYPE,
+    U_TYPE,
+    J_TYPE,
+};
+
 } // namespace opcode
 
 namespace detail
@@ -403,6 +413,7 @@ namespace detail
 
 struct interface
 {
+    using ptr = std::shared_ptr<interface>;
     virtual ~interface() = default;
 
     [[nodiscard]]
@@ -413,6 +424,8 @@ struct interface
     virtual opcode::opcode_t get_func_b() const = 0;
     [[nodiscard]]
     virtual std::string_view get_mnemonic() const = 0;
+    [[nodiscard]]
+    virtual opcode::BaseFormat get_type() const = 0;
 
     template<uint8_t start, uint8_t length>
     static consteval opcode::data_t get_bits(opcode::opcode_t code)
@@ -468,6 +481,7 @@ static_assert(interface::get_bits<1, 1>(0b0000'0010) == opcode::opcode_t{0b0000'
 template
 <
     opcode::opcode_t CodeBase,
+    opcode::BaseFormat Format,
     opcode::opcode_t FuncA = 0,
     opcode::opcode_t FuncB = 0
 >
@@ -495,6 +509,11 @@ struct instruction_base : public interface
     std::string_view get_mnemonic() const final
     {
         return opcode::get_op_id(get_code_base());
+    }
+    [[nodiscard]]
+    opcode::BaseFormat get_type() const final
+    {
+        return Format;
     }
 };
 
