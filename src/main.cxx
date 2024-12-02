@@ -1,6 +1,9 @@
 #include <iostream>
 #include "stdlib.hxx"
 
+
+void disasm(const fs::path &program_file);
+
 namespace fs = std::filesystem;
 
 using program = std::vector<std::uint8_t>;
@@ -300,6 +303,8 @@ std::string_view get_op_id(OpcodeType code)
 } // namespace opcode
 } // namespace vm
 
+void disasm(const fs::path &program_file);
+
 int main(int argc, char** argv)
 {
     if (argc < 2)
@@ -308,7 +313,15 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    auto bin = load_program(argv[1]);
+    fs::path program_file = argv[1];
+    disasm(program_file);
+
+    return 0;
+}
+
+void disasm(const fs::path &program_file)
+{
+    auto bin = load_program(program_file);
 
     if (bin)
     {
@@ -322,6 +335,4 @@ int main(int argc, char** argv)
                 << std::endl;
         }
     }
-
-    return 0;
 }
