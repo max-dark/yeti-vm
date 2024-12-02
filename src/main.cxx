@@ -517,6 +517,25 @@ struct instruction_base : public interface
     }
 };
 
+struct registry
+{
+    using handler_ptr = interface*;
+    using type_map = std::map<opcode::BaseFormat, interface::ptr>;
+    using base_map = std::map<opcode::opcode_t, type_map>;
+
+    void register_handler(interface::ptr handler)
+    {
+        auto& type = handlers[handler->get_code_base()];
+        type[handler->get_type()] = handler;
+    }
+
+    handler_ptr find(opcode::opcode_t code)
+    {
+        return nullptr;
+    }
+
+    base_map handlers;
+};
 
 } // namespace detail
 } // namespace vm
