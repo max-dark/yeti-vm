@@ -524,10 +524,16 @@ struct registry
     using type_map = std::map<opcode::BaseFormat, interface::ptr>;
     using base_map = std::map<opcode::opcode_t, type_map>;
 
+    template<typename Handler>
+    inline void register_handler()
+    {
+        static_assert(std::is_base_of_v<interface, Handler>, "Wrong type of Handler");
+        register_handler(std::make_shared<Handler>());
+    }
     void register_handler(interface::ptr handler)
     {
         auto& type = handlers[handler->get_code_base()];
-        type[handler->get_type()] = handler;
+        type[handler->get_type()] = std::move(handler);
     }
 
     handler_ptr find(opcode::opcode_t code)
