@@ -221,7 +221,7 @@ enum OpcodeType: opcode_t
 
     OP_IMM_32 = make_opcode(0b00, 0b110), // only for 64bit
     OP_32     = make_opcode(0b01, 0b110), // only for 64bit
-    CUSTOM_2  = make_opcode(0b01, 0b110), // for extensions
+    CUSTOM_2  = make_opcode(0b10, 0b110), // for extensions
     CUSTOM_3  = make_opcode(0b11, 0b110), // for extensions
 };
 
