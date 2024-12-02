@@ -36,8 +36,101 @@ using registers = std::array<register_t, register_count + 1>; // generic + PC
 enum RegAlias: register_no
 {
     zero = 0,
-    pc = register_count
+    ra = 1,
+    sp = 2,
+    gp = 3,
+    tp = 4,
+    t0 = 5,
+    t1 = 6, t2 = 7,
+    s0 = 8, fp = 8,
+    s1 = 9,
+    a0 = 10, a1 = 11,
+    a2 = 12, a3 = 13, a4 = 14, a5 = 15, a6 = 16, a7 = 17,
+    s2 = 18, s3 = 19, s4 = 20, s5 = 21, s6 = 22, s7 = 23, s8 = 24, s9 = 25, s10 = 26, s11 = 27,
+    t3 = 28, t4 = 29, t5 = 30, t6 = 31,
+    pc = register_count,
+    unknown
 };
+
+std::string_view get_register_alias(register_no no)
+{
+    if (no > register_count) no = unknown;
+    auto alias = static_cast<RegAlias>(no);
+
+    switch (alias)
+    {
+        case zero:
+            return "zero";
+        case ra:
+            return "ra";
+        case sp:
+            return "sp";
+        case gp:
+            return "gp";
+        case tp:
+            return "tp";
+        case t0:
+            return "t0/al";
+        case t1:
+            return "t1";
+        case t2:
+            return "t2";
+        case s0:
+            return "s0/fp";
+        case s1:
+            return "s1";
+        case a0:
+            return "a0/r0";
+        case a1:
+            return "a1/r1";
+        case a2:
+            return "a2";
+        case a3:
+            return "a3";
+        case a4:
+            return "a4";
+        case a5:
+            return "a5";
+        case a6:
+            return "a6";
+        case a7:
+            return "a7";
+        case s2:
+            return "s2";
+        case s3:
+            return "s3";
+        case s4:
+            return "s4";
+        case s5:
+            return "s5";
+        case s6:
+            return "s6";
+        case s7:
+            return "s7";
+        case s8:
+            return "s8";
+        case s9:
+            return "s9";
+        case s10:
+            return "s10";
+        case s11:
+            return "s11";
+        case t3:
+            return "t3";
+        case t4:
+            return "t4";
+        case t5:
+            return "t5";
+        case t6:
+            return "t6";
+        case pc:
+            return "pc";
+        case unknown:
+            return "unknown";
+    }
+
+    return "IMPOSSIBLE";
+}
 
 namespace opcode
 {
