@@ -9,6 +9,20 @@ std::optional<program> load_program(const fs::path& programFile)
 {
     program data;
 
+    if (fs::is_regular_file(programFile))
+    {
+        auto sz = static_cast<std::streamsize>(fs::file_size(programFile));
+        data.resize(sz);
+        std::ifstream bin{programFile, std::ios::binary};
+
+        if (bin.is_open())
+        {
+            bin.read(reinterpret_cast<char *>(data.data()), sz);
+            if (bin.good() || bin.eof())
+                return data;
+        }
+    }
+
     return std::nullopt;
 }
 
@@ -225,10 +239,83 @@ enum OpcodeType: opcode_t
     CUSTOM_3  = make_opcode(0b11, 0b110), // for extensions
 };
 
+std::string_view get_op_id(OpcodeType code)
+{
+    switch (code)
+    {
+        case LOAD:
+            return "LOAD";
+        case STORE:
+            return "STORE";
+        case MADD:
+            return "MADD";
+        case BRANCH:
+            return "BRANCH";
+        case LOAD_FP:
+            return "LOAD_FP";
+        case STORE_FP:
+            return "STORE_FP";
+        case MSUB:
+            return "MSUB";
+        case JALR:
+            return "JALR";
+        case CUSTOM_0:
+            return "CUSTOM_0";
+        case CUSTOM_1:
+            return "CUSTOM_1";
+        case MISC_MEM:
+            return "MISC_MEM";
+        case AMO:
+            return "AMO";
+        case JAL:
+            return "JAL";
+        case OP_IMM:
+            return "OP_IMM";
+        case OP:
+            return "OP";
+        case SYSTEM:
+            return "SYSTEM";
+        case AUIPC:
+            return "AUIPC";
+        case LUI:
+            return "LUI";
+        case OP_IMM_32:
+            return "OP_IMM_32";
+        case OP_32:
+            return "OP_32";
+        case CUSTOM_3:
+            return "CUSTOM_3";
+        case CUSTOM_2:
+            return "CUSTOM_2";
+    }
+    return "UNKNOWN";
+}
+
 } // namespace opcode
 } // namespace vm
 
 int main(int argc, char** argv)
 {
+    if (argc < 2)
+    {
+        std::cout << "Usage: exe <path/to/file.bin>" << std::endl;
+        return 0;
+    }
+
+    auto bin = load_program(argv[1]);
+
+    if (bin)
+    {
+        using op_type = vm::opcode::OpcodeBase;
+        for (size_t i = 0; i < bin->size(); i+= sizeof(op_type)) {
+            const auto *p = bin->data() + i;
+            auto *op = reinterpret_cast<const op_type*>(p);
+            std::cout << std::hex
+                << std::setw(8) << std::setfill('0') << std::right << op->code
+                << std::setw(10) << std::setfill(' ') << std::right << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(op->base.op))
+                << std::endl;
+        }
+    }
+
     return 0;
 }
