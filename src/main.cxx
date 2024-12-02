@@ -269,6 +269,12 @@ struct OpcodeBase
         u_type u;
         j_type j;
     };
+
+    [[nodiscard]]
+    opcode_t get_code() const
+    {
+        return base.op;
+    }
 };
 static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
 
@@ -391,6 +397,109 @@ std::string_view get_op_id(OpcodeType code)
 }
 
 } // namespace opcode
+
+namespace detail
+{
+
+struct interface
+{
+    virtual ~interface() = default;
+
+    [[nodiscard]]
+    virtual opcode::opcode_t get_code_base() const = 0;
+    [[nodiscard]]
+    virtual opcode::opcode_t get_func_a() const = 0;
+    [[nodiscard]]
+    virtual opcode::opcode_t get_func_b() const = 0;
+    [[nodiscard]]
+    virtual std::string_view get_mnemonic() const = 0;
+
+    template<uint8_t start, uint8_t length>
+    static consteval opcode::data_t get_bits(opcode::opcode_t code)
+    {
+        constexpr uint8_t shift = (sizeof(code) * 8) - length;
+        constexpr opcode::opcode_t mask = (~static_cast<opcode::opcode_t>(0)) >> shift;
+
+        return (code >> start) & mask;
+    }
+
+    static constexpr opcode::data_t get_bits(opcode::opcode_t code, uint8_t start, uint8_t length)
+    {
+        uint8_t shift = (sizeof(code) * 8) - length;
+        opcode::opcode_t mask = static_cast<opcode::opcode_t>(-1) >> shift;
+
+        return (code >> start) & mask;
+    }
+
+    static register_no get_rs2(opcode::opcode_t code)
+    {
+        return get_bits(code, 20, 5);
+    }
+
+    static register_no get_rs1(opcode::opcode_t code)
+    {
+        return get_bits(code, 15, 5);
+    }
+
+    static register_no get_rd(opcode::opcode_t code)
+    {
+        return get_bits(code, 7, 5);
+    }
+
+    static opcode::data_t get_func3(opcode::opcode_t code)
+    {
+        return get_bits(code, 12, 3);
+    }
+
+    static opcode::data_t get_func7(opcode::opcode_t code)
+    {
+        return get_bits(code, 25, 7);
+    }
+
+    static opcode::data_t get_imm12(opcode::opcode_t code)
+    {
+        return get_bits(code, 20, 12);
+    }
+};
+static_assert(interface::get_bits<0, 1>(0b0000'0001) == opcode::opcode_t{0b0000'0001}, "something wrong");
+static_assert(interface::get_bits<0, 2>(0b0000'0011) == opcode::opcode_t{0b0000'0011}, "something wrong");
+static_assert(interface::get_bits<1, 1>(0b0000'0010) == opcode::opcode_t{0b0000'0001}, "something wrong");
+
+template
+<
+    opcode::opcode_t CodeBase,
+    opcode::opcode_t FuncA = 0,
+    opcode::opcode_t FuncB = 0
+>
+struct instruction_base : public interface
+{
+    [[nodiscard]]
+    opcode::opcode_t get_code_base() const final
+    {
+        return CodeBase;
+    }
+
+    [[nodiscard]]
+    opcode::opcode_t get_func_a() const final
+    {
+        return FuncA;
+    }
+
+    [[nodiscard]]
+    opcode::opcode_t get_func_b() const final
+    {
+        return FuncB;
+    }
+
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return opcode::get_op_id(get_code_base());
+    }
+};
+
+
+} // namespace detail
 } // namespace vm
 
 void disasm(const fs::path &program_file);
@@ -428,7 +537,7 @@ void disasm(const program &code)
         auto *op = reinterpret_cast<const op_type*>(p);
         std::cout << std::hex
                   << std::setw(8) << std::setfill('0') << std::right << op->code
-                  << std::setw(10) << std::setfill(' ') << std::right << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(op->base.op))
+                  << std::setw(10) << std::setfill(' ') << std::right << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(op->get_code()))
                   << std::endl;
     }
 }
