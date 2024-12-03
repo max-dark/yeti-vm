@@ -138,6 +138,17 @@ using opcode_t = std::uint32_t;
 using function_t = std::uint32_t;
 using data_t = std::uint32_t;
 
+enum BaseFormat: opcode_t
+{
+    UNKNOWN,
+    R_TYPE,
+    I_TYPE,
+    S_TYPE,
+    B_TYPE,
+    U_TYPE,
+    J_TYPE,
+};
+
 template<uint8_t start, uint8_t length>
 consteval opcode::data_t get_bits(opcode::opcode_t code)
 {
@@ -335,22 +346,49 @@ std::string_view get_op_id(OpcodeType code)
     return "UNKNOWN";
 }
 
-enum BaseFormat: opcode_t
+constexpr bool have_ext_a(opcode_t code)
 {
-    R_TYPE,
-    I_TYPE,
-    S_TYPE,
-    B_TYPE,
-    U_TYPE,
-    J_TYPE,
-};
+    switch (code) {
+        case LUI: case AUIPC: case JAL: return false;
+        default: return true;
+    }
+}
 
+constexpr bool have_ext_b(opcode_t code)
+{
+    switch (code) {
+        case LUI: case AUIPC: case JAL: return false;
+        default: return true;
+    }
+}
 } // namespace opcode
+
+inline constexpr opcode::opcode_t no_func_a = 1 << 4;
+inline constexpr opcode::opcode_t no_func_b = 1 << 8;
+struct Code
+{
+    opcode::opcode_t code = 0;
+    opcode::BaseFormat format = opcode::UNKNOWN;
+    opcode::opcode_t funcA = no_func_a;
+    opcode::opcode_t funcB = no_func_b;
+
+    bool operator<(const Code& rhs) const
+    {
+        bool result = code < rhs.code;
+        //result = result && (format < rhs.format);
+        result = result && (funcA < rhs.funcA);
+        result = result && (funcB < rhs.funcB);
+        return result;
+    }
+};
 
 struct interface
 {
     using ptr = std::shared_ptr<interface>;
     virtual ~interface() = default;
+
+    [[nodiscard]]
+    virtual const Code& get_id() const = 0;
 
     [[nodiscard]]
     virtual opcode::opcode_t get_code_base() const = 0;
@@ -369,11 +407,24 @@ template
 <
     opcode::opcode_t CodeBase,
     opcode::BaseFormat Format,
-    opcode::opcode_t FuncA = 0,
-    opcode::opcode_t FuncB = 0
+    opcode::opcode_t FuncA = no_func_a,
+    opcode::opcode_t FuncB = no_func_b
 >
 struct instruction_base : public interface
 {
+    [[nodiscard]]
+    const Code& get_id() const final
+    {
+        static const Code id{
+            .code = CodeBase,
+            .format = Format,
+            .funcA = FuncA,
+            .funcB = FuncB
+        };
+
+        return id;
+    }
+
     [[nodiscard]]
     opcode::opcode_t get_code_base() const final
     {
@@ -408,8 +459,10 @@ struct instruction_base : public interface
 struct registry
 {
     using handler_ptr = const interface*;
-    using type_map = std::map<opcode::BaseFormat, interface::ptr>;
+    using type_map = std::map<Code, interface::ptr>;
     using base_map = std::map<opcode::opcode_t, type_map>;
+    using format_arr = std::array<opcode::BaseFormat, 16>;
+    using format_map = std::map<opcode::opcode_t, format_arr>;
 
     template<typename Handler>
     inline void register_handler()
@@ -419,17 +472,39 @@ struct registry
     }
     void register_handler(interface::ptr handler)
     {
-        auto& type = handlers[handler->get_code_base()];
-        type[handler->get_type()] = std::move(handler);
+        auto& id = handler->get_id();
+        auto& type = handlers[id.code];
+        type[id] = std::move(handler);
     }
 
-    handler_ptr find(const opcode::OpcodeBase* code) const
+    handler_ptr find_handler(const opcode::OpcodeBase* code) const
     {
         auto op = code->get_code();
+        const auto type = handlers.find(op);
+        if (type != handlers.end())
+        {
+            auto& tmp = type->second;
+        }
+
         return nullptr;
     }
 
+    void register_format(opcode::BaseFormat fmt, opcode::opcode_t code, uint8_t func)
+    {
+        formats[code][func] = fmt;
+    }
+
+    [[nodiscard]]
+    std::optional<opcode::BaseFormat> find_format(opcode::opcode_t code) const
+    {
+        opcode::OpcodeBase tmp{code};
+        auto fmt = formats.find(code);
+        if (fmt != formats.end()) return fmt->second[tmp.get_func3()];
+        return std::nullopt;
+    }
+
     base_map handlers;
+    format_map formats;
 };
 
 namespace rv32i
