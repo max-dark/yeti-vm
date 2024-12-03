@@ -31,7 +31,7 @@ namespace vm
 using register_no = std::uint8_t;
 constexpr register_no register_count = 32;
 using register_t = std::uint32_t;
-using registers = std::array<register_t, register_count + 1>; // generic + PC
+using register_file = std::array<register_t, register_count + 1>; // generic + PC
 
 enum RegAlias: register_no
 {
@@ -260,7 +260,7 @@ enum OpcodeType: opcode_t
     LOAD_FP  = make_opcode(0b00, 0b001), // read value from memory(float/double)
     STORE_FP = make_opcode(0b01, 0b001), // write value to memory(float/double)
     MSUB     = make_opcode(0b10, 0b001), // "Multiple and Sub"(float/double)
-    JALR     = make_opcode(0b11, 0b001), // jump to offset from register
+    JALR     = make_opcode(0b11, 0b001), // jump to offset_t from register
 
     CUSTOM_0 = make_opcode(0b00, 0b010), // for extensions
     CUSTOM_1 = make_opcode(0b01, 0b010), // for extensions
@@ -270,7 +270,7 @@ enum OpcodeType: opcode_t
     MISC_MEM = make_opcode(0b00, 0b011), // sync, barriers, etc
     AMO      = make_opcode(0b01, 0b011), // atomic ops
     NMADD    = make_opcode(0b10, 0b011), // "Multiple and Add"(float/double)
-    JAL      = make_opcode(0b11, 0b011), // jump to offset
+    JAL      = make_opcode(0b11, 0b011), // jump to offset_t
 
     OP_IMM = make_opcode(0b00, 0b100), // op with const
     OP     = make_opcode(0b01, 0b100), // op with registers
@@ -391,6 +391,8 @@ struct Code
     }
 };
 
+struct basic_vm;
+
 struct interface
 {
     using ptr = std::shared_ptr<interface>;
@@ -410,6 +412,9 @@ struct interface
     [[nodiscard]]
     virtual opcode::BaseFormat get_type() const = 0;
 
+    virtual void exec(basic_vm* vm, opcode::opcode_t data) const {
+        // no op by default
+    }
 };
 
 template
@@ -506,6 +511,92 @@ struct registry
     }
 
     base_map handlers;
+};
+
+struct basic_vm: public registry
+{
+    using code_memory_t = std::vector<std::uint8_t>;
+    using data_memory_t = std::vector<std::uint8_t>;
+    using address_t = std::uint32_t;
+    using offset_t = std::int32_t;
+
+    void halt()
+    {}
+
+    void jump_to(offset_t value)
+    {
+        auto dest = get_pc() + value;
+        bool valid = dest % sizeof(opcode::opcode_t);
+        valid = valid && (dest < code.size());
+        if (!valid) halt();
+        set_pc(dest);
+    }
+    void jump_if(bool condition, offset_t value)
+    {
+        if (condition) jump_to(value);
+        else inc_pc();
+    }
+
+    void syscall()
+    {
+        inc_pc();
+    }
+
+    void debug()
+    {
+        inc_pc();
+    }
+
+    void control()
+    {
+        inc_pc();
+    }
+
+    void load(register_no r, address_t from, uint8_t size)
+    {
+        inc_pc();
+    }
+
+    void store(register_no r, address_t to, uint8_t size)
+    {
+        inc_pc();
+    }
+
+    void set_register(register_no r, register_t value)
+    {
+        if (r > 0 && r <= register_count)
+        {
+            registers[r] = value;
+        }
+    }
+
+    [[nodiscard]]
+    register_t get_register(register_no r) const
+    {
+        if (r > 0 && r <= register_count)
+        {
+            return registers[r];
+        }
+        return 0;
+    }
+
+    [[nodiscard]]
+    register_t get_pc() const
+    {
+        return get_register(RegAlias::pc);
+    }
+    void set_pc(register_t value)
+    {
+        set_register(RegAlias::pc, value);
+    }
+    void inc_pc()
+    {
+        registers[RegAlias::pc] += sizeof(opcode::opcode_t);
+    }
+
+    register_file registers{};
+    code_memory_t code; // ro memory
+    data_memory_t data; // rw memory
 };
 
 namespace rv32i
