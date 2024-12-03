@@ -412,7 +412,7 @@ struct interface
     [[nodiscard]]
     virtual opcode::BaseFormat get_type() const = 0;
 
-    virtual void exec(basic_vm* vm, opcode::opcode_t data) const {
+    virtual void exec(basic_vm* vm, const opcode::OpcodeBase* current) const {
         // no op by default
     }
 };
@@ -552,6 +552,11 @@ struct basic_vm: public registry
         inc_pc();
     }
 
+    void barrier()
+    {
+        inc_pc();
+    }
+
     void load(register_no r, address_t from, uint8_t size)
     {
         inc_pc();
@@ -602,21 +607,61 @@ struct basic_vm: public registry
 namespace rv32i
 {
 
-struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {};
-struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {};
+struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
 
-struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {};
-struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {};
+struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
 
 template<opcode::opcode_t Type>
 struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {};
 
-struct beq : branch<0b0000> {};
-struct bne : branch<0b0001> {};
-struct blt : branch<0b0100> {};
-struct bge : branch<0b0101> {};
-struct bltu: branch<0b0110> {};
-struct bgeu: branch<0b0111> {};
+struct beq : branch<0b0000> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct bne : branch<0b0001> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct blt : branch<0b0100> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct bge : branch<0b0101> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct bltu: branch<0b0110> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct bgeu: branch<0b0111> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
 
 void add_branch(registry* r)
 {
@@ -631,11 +676,31 @@ void add_branch(registry* r)
 template<opcode::opcode_t Type>
 struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {};
 
-struct lb : load<0b0000> {};
-struct lh : load<0b0001> {};
-struct lw : load<0b0010> {};
-struct lbu: load<0b0100> {};
-struct lhu: load<0b0101> {};
+struct lb : load<0b0000> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct lh : load<0b0001> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct lw : load<0b0010> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct lbu: load<0b0100> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct lhu: load<0b0101> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
 
 void add_load(registry* r)
 {
@@ -649,9 +714,21 @@ void add_load(registry* r)
 template<opcode::opcode_t Type>
 struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {};
 
-struct sb: store<0b0000> {};
-struct sh: store<0b0001> {};
-struct sw: store<0b0010> {};
+struct sb: store<0b0000> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct sh: store<0b0001> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct sw: store<0b0010> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
 
 void add_store(registry* r)
 {
@@ -663,11 +740,31 @@ void add_store(registry* r)
 template<opcode::opcode_t Type>
 struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {};
 
-struct sli : int_imm<0b0010> {};
-struct sliu: int_imm<0b0011> {};
-struct xori: int_imm<0b0100> {};
-struct ori : int_imm<0b0110> {};
-struct andi: int_imm<0b0111> {};
+struct sli : int_imm<0b0010> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct sliu: int_imm<0b0011> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct xori: int_imm<0b0100> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct ori : int_imm<0b0110> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct andi: int_imm<0b0111> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
 
 void add_int_imm(registry* r)
 {
@@ -681,9 +778,21 @@ void add_int_imm(registry* r)
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {};
 
-struct slli: shift_imm<0b0001, 0> {};
-struct srli: shift_imm<0b0101, 0> {};
-struct srai: shift_imm<0b0101, 1> {};
+struct slli: shift_imm<0b0001, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct srli: shift_imm<0b0101, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct srai: shift_imm<0b0101, 1> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
 
 void add_shift_imm(registry* r)
 {
@@ -695,16 +804,56 @@ void add_shift_imm(registry* r)
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {};
 
-struct add_r : int_r<0b0000, 0> {};
-struct sub_r : int_r<0b0000, 1> {};
-struct sll_r : int_r<0b0001, 0> {};
-struct slt_r : int_r<0b0010, 0> {};
-struct sltu_r: int_r<0b0011, 0> {};
-struct xor_r : int_r<0b0100, 0> {};
-struct srl_r : int_r<0b0101, 0> {};
-struct sra_r : int_r<0b0101, 1> {};
-struct or_r  : int_r<0b0110, 0> {};
-struct and_r : int_r<0b0111, 0> {};
+struct add_r : int_r<0b0000, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct sub_r : int_r<0b0000, 1> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct sll_r : int_r<0b0001, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct slt_r : int_r<0b0010, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct sltu_r: int_r<0b0011, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct xor_r : int_r<0b0100, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct srl_r : int_r<0b0101, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct sra_r : int_r<0b0101, 1> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct or_r  : int_r<0b0110, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+struct and_r : int_r<0b0111, 0> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
 
 void add_int(registry* r)
 {
@@ -724,8 +873,18 @@ void add_int(registry* r)
 template<opcode::opcode_t Type>
 struct misc_mem: public instruction_base<opcode::MISC_MEM, opcode::I_TYPE, Type> {};
 
-struct fence  : misc_mem<0b0000> {};
-struct fence_i: misc_mem<0b0001> {};
+struct fence  : misc_mem<0b0000> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+        vm->barrier();
+    }
+};
+struct fence_i: misc_mem<0b0001> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+        vm->barrier();
+    }
+};
 
 void add_misc(registry* r)
 {
@@ -734,10 +893,20 @@ void add_misc(registry* r)
 }
 
 // ECALL / EBREAK
-struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {};
+struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+        vm->syscall();
+    }
+};
 
 template<opcode::opcode_t Type>
-struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {};
+struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+        vm->control();
+    }
+};
 
 struct csrrw : csr<0b0001> {};
 struct csrrs : csr<0b0010> {};
