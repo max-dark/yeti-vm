@@ -138,6 +138,26 @@ using opcode_t = std::uint32_t;
 using function_t = std::uint32_t;
 using data_t = std::uint32_t;
 
+template<uint8_t start, uint8_t length>
+consteval opcode::data_t get_bits(opcode::opcode_t code)
+{
+    constexpr uint8_t shift = (sizeof(code) * 8) - length;
+    constexpr opcode::opcode_t mask = (~static_cast<opcode::opcode_t>(0)) >> shift;
+
+    return (code >> start) & mask;
+}
+static_assert(get_bits<0, 1>(0b0000'0001) == opcode_t{0b0000'0001}, "something wrong");
+static_assert(get_bits<0, 2>(0b0000'0011) == opcode_t{0b0000'0011}, "something wrong");
+static_assert(get_bits<1, 1>(0b0000'0010) == opcode_t{0b0000'0001}, "something wrong");
+
+constexpr data_t get_bits(opcode_t code, uint8_t start, uint8_t length)
+{
+    uint8_t shift = (sizeof(code) * 8) - length;
+    opcode_t mask = static_cast<opcode_t>(-1) >> shift;
+
+    return (code >> start) & mask;
+}
+
 data_t extend_sign(data_t value, opcode_t code)
 {
     data_t sign = code & (1u << 31);
@@ -151,129 +171,48 @@ data_t extend_sign(data_t value, opcode_t code)
 
 struct OpcodeBase
 {
-    using bf = data_t;
-
-    struct base_type
-    {
-        bf op : 7;
-        bf data : 25;
-
-        bf value() const
-        {
-            return 0;
-        }
-    };
-    static_assert(sizeof(base_type) == sizeof(opcode_t));
-    struct r_type
-    {
-        bf op : 7;
-        bf rd : 5;
-        bf f3 : 3;
-        bf rs1 : 5;
-        bf rs2 : 5;
-        bf f7 : 7;
-
-        bf value() const
-        {
-            return 0;
-        }
-    };
-    static_assert(sizeof(r_type) == sizeof(opcode_t));
-
-    struct i_type
-    {
-        bf op : 7;
-        bf rd : 5;
-        bf f3 : 3;
-        bf rs1 : 5;
-        bf i_11_0 : 12;
-
-        bf value() const
-        {
-            return i_11_0;
-        }
-    };
-    static_assert(sizeof(i_type) == sizeof(opcode_t));
-
-    struct s_type
-    {
-        bf op : 7;
-        bf i_4_0 : 5;
-        bf f3 : 3;
-        bf rs1 : 5;
-        bf rs2 : 5;
-        bf i_11_5 : 7;
-
-        bf value() const
-        {
-            return (i_11_5 << 5) | i_4_0;
-        }
-    };
-    static_assert(sizeof(s_type) == sizeof(opcode_t));
-
-    struct b_type
-    {
-        bf op : 7;
-        bf i_11 : 1;
-        bf i_4_1 : 4;
-        bf f3 : 3;
-        bf rs1 : 5;
-        bf rs2 : 5;
-        bf i_10_5 : 6;
-        bf i_12 : 1;
-
-        bf value() const
-        {
-            return (i_12 << 12) | (i_11 << 11) | (i_10_5 << 5) | (i_4_1 << 1) | 0; // OoO
-        }
-    };
-    static_assert(sizeof(b_type) == sizeof(opcode_t));
-
-    struct u_type
-    {
-        bf op : 7;
-        bf rd : 5;
-        bf i_31_12 : 20;
-
-        bf value() const
-        {
-            return (i_31_12 << 12) | 0b0000'0000'0000;
-        }
-    };
-    static_assert(sizeof(u_type) == sizeof(opcode_t));
-
-    struct j_type
-    {
-        bf op : 7;
-        bf rd : 5;
-        bf i_19_12 : 8;
-        bf i_11 : 1;
-        bf i_10_1 : 10;
-        bf i_20 : 1;
-
-        bf value() const
-        {
-            return (i_20 << 20) | (i_19_12 << 12) | (i_11 << 11) | (i_10_1 << 1) | 0;
-        }
-    };
-    static_assert(sizeof(j_type) == sizeof(opcode_t));
-
-    union
-    {
-        opcode_t code;
-        base_type base;
-        r_type r;
-        i_type i;
-        s_type s;
-        b_type b;
-        u_type u;
-        j_type j;
-    };
+    opcode_t code;
 
     [[nodiscard]]
     opcode_t get_code() const
     {
-        return base.op;
+        return get_bits(code, 0, 7);
+    }
+
+    [[nodiscard]]
+    register_no get_rs2() const
+    {
+        return get_bits(code, 20, 5);
+    }
+
+    [[nodiscard]]
+    register_no get_rs1() const
+    {
+        return get_bits(code, 15, 5);
+    }
+
+    [[nodiscard]]
+    register_no get_rd() const
+    {
+        return get_bits(code, 7, 5);
+    }
+
+    [[nodiscard]]
+    data_t get_func3() const
+    {
+        return get_bits(code, 12, 3);
+    }
+
+    [[nodiscard]]
+    data_t get_func7() const
+    {
+        return get_bits(code, 25, 7);
+    }
+
+    [[nodiscard]]
+    data_t get_imm12() const
+    {
+        return get_bits(code, 20, 12);
     }
 };
 static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
@@ -408,9 +347,6 @@ enum BaseFormat: opcode_t
 
 } // namespace opcode
 
-namespace detail
-{
-
 struct interface
 {
     using ptr = std::shared_ptr<interface>;
@@ -427,56 +363,7 @@ struct interface
     [[nodiscard]]
     virtual opcode::BaseFormat get_type() const = 0;
 
-    template<uint8_t start, uint8_t length>
-    static consteval opcode::data_t get_bits(opcode::opcode_t code)
-    {
-        constexpr uint8_t shift = (sizeof(code) * 8) - length;
-        constexpr opcode::opcode_t mask = (~static_cast<opcode::opcode_t>(0)) >> shift;
-
-        return (code >> start) & mask;
-    }
-
-    static constexpr opcode::data_t get_bits(opcode::opcode_t code, uint8_t start, uint8_t length)
-    {
-        uint8_t shift = (sizeof(code) * 8) - length;
-        opcode::opcode_t mask = static_cast<opcode::opcode_t>(-1) >> shift;
-
-        return (code >> start) & mask;
-    }
-
-    static register_no get_rs2(opcode::opcode_t code)
-    {
-        return get_bits(code, 20, 5);
-    }
-
-    static register_no get_rs1(opcode::opcode_t code)
-    {
-        return get_bits(code, 15, 5);
-    }
-
-    static register_no get_rd(opcode::opcode_t code)
-    {
-        return get_bits(code, 7, 5);
-    }
-
-    static opcode::data_t get_func3(opcode::opcode_t code)
-    {
-        return get_bits(code, 12, 3);
-    }
-
-    static opcode::data_t get_func7(opcode::opcode_t code)
-    {
-        return get_bits(code, 25, 7);
-    }
-
-    static opcode::data_t get_imm12(opcode::opcode_t code)
-    {
-        return get_bits(code, 20, 12);
-    }
 };
-static_assert(interface::get_bits<0, 1>(0b0000'0001) == opcode::opcode_t{0b0000'0001}, "something wrong");
-static_assert(interface::get_bits<0, 2>(0b0000'0011) == opcode::opcode_t{0b0000'0011}, "something wrong");
-static_assert(interface::get_bits<1, 1>(0b0000'0010) == opcode::opcode_t{0b0000'0001}, "something wrong");
 
 template
 <
@@ -520,7 +407,7 @@ struct instruction_base : public interface
 
 struct registry
 {
-    using handler_ptr = interface*;
+    using handler_ptr = const interface*;
     using type_map = std::map<opcode::BaseFormat, interface::ptr>;
     using base_map = std::map<opcode::opcode_t, type_map>;
 
@@ -536,8 +423,9 @@ struct registry
         type[handler->get_type()] = std::move(handler);
     }
 
-    handler_ptr find(opcode::opcode_t code)
+    handler_ptr find(const opcode::OpcodeBase* code) const
     {
+        auto op = code->get_code();
         return nullptr;
     }
 
@@ -721,7 +609,6 @@ void add_all(registry* r)
 
 } // namespace rv32i
 
-} // namespace detail
 } // namespace vm
 
 void disasm(const fs::path &program_file);
