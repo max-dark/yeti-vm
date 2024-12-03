@@ -357,8 +357,17 @@ constexpr bool have_ext_a(opcode_t code)
 constexpr bool have_ext_b(opcode_t code)
 {
     switch (code) {
-        case LUI: case AUIPC: case JAL: return false;
-        default: return true;
+        case OP: {
+            // @see int_r
+            return true;
+        }
+        case OP_IMM: {
+            // @see shift_imm
+            OpcodeBase tmp{ .code = code };
+            auto f = tmp.get_func3();
+            return (f == 0b0001 || f == 0b0101);
+        }
+        default: return false;
     }
 }
 } // namespace opcode
@@ -483,7 +492,16 @@ struct registry
         const auto type = handlers.find(op);
         if (type != handlers.end())
         {
+            Code c;
+            c.code = op;
+            c.format = opcode::UNKNOWN;
+            c.funcA = opcode::have_ext_a(op) ? code->get_func3() : no_func_a;
+            c.funcB = opcode::have_ext_b(op) ? code->get_func7() : no_func_a;
+
             auto& tmp = type->second;
+            auto handler = tmp.find(c);
+            if (handler != tmp.end())
+                return handler->second.get();
         }
 
         return nullptr;
