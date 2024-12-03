@@ -470,8 +470,6 @@ struct registry
     using handler_ptr = const interface*;
     using type_map = std::map<Code, interface::ptr>;
     using base_map = std::map<opcode::opcode_t, type_map>;
-    using format_arr = std::array<opcode::BaseFormat, 16>;
-    using format_map = std::map<opcode::opcode_t, format_arr>;
 
     template<typename Handler>
     inline void register_handler()
@@ -507,22 +505,7 @@ struct registry
         return nullptr;
     }
 
-    void register_format(opcode::BaseFormat fmt, opcode::opcode_t code, uint8_t func)
-    {
-        formats[code][func] = fmt;
-    }
-
-    [[nodiscard]]
-    std::optional<opcode::BaseFormat> find_format(opcode::opcode_t code) const
-    {
-        opcode::OpcodeBase tmp{code};
-        auto fmt = formats.find(code);
-        if (fmt != formats.end()) return fmt->second[tmp.get_func3()];
-        return std::nullopt;
-    }
-
     base_map handlers;
-    format_map formats;
 };
 
 namespace rv32i
