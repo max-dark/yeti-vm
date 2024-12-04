@@ -701,15 +701,31 @@ namespace rv32i
 
 struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
     [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string args{get_register_alias(code->get_rd())};
+        return args + ", " + opcode::to_hex(code->decode_u());
+    }
+    [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
         return "lui";
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto data = current->decode_u();
+
+        vm->set_register(dest, data);
     }
 };
 struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string args{get_register_alias(code->get_rd())};
+        return args + ", " + opcode::to_hex(code->decode_u());
+    }
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
@@ -717,6 +733,10 @@ struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto data = current->decode_u();
+        auto pc_value = vm->get_pc();
+        vm->set_register(dest, data + pc_value);
     }
 };
 
