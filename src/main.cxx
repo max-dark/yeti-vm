@@ -1014,8 +1014,9 @@ struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
     {
-        std::string lhs{get_register_alias(code->get_rs1())};
-        return lhs + ", " + std::to_string(get_offset(code));
+        std::string dest{get_register_alias(code->get_rd())};
+        std::string base{get_register_alias(code->get_rs1())};
+        return dest + ", " + base + ", " + std::to_string(get_offset(code));
     }
     virtual register_t read_memory(basic_vm* vm, basic_vm::address_t address) const = 0;
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
