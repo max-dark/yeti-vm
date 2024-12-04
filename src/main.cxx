@@ -32,7 +32,13 @@ namespace vm
 using register_no = std::uint8_t;
 constexpr register_no register_count = 32;
 using register_t = std::uint32_t;
+using signed_t = std::int32_t;
 using register_file = std::array<register_t, register_count + 1>; // generic + PC
+
+signed_t to_signed(register_t value)
+{
+    return std::bit_cast<signed_t>(value);
+}
 
 enum RegAlias: register_no
 {
@@ -812,7 +818,33 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
 };
 
 template<opcode::opcode_t Type>
-struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {};
+struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string lhs{get_register_alias(code->get_rs1())};
+        std::string rhs{get_register_alias(code->get_rs2())};
+        return lhs + ", " + rhs + ", " + std::to_string(get_data(code));
+    }
+
+    [[nodiscard]]
+    static opcode::signed_t get_data(const opcode::OpcodeBase* current)
+    {
+        auto value = opcode::extend_sign(current->decode_b(), current->code);
+        return std::bit_cast<opcode::signed_t>(value);
+    }
+
+    [[nodiscard]]
+    virtual bool compare(register_t lhs, register_t rhs) const = 0;
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+        auto lhs = vm->get_register(current->get_rs1());
+        auto rhs = vm->get_register(current->get_rs2());
+        auto offset = get_data(current);
+
+        vm->jump_if(compare(lhs, rhs), offset);
+    }
+};
 
 struct beq : branch<0b0000> {
     [[nodiscard]]
@@ -820,8 +852,10 @@ struct beq : branch<0b0000> {
     {
         return "beq";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    bool compare(register_t lhs, register_t rhs) const override
     {
+        return to_signed(lhs) == to_signed(rhs);
     }
 };
 struct bne : branch<0b0001> {
@@ -830,8 +864,10 @@ struct bne : branch<0b0001> {
     {
         return "bne";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    bool compare(register_t lhs, register_t rhs) const override
     {
+        return to_signed(lhs) != to_signed(rhs);
     }
 };
 struct blt : branch<0b0100> {
@@ -840,8 +876,10 @@ struct blt : branch<0b0100> {
     {
         return "blt";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    bool compare(register_t lhs, register_t rhs) const override
     {
+        return to_signed(lhs) < to_signed(rhs);
     }
 };
 struct bge : branch<0b0101> {
@@ -850,8 +888,10 @@ struct bge : branch<0b0101> {
     {
         return "bge";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    bool compare(register_t lhs, register_t rhs) const override
     {
+        return lhs >= to_signed(rhs);
     }
 };
 struct bltu: branch<0b0110> {
@@ -860,8 +900,10 @@ struct bltu: branch<0b0110> {
     {
         return "bltu";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    bool compare(register_t lhs, register_t rhs) const override
     {
+        return lhs < rhs;
     }
 };
 struct bgeu: branch<0b0111> {
@@ -870,8 +912,10 @@ struct bgeu: branch<0b0111> {
     {
         return "bgeu";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    bool compare(register_t lhs, register_t rhs) const override
     {
+        return lhs >= rhs;
     }
 };
 
