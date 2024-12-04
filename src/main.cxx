@@ -1178,6 +1178,17 @@ void add_store(registry* r)
 template<opcode::opcode_t Type>
 struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {};
 
+struct addi : int_imm<0b0000> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "addi";
+    }
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+    }
+};
+
 struct sli : int_imm<0b0010> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -1231,6 +1242,7 @@ struct andi: int_imm<0b0111> {
 
 void add_int_imm(registry* r)
 {
+    r->register_handler<addi>();
     r->register_handler<sli>();
     r->register_handler<sliu>();
     r->register_handler<xori>();
