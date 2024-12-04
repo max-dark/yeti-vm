@@ -150,6 +150,22 @@ enum BaseFormat: opcode_t
     J_TYPE,
 };
 
+
+template<uint8_t start, uint8_t length>
+consteval data_t make_mask()
+{
+    constexpr data_t all = ~data_t{0};
+    constexpr data_t from_start = all << start;
+    constexpr data_t from_end   = from_start << length;
+
+    return from_start & (~from_end);
+}
+static_assert(make_mask<0, 8>() == 0b0'1111'1111, "wrong mask");
+static_assert(make_mask<1, 8>() == 0b1'1111'1110, "wrong mask");
+
+template<uint8_t start, uint8_t length>
+constexpr data_t mask_value = make_mask<start, length>();
+
 template<uint8_t start, uint8_t length>
 consteval opcode::data_t get_bits(opcode::opcode_t code)
 {
@@ -168,6 +184,29 @@ constexpr data_t get_bits(opcode_t code, uint8_t start, uint8_t length)
     opcode_t mask = static_cast<opcode_t>(-1) >> shift;
 
     return (code >> start) & mask;
+}
+
+template<uint8_t start, uint8_t length>
+constexpr data_t shift_bits(opcode_t code, uint8_t to)
+{
+    constexpr auto mask = mask_value<start, length>;
+    return ((code & mask) >> start) << to;
+}
+
+template<uint8_t start, uint8_t to, uint8_t length>
+constexpr data_t shift_bits(opcode_t code)
+{
+    constexpr auto mask = mask_value<start, length>;
+    return ((code & mask) >> start) << to;
+}
+static_assert(shift_bits<0, 1, 1>(0b0000'0001) == 0b0000'0010);
+static_assert(shift_bits<0, 1, 2>(0b0000'0011) == 0b0000'0110);
+static_assert(shift_bits<0, 2, 1>(0b0000'0001) == 0b0000'0100);
+static_assert(shift_bits<0, 2, 2>(0b0000'0011) == 0b0000'1100);
+
+std::string to_hex(data_t num)
+{
+    return std::format("{:08x}", num);
 }
 
 data_t extend_sign(data_t value, opcode_t code)
@@ -225,6 +264,46 @@ struct OpcodeBase
     data_t get_imm12() const
     {
         return get_bits(code, 20, 12);
+    }
+
+    [[nodiscard]]
+    data_t decode_i() const
+    {
+        return shift_bits<20, 0, 12>(code);
+    }
+
+    [[nodiscard]]
+    data_t decode_s() const
+    {
+        auto a = shift_bits< 7, 0, 5>(code);
+        auto b = shift_bits<25, 5, 7>(code);
+        return a | b;
+    }
+
+    [[nodiscard]]
+    data_t decode_b() const
+    {
+        auto s = shift_bits<31, 12, 1>(code);
+        auto a = shift_bits< 8,  1, 4>(code);
+        auto c = shift_bits< 7, 11, 1>(code);
+        auto b = shift_bits<25,  5, 6>(code);
+        return s | a | b | c | 0;
+    }
+
+    [[nodiscard]]
+    data_t decode_u() const
+    {
+        return code & mask_value<12, 30>;
+    }
+
+    [[nodiscard]]
+    data_t decode_j() const
+    {
+        auto s = shift_bits<31, 20, 1>(code); // [31]
+        auto a = shift_bits<12, 12, 8>(code); // [19:12]
+        auto b = shift_bits<20, 11, 1>(code); // [20]
+        auto c = shift_bits<21,  1,10>(code); // [30:21]
+        return s | a | b | c | 0;
     }
 };
 static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
