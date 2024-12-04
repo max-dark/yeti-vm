@@ -1,5 +1,6 @@
-#include <iostream>
 #include "stdlib.hxx"
+#include <iostream>
+#include <format>
 
 namespace fs = std::filesystem;
 
@@ -410,6 +411,8 @@ struct interface
     [[nodiscard]]
     virtual std::string_view get_mnemonic() const = 0;
     [[nodiscard]]
+    virtual std::string get_args(const opcode::OpcodeBase* code) const = 0;
+    [[nodiscard]]
     virtual opcode::BaseFormat get_type() const = 0;
 
     virtual void exec(basic_vm* vm, const opcode::OpcodeBase* current) const {
@@ -462,6 +465,11 @@ struct instruction_base : public interface
     {
         auto code = opcode::OpcodeType{get_code_base()};
         return opcode::get_op_id(code);
+    }
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        return std::format("{:08x}", opcode::get_bits(code->code, 8, 32));
     }
     [[nodiscard]]
     opcode::BaseFormat get_type() const final
@@ -1207,13 +1215,29 @@ void disasm(const fs::path &program_file)
 
 void disasm(const program &code)
 {
+    using namespace std::literals;
     using op_type = vm::opcode::OpcodeBase;
+    vm::registry registry;
+    vm::rv32i::add_all(&registry);
+
+    std::cout
+        << std::setw(10) << std::left << "hex"
+        << std::setw(10) << std::left << "group"
+        << std::setw(10) << std::left << "instr"
+        << std::setw(10) << std::left << "args"
+        << std::endl;
     for (size_t i = 0; i < code.size(); i+= sizeof(op_type)) {
         const auto *p = code.data() + i;
         auto *op = reinterpret_cast<const op_type*>(p);
+        auto handler = registry.find_handler(op);
+        auto mnemonic = handler ? handler->get_mnemonic() : "UNKNOWN"sv;
+        auto args = handler ? handler->get_args(op) : "UNKNOWN"s;
         std::cout << std::hex
                   << std::setw(8) << std::setfill('0') << std::right << op->code
-                  << std::setw(10) << std::setfill(' ') << std::right << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(op->get_code()))
+                  << "  "
+                  << std::setw(10) << std::setfill(' ') << std::left << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(op->get_code()))
+                  << std::setw(10) << std::setfill(' ') << std::left << mnemonic
+                  << std::setw(10) << std::setfill(' ') << std::left << args
                   << std::endl;
     }
 }
