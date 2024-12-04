@@ -138,6 +138,7 @@ namespace opcode
 using opcode_t = std::uint32_t;
 using function_t = std::uint32_t;
 using data_t = std::uint32_t;
+using signed_t = std::int32_t;
 
 enum BaseFormat: opcode_t
 {
@@ -754,6 +755,17 @@ struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
 };
 
 struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
+    static opcode::signed_t get_data(const opcode::OpcodeBase* code)
+    {
+        auto value = opcode::extend_sign(code->decode_j(), code->code);
+        return std::bit_cast<opcode::signed_t>(value);
+    }
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string args{get_register_alias(code->get_rd())};
+        return args + ", " + std::to_string(get_data(code));
+    }
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
@@ -761,9 +773,26 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto offset = get_data(current);
+        auto pc_value = vm->get_pc();
+        vm->set_register(dest, pc_value + sizeof(opcode::opcode_t));
+        vm->jump_to(offset); // @see 2.5.1 "Unconditional jumps"
     }
 };
 struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
+    static opcode::signed_t get_data(const opcode::OpcodeBase* code)
+    {
+        auto value = opcode::extend_sign(code->decode_i(), code->code);
+        return std::bit_cast<opcode::signed_t>(value);
+    }
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string dest{get_register_alias(code->get_rd())};
+        std::string src{get_register_alias(code->get_rs1())};
+        return dest + ", " + src + ", " + std::to_string(get_data(code));
+    }
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
@@ -771,6 +800,14 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto src = current->get_rs1();
+        auto offset = get_data(current);
+        auto pc_value = vm->get_pc();
+        auto base = vm->get_register(src);
+
+        vm->set_register(dest, pc_value + sizeof(opcode::opcode_t));
+        vm->jump_abs((base + offset) & (~1u)); // @see 2.5.1 "Unconditional jumps"
     }
 };
 
