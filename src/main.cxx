@@ -490,7 +490,12 @@ struct interface
     [[nodiscard]]
     virtual std::string_view get_mnemonic() const = 0;
     [[nodiscard]]
-    virtual std::string get_args(const opcode::OpcodeBase* code) const = 0;
+    virtual std::string get_args(const opcode::OpcodeBase* code) const
+    {
+        return get_args(code->code);
+    }
+    [[nodiscard]]
+    virtual std::string get_args(opcode::opcode_t code) const = 0;
     [[nodiscard]]
     virtual opcode::BaseFormat get_type() const = 0;
 
@@ -546,9 +551,9 @@ struct instruction_base : public interface
         return opcode::get_op_id(code);
     }
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(opcode::opcode_t code) const override
     {
-        return std::format("{:08x}", opcode::get_bits(code->code, 8, 32));
+        return opcode::to_hex(opcode::get_bits(code, 8, 32));
     }
     [[nodiscard]]
     opcode::BaseFormat get_type() const final
