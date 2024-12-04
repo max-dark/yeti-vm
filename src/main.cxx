@@ -1001,7 +1001,31 @@ void add_branch(registry* r)
 }
 
 template<opcode::opcode_t Type>
-struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {};
+struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
+    static signed_t get_offset(const opcode::OpcodeBase* current)
+    {
+        return to_signed(current->decode_i());
+    }
+    static basic_vm::address_t get_address(basic_vm *vm, const opcode::OpcodeBase* current)
+    {
+        auto base = vm->get_register(current->get_rs1());
+        return base + get_offset(current);
+    }
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string lhs{get_register_alias(code->get_rs1())};
+        return lhs + ", " + std::to_string(get_offset(code));
+    }
+    virtual register_t read_memory(basic_vm* vm, basic_vm::address_t address) const = 0;
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+        auto address = get_address(vm, current);
+        auto value = read_memory(vm, address);
+        auto dest = current->get_rd();
+        vm->set_register(dest, value);
+    }
+};
 
 struct lb : load<0b0000> {
     [[nodiscard]]
@@ -1009,8 +1033,13 @@ struct lb : load<0b0000> {
     {
         return "lb";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
     {
+        register_t value = 0;
+        vm->read_memory(address, 1, value);
+        if (value & opcode::mask_value<7, 1>)
+            return opcode::mask_value<8, 24> | value;
+        return value;
     }
 };
 struct lh : load<0b0001> {
@@ -1019,8 +1048,13 @@ struct lh : load<0b0001> {
     {
         return "lh";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
     {
+        register_t value = 0;
+        vm->read_memory(address, 2, value);
+        if (value & opcode::mask_value<15, 1>)
+            return opcode::mask_value<16, 16> | value;
+        return value;
     }
 };
 struct lw : load<0b0010> {
@@ -1029,8 +1063,11 @@ struct lw : load<0b0010> {
     {
         return "lw";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
     {
+        register_t value = 0;
+        vm->read_memory(address, 4, value);
+        return value;
     }
 };
 struct lbu: load<0b0100> {
@@ -1039,8 +1076,11 @@ struct lbu: load<0b0100> {
     {
         return "lbu";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
     {
+        register_t value = 0;
+        vm->read_memory(address, 1, value);
+        return value;
     }
 };
 struct lhu: load<0b0101> {
@@ -1049,8 +1089,11 @@ struct lhu: load<0b0101> {
     {
         return "lhu";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
     {
+        register_t value = 0;
+        vm->read_memory(address, 2, value);
+        return value;
     }
 };
 
