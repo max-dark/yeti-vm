@@ -669,15 +669,40 @@ struct basic_vm: public registry
         inc_pc();
     }
 
-    void load(register_no r, address_t from, uint8_t size)
+    void read_memory(address_t from, uint8_t size, register_t& value)
     {
+        auto ptr = get_ptr(from);
+        if (!ptr)
+        {
+            halt();
+            return;
+        }
+        if (size > sizeof(value))
+        {
+            halt();
+            return;
+        }
+        std::memcpy(&value, ptr, size);
         inc_pc();
     }
 
-    void store(register_no r, address_t to, uint8_t size)
+    void write_memory(address_t from, uint8_t size, register_t value)
     {
+        auto ptr = get_ptr(from);
+        if (!ptr)
+        {
+            halt();
+            return;
+        }
+        if (size > sizeof(value))
+        {
+            halt();
+            return;
+        }
+        std::memcpy(ptr, &value, size);
         inc_pc();
     }
+
 
     void set_register(register_no r, register_t value)
     {
@@ -711,9 +736,55 @@ struct basic_vm: public registry
         registers[RegAlias::pc] += sizeof(opcode::opcode_t);
     }
 
+    [[nodiscard]]
+    const void* get_ptr(address_t address) const
+    {
+        if (address >= data_base)
+        {
+            address -= data_base;
+            if (address < data.size())
+            {
+                return data.data() + address;
+            }
+        }
+        if (address >= code_base)
+        {
+            address -= code_base;
+            if (address < code.size())
+            {
+                return code.data() + address;
+            }
+        }
+        return nullptr;
+    }
+
+    [[nodiscard]]
+    void* get_ptr(address_t address)
+    {
+        if (address >= data_base)
+        {
+            address -= data_base;
+            if (address < data.size())
+            {
+                return data.data() + address;
+            }
+        }
+        if (address >= code_base)
+        {
+            address -= code_base;
+            if (address < code.size())
+            {
+                return code.data() + address;
+            }
+        }
+        return nullptr;
+    }
+
     register_file registers{};
     code_memory_t code; // ro memory
     data_memory_t data; // rw memory
+    address_t code_base = 0;
+    address_t data_base = 4 * 1024 * 1024;
 };
 
 namespace rv32i
