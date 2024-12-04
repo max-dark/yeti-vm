@@ -615,17 +615,30 @@ struct basic_vm: public registry
     void halt()
     {}
 
-    void jump_to(offset_t value)
+    void jump_abs(address_t dest)
     {
-        auto dest = get_pc() + value;
         bool valid = dest % sizeof(opcode::opcode_t);
         valid = valid && (dest < code.size());
         if (!valid) halt();
         set_pc(dest);
     }
+
+    void jump_to(offset_t value)
+    {
+        auto dest = get_pc() + value;
+        bool valid = dest % sizeof(opcode::opcode_t);
+        jump_abs(dest);
+    }
+
     void jump_if(bool condition, offset_t value)
     {
         if (condition) jump_to(value);
+        else inc_pc();
+    }
+
+    void jump_if_abs(bool condition, address_t value)
+    {
+        if (condition) jump_abs(value);
         else inc_pc();
     }
 
