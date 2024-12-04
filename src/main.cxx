@@ -458,7 +458,7 @@ struct instruction_base : public interface
     }
 
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view get_mnemonic() const override
     {
         auto code = opcode::OpcodeType{get_code_base()};
         return opcode::get_op_id(code);
@@ -608,22 +608,42 @@ namespace rv32i
 {
 
 struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "lui";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "auipc";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 
 struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "jal";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "jalr";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
@@ -633,31 +653,61 @@ template<opcode::opcode_t Type>
 struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {};
 
 struct beq : branch<0b0000> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "beq";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct bne : branch<0b0001> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "bne";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct blt : branch<0b0100> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "blt";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct bge : branch<0b0101> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "bge";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct bltu: branch<0b0110> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "bltu";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct bgeu: branch<0b0111> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "bgeu";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
@@ -677,26 +727,51 @@ template<opcode::opcode_t Type>
 struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {};
 
 struct lb : load<0b0000> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "lb";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct lh : load<0b0001> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "lh";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct lw : load<0b0010> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "lw";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct lbu: load<0b0100> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "lbu";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct lhu: load<0b0101> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "lhu";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
@@ -715,16 +790,31 @@ template<opcode::opcode_t Type>
 struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {};
 
 struct sb: store<0b0000> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sb";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct sh: store<0b0001> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sh";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct sw: store<0b0010> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sw";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
@@ -741,26 +831,51 @@ template<opcode::opcode_t Type>
 struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {};
 
 struct sli : int_imm<0b0010> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sli";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct sliu: int_imm<0b0011> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sliu";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct xori: int_imm<0b0100> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "xori";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct ori : int_imm<0b0110> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "ori";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct andi: int_imm<0b0111> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "andi";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
@@ -779,16 +894,31 @@ template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {};
 
 struct slli: shift_imm<0b0001, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "slli";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct srli: shift_imm<0b0101, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "srli";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct srai: shift_imm<0b0101, 1> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "srai";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
@@ -805,51 +935,101 @@ template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {};
 
 struct add_r : int_r<0b0000, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "add";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct sub_r : int_r<0b0000, 1> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sub";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct sll_r : int_r<0b0001, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sll";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct slt_r : int_r<0b0010, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "slt";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct sltu_r: int_r<0b0011, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sltu";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct xor_r : int_r<0b0100, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "xor";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct srl_r : int_r<0b0101, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "srl";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct sra_r : int_r<0b0101, 1> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "sra";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct or_r  : int_r<0b0110, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "or";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
 };
 struct and_r : int_r<0b0111, 0> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "and";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
     }
@@ -874,12 +1054,22 @@ template<opcode::opcode_t Type>
 struct misc_mem: public instruction_base<opcode::MISC_MEM, opcode::I_TYPE, Type> {};
 
 struct fence  : misc_mem<0b0000> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "fence";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
         vm->barrier();
     }
 };
 struct fence_i: misc_mem<0b0001> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "fence.i";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
         vm->barrier();
@@ -894,6 +1084,11 @@ void add_misc(registry* r)
 
 // ECALL / EBREAK
 struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "env(call/break)";
+    }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
         vm->syscall();
@@ -908,12 +1103,48 @@ struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {
     }
 };
 
-struct csrrw : csr<0b0001> {};
-struct csrrs : csr<0b0010> {};
-struct csrrc : csr<0b0011> {};
-struct csrrwi: csr<0b0101> {};
-struct csrrsi: csr<0b0110> {};
-struct csrrci: csr<0b0111> {};
+struct csrrw : csr<0b0001> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "csrrw";
+    }
+};
+struct csrrs : csr<0b0010> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "csrrs";
+    }
+};
+struct csrrc : csr<0b0011> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "csrrc";
+    }
+};
+struct csrrwi: csr<0b0101> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "csrrwi";
+    }
+};
+struct csrrsi: csr<0b0110> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "csrrsi";
+    }
+};
+struct csrrci: csr<0b0111> {
+    [[nodiscard]]
+    std::string_view get_mnemonic() const final
+    {
+        return "csrrci";
+    }
+};
 
 void add_system(registry* r)
 {
