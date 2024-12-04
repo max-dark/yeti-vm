@@ -1108,7 +1108,31 @@ void add_load(registry* r)
 }
 
 template<opcode::opcode_t Type>
-struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {};
+struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
+    static signed_t get_offset(const opcode::OpcodeBase* current)
+    {
+        return to_signed(current->decode_s());
+    }
+    static basic_vm::address_t get_address(basic_vm *vm, const opcode::OpcodeBase* current)
+    {
+        auto base = vm->get_register(current->get_rs1());
+        return base + get_offset(current);
+    }
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string base{get_register_alias(code->get_rs1())};
+        std::string src{get_register_alias(code->get_rs2())};
+        return src + ", " + base + ", " + std::to_string(get_offset(code));
+    }
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+        auto value = vm->get_register(current->get_rs2());
+        auto address = get_address(vm, current);
+        write_memory(vm, address, value);
+    }
+    virtual void write_memory(basic_vm* vm, basic_vm::address_t address, register_t value) const = 0;
+};
 
 struct sb: store<0b0000> {
     [[nodiscard]]
@@ -1116,8 +1140,9 @@ struct sb: store<0b0000> {
     {
         return "sb";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void write_memory(basic_vm* vm, basic_vm::address_t address, register_t value) const override
     {
+        vm->write_memory(address, 1, value);
     }
 };
 struct sh: store<0b0001> {
@@ -1126,8 +1151,9 @@ struct sh: store<0b0001> {
     {
         return "sh";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void write_memory(basic_vm* vm, basic_vm::address_t address, register_t value) const override
     {
+        vm->write_memory(address, 2, value);
     }
 };
 struct sw: store<0b0010> {
@@ -1136,8 +1162,9 @@ struct sw: store<0b0010> {
     {
         return "sw";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void write_memory(basic_vm* vm, basic_vm::address_t address, register_t value) const override
     {
+        vm->write_memory(address, 4, value);
     }
 };
 
