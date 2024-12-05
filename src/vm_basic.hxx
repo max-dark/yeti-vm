@@ -1,47 +1,47 @@
 #pragma once
 
 #include <vm_base_types.hxx>
+#include <vm_interface.hxx>
 #include <vm_handler.hxx>
 
 namespace vm
 {
 
 struct basic_vm: public registry
+        , public vm_interface
 {
     using code_memory_t = std::vector<std::uint8_t>;
     using data_memory_t = std::vector<std::uint8_t>;
-    using address_t = std::uint32_t;
-    using offset_t = std::int32_t;
 
     void halt();
 
-    void jump_abs(address_t dest);
+    void jump_abs(address_t dest) override;
 
-    void jump_to(offset_t value);
+    void jump_to(offset_t value) override;
 
-    void jump_if(bool condition, offset_t value);
+    void jump_if(bool condition, offset_t value) override;
 
-    void jump_if_abs(bool condition, address_t value);
+    void jump_if_abs(bool condition, address_t value) override;
 
-    void syscall();
+    void syscall() override;
 
-    void debug();
+    void debug() override;
 
-    void control();
+    void control() override;
 
-    void barrier();
+    void barrier() override;
 
-    void read_memory(address_t from, uint8_t size, register_t& value);
+    void read_memory(address_t from, uint8_t size, register_t& value) override;
 
-    void write_memory(address_t from, uint8_t size, register_t value);
+    void write_memory(address_t from, uint8_t size, register_t value) override;
 
-    void set_register(register_no r, register_t value);
-
-    [[nodiscard]]
-    register_t get_register(register_no r) const;
+    void set_register(register_no r, register_t value) override;
 
     [[nodiscard]]
-    register_t get_pc() const;
+    register_t get_register(register_no r) const override;
+
+    [[nodiscard]]
+    register_t get_pc() const override;
     void set_pc(register_t value);
     void inc_pc();
 

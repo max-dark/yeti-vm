@@ -29,6 +29,7 @@ set(LIB_HEADERS
     vm_utility.hxx
     vm_opcode.hxx
     vm_handler.hxx
+    vm_interface.hxx
     vm_basic.hxx
     vm_handlers_rv32i.hxx
 )
@@ -37,6 +38,7 @@ set(LIB_SOURCES
     vm_utility.cxx
     vm_opcode.cxx
     vm_handler.cxx
+    vm_interface.cxx
     vm_basic.cxx
     vm_handlers_rv32i.cxx
 )

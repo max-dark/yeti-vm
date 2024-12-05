@@ -5,7 +5,7 @@
 
 namespace vm
 {
-struct basic_vm;
+struct vm_interface;
 
 inline constexpr opcode::opcode_t no_func_a = 1 << 4;
 inline constexpr opcode::opcode_t no_func_b = 1 << 8;
@@ -52,7 +52,7 @@ struct interface
     [[nodiscard]]
     virtual opcode::BaseFormat get_type() const = 0;
 
-    virtual void exec(basic_vm* vm, const opcode::OpcodeBase* current) const = 0;
+    virtual void exec(vm_interface* vm, const opcode::OpcodeBase* current) const = 0;
 };
 
 template

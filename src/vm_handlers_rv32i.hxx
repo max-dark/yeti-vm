@@ -1,11 +1,15 @@
 #pragma once
 
 #include <vm_base_types.hxx>
-#include <vm_basic.hxx>
+#include <vm_handler.hxx>
+#include <vm_interface.hxx>
 #include <vm_utility.hxx>
 
 namespace vm::rv32i
 {
+
+using basic_vm = vm::vm_interface;
+
 struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
