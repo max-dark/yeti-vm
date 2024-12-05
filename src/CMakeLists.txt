@@ -30,6 +30,7 @@ set(LIB_HEADERS
     vm_opcode.hxx
     vm_handler.hxx
     vm_basic.hxx
+    vm_handlers_rv32i.hxx
 )
 set(LIB_SOURCES
     vm_base_types.cxx
@@ -37,6 +38,7 @@ set(LIB_SOURCES
     vm_opcode.cxx
     vm_handler.cxx
     vm_basic.cxx
+    vm_handlers_rv32i.cxx
 )
 add_library(${LIB_NAME} STATIC)
 target_sources(
