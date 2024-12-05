@@ -9,7 +9,7 @@ using register_no = std::uint8_t;
 constexpr register_no register_count = 32;
 using register_t = std::uint32_t;
 using signed_t = std::int32_t;
-using unsigned_t = std::int32_t;
+using unsigned_t = std::uint32_t;
 using register_file = std::array<register_t, register_count + 1>; // generic + PC
 
 enum RegAlias: register_no
