@@ -8,6 +8,8 @@
 namespace vm::rv32i
 {
 
+/// load upper immediate
+/// asm: lui dest, const
 struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
@@ -28,6 +30,8 @@ struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
         vm->set_register(dest, data);
     }
 };
+/// add upper immediate to PC
+/// asm: auipc dest, const
 struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
@@ -49,6 +53,8 @@ struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
     }
 };
 
+/// jump and link, stores return address in dest
+/// asm: jal dest, const
 struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
     static opcode::signed_t get_data(const opcode::OpcodeBase* code)
     {
@@ -75,6 +81,9 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
         vm->jump_to(offset); // @see 2.5.1 "Unconditional jumps"
     }
 };
+
+/// jump and link by register
+/// asm: jalr dest, src, const
 struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
     static opcode::signed_t get_data(const opcode::OpcodeBase* code)
     {
@@ -106,6 +115,7 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
     }
 };
 
+/// branch (conditional jump)
 template<opcode::opcode_t Type>
 struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {
     [[nodiscard]]
@@ -135,6 +145,7 @@ struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {
     }
 };
 
+/// jump if eq
 struct beq : branch<0b0000> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -147,6 +158,7 @@ struct beq : branch<0b0000> {
         return to_signed(lhs) == to_signed(rhs);
     }
 };
+/// jump if not eq
 struct bne : branch<0b0001> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -159,6 +171,8 @@ struct bne : branch<0b0001> {
         return to_signed(lhs) != to_signed(rhs);
     }
 };
+
+/// jump if less
 struct blt : branch<0b0100> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -171,6 +185,8 @@ struct blt : branch<0b0100> {
         return to_signed(lhs) < to_signed(rhs);
     }
 };
+
+/// jump if greater or equal
 struct bge : branch<0b0101> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -183,6 +199,8 @@ struct bge : branch<0b0101> {
         return to_signed(lhs) >= to_signed(rhs);
     }
 };
+
+/// jump if less (unsigned)
 struct bltu: branch<0b0110> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -195,6 +213,8 @@ struct bltu: branch<0b0110> {
         return lhs < rhs;
     }
 };
+
+/// jump if greater of equal
 struct bgeu: branch<0b0111> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -208,6 +228,7 @@ struct bgeu: branch<0b0111> {
     }
 };
 
+/// load(read) value from memory
 template<opcode::opcode_t Type>
 struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
     static signed_t get_offset(const opcode::OpcodeBase* current)
@@ -236,6 +257,7 @@ struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
     }
 };
 
+/// load byte (sign extended)
 struct lb : load<0b0000> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -251,6 +273,8 @@ struct lb : load<0b0000> {
         return value;
     }
 };
+
+/// load halfword (sign extended)
 struct lh : load<0b0001> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -266,6 +290,8 @@ struct lh : load<0b0001> {
         return value;
     }
 };
+
+/// load word (sign extended)
 struct lw : load<0b0010> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -279,6 +305,8 @@ struct lw : load<0b0010> {
         return value;
     }
 };
+
+/// load byte (unsigned)
 struct lbu: load<0b0100> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -292,6 +320,8 @@ struct lbu: load<0b0100> {
         return value;
     }
 };
+
+/// load halfword (unsigned)
 struct lhu: load<0b0101> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -306,6 +336,7 @@ struct lhu: load<0b0101> {
     }
 };
 
+/// store(write) value into memory
 template<opcode::opcode_t Type>
 struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
     static signed_t get_offset(const opcode::OpcodeBase* current)
@@ -333,6 +364,7 @@ struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
     virtual void write_memory(vm_interface* vm, vm_interface::address_t address, register_t value) const = 0;
 };
 
+/// store byte
 struct sb: store<0b0000> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -344,6 +376,8 @@ struct sb: store<0b0000> {
         vm->write_memory(address, 1, value);
     }
 };
+
+/// store halfword
 struct sh: store<0b0001> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -355,6 +389,8 @@ struct sh: store<0b0001> {
         vm->write_memory(address, 2, value);
     }
 };
+
+/// store word
 struct sw: store<0b0010> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -367,6 +403,7 @@ struct sw: store<0b0010> {
     }
 };
 
+/// integer-immediate
 template<opcode::opcode_t Type>
 struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {
     static signed_t get_data(const opcode::OpcodeBase* current)
