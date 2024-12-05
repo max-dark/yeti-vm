@@ -734,11 +734,16 @@ struct basic_vm: public registry
     }
     void set_pc(register_t value)
     {
+        if (value + sizeof(opcode::opcode_t) >= code.size())
+        {
+            halt();
+            return;
+        }
         set_register(RegAlias::pc, value);
     }
     void inc_pc()
     {
-        registers[RegAlias::pc] += sizeof(opcode::opcode_t);
+        set_pc(get_pc() + sizeof(opcode::opcode_t));
     }
 
     [[nodiscard]]
