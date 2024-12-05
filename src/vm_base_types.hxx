@@ -4,6 +4,7 @@
 
 namespace vm
 {
+using program_code_t = std::vector<std::uint8_t>;
 
 using register_no = std::uint8_t;
 constexpr register_no register_count = 32;

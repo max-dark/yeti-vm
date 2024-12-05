@@ -4,13 +4,14 @@
 #include <vm_utility.hxx>
 #include <vm_opcode.hxx>
 #include <vm_handler.hxx>
+#include <vm_basic.hxx>
 
 #include <iostream>
 #include <format>
 
 namespace fs = std::filesystem;
 
-using program = std::vector<std::uint8_t>;
+using program = vm::program_code_t;
 
 std::optional<program> load_program(const fs::path& programFile)
 {
@@ -33,273 +34,7 @@ std::optional<program> load_program(const fs::path& programFile)
     return std::nullopt;
 }
 
-namespace vm
-{
-
-struct basic_vm: public registry
-{
-    using code_memory_t = std::vector<std::uint8_t>;
-    using data_memory_t = std::vector<std::uint8_t>;
-    using address_t = std::uint32_t;
-    using offset_t = std::int32_t;
-
-    void halt()
-    {
-        running = false;
-    }
-
-    void jump_abs(address_t dest)
-    {
-        bool valid = dest % sizeof(opcode::opcode_t);
-        valid = valid && (dest < code.size());
-        if (!valid) halt();
-        set_pc(dest);
-    }
-
-    void jump_to(offset_t value)
-    {
-        auto dest = get_pc() + value;
-        bool valid = dest % sizeof(opcode::opcode_t);
-        jump_abs(dest);
-    }
-
-    void jump_if(bool condition, offset_t value)
-    {
-        if (condition) jump_to(value);
-        else inc_pc();
-    }
-
-    void jump_if_abs(bool condition, address_t value)
-    {
-        if (condition) jump_abs(value);
-        else inc_pc();
-    }
-
-    void syscall()
-    {
-        inc_pc();
-    }
-
-    void debug()
-    {
-        inc_pc();
-    }
-
-    void control()
-    {
-        inc_pc();
-    }
-
-    void barrier()
-    {
-        inc_pc();
-    }
-
-    void read_memory(address_t from, uint8_t size, register_t& value)
-    {
-        auto ptr = get_ptr(from);
-        if (!ptr)
-        {
-            halt();
-            return;
-        }
-        if (size > sizeof(value))
-        {
-            halt();
-            return;
-        }
-        std::memcpy(&value, ptr, size);
-        inc_pc();
-    }
-
-    void write_memory(address_t from, uint8_t size, register_t value)
-    {
-        auto ptr = get_ptr(from);
-        if (!ptr)
-        {
-            halt();
-            return;
-        }
-        if (size > sizeof(value))
-        {
-            halt();
-            return;
-        }
-        std::memcpy(ptr, &value, size);
-        inc_pc();
-    }
-
-    void set_register(register_no r, register_t value)
-    {
-        if (r > 0 && r <= register_count)
-        {
-            registers[r] = value;
-        }
-    }
-
-    [[nodiscard]]
-    register_t get_register(register_no r) const
-    {
-        if (r > 0 && r <= register_count)
-        {
-            return registers[r];
-        }
-        return 0;
-    }
-
-    [[nodiscard]]
-    register_t get_pc() const
-    {
-        return get_register(RegAlias::pc);
-    }
-    void set_pc(register_t value)
-    {
-        if (value + sizeof(opcode::opcode_t) >= code.size())
-        {
-            halt();
-            return;
-        }
-        set_register(RegAlias::pc, value);
-    }
-    void inc_pc()
-    {
-        set_pc(get_pc() + sizeof(opcode::opcode_t));
-    }
-
-    [[nodiscard]]
-    const void* get_ptr(address_t address) const
-    {
-        if (address >= data_base)
-        {
-            address -= data_base;
-            if (address < data.size())
-            {
-                return data.data() + address;
-            }
-        }
-        if (address >= code_base)
-        {
-            address -= code_base;
-            if (address < code.size())
-            {
-                return code.data() + address;
-            }
-        }
-        return nullptr;
-    }
-
-    [[nodiscard]]
-    void* get_ptr(address_t address)
-    {
-        if (address >= data_base)
-        {
-            address -= data_base;
-            if (address < data.size())
-            {
-                return data.data() + address;
-            }
-        }
-        if (address >= code_base)
-        {
-            address -= code_base;
-            if (address < code.size())
-            {
-                return code.data() + address;
-            }
-        }
-        return nullptr;
-    }
-
-    void set_ro_size(size_t size)
-    {
-        code.resize(size);
-    }
-
-    void set_rw_size(size_t size)
-    {
-        data.resize(size);
-    }
-
-    void run_step()
-    {
-        auto* current = get_current();
-        auto handler = find_handler(current);
-        if (!handler)
-        {
-            halt();
-            return;
-        }
-        handler->exec(this, current);
-    }
-
-    void run()
-    {
-        while (is_running())
-        {
-            run_step();
-        }
-    }
-
-    void start()
-    {
-        std::fill(registers.begin(), registers.end(), 0);
-        std::fill(data.begin(), data.end(), 0);
-        running = true;
-    }
-
-    bool is_running() const
-    {
-        return running;
-    }
-
-    void init_memory()
-    {
-        init_memory(def_code_size, def_data_size);
-    }
-
-    void init_memory(size_t code_size, size_t data_size)
-    {
-        set_ro_size(code_size);
-        set_rw_size(data_size);
-    }
-
-    bool set_program(const program& bin)
-    {
-        if (!is_initialized()) return false;
-        if (bin.size() > code.size()) return false;
-
-        std::copy(bin.begin(), bin.end(), code.begin());
-
-        return true;
-    }
-
-    static constexpr address_t def_code_base = 0;
-    static constexpr address_t def_data_base = 4 * 1024 * 1024;
-
-    static constexpr size_t def_code_size = 4 * 1024 * 1024;
-    static constexpr size_t def_data_size = 4 * 1024 * 1024;
-
-    bool is_initialized() const
-    {
-        return !(code.empty() || data.empty());
-    }
-private:
-    [[nodiscard]]
-    const opcode::OpcodeBase* get_current() const
-    {
-        const auto * ptr = code.data() + get_pc();
-        return reinterpret_cast<const opcode::OpcodeBase*>(ptr);
-    }
-    register_file registers{};
-    code_memory_t code; // ro memory
-    data_memory_t data; // rw memory
-    address_t code_base = def_code_base;
-    address_t data_base = def_data_base;
-
-    bool running = false;
-};
-
-namespace rv32i
+namespace vm::rv32i
 {
 
 struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
@@ -1173,8 +908,6 @@ void add_all(registry* r)
     add_misc(r);
     add_system(r);
 }
-
-} // namespace rv32i
 
 } // namespace vm
 
