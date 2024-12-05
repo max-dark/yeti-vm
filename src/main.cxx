@@ -1379,7 +1379,26 @@ void add_shift_imm(registry* r)
 }
 
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
-struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {};
+struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string dest{get_register_alias(code->get_rd())};
+        std::string lhs{get_register_alias(code->get_rs1())};
+        std::string rhs{get_register_alias(code->get_rs2())};
+        return dest + ", " + lhs + ", " + rhs;
+    }
+    [[nodiscard]]
+    virtual register_t calculate(register_t lhs, register_t rhs) const = 0;
+    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    {
+        auto dest = current->get_rd();
+        auto lhs = vm->get_register(current->get_rs1());
+        auto rhs = vm->get_register(current->get_rs2());
+
+        vm->set_register(dest, calculate(lhs, rhs));
+    }
+};
 
 struct add_r : int_r<0b0000, 0> {
     [[nodiscard]]
@@ -1387,8 +1406,10 @@ struct add_r : int_r<0b0000, 0> {
     {
         return "add";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return lhs + rhs;
     }
 };
 struct sub_r : int_r<0b0000, 1> {
@@ -1397,8 +1418,10 @@ struct sub_r : int_r<0b0000, 1> {
     {
         return "sub";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return lhs - rhs;
     }
 };
 struct sll_r : int_r<0b0001, 0> {
@@ -1407,8 +1430,10 @@ struct sll_r : int_r<0b0001, 0> {
     {
         return "sll";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return lhs << rhs;
     }
 };
 struct slt_r : int_r<0b0010, 0> {
@@ -1417,8 +1442,10 @@ struct slt_r : int_r<0b0010, 0> {
     {
         return "slt";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return to_signed(lhs) < to_signed(rhs);
     }
 };
 struct sltu_r: int_r<0b0011, 0> {
@@ -1427,8 +1454,10 @@ struct sltu_r: int_r<0b0011, 0> {
     {
         return "sltu";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return lhs < rhs;
     }
 };
 struct xor_r : int_r<0b0100, 0> {
@@ -1437,8 +1466,10 @@ struct xor_r : int_r<0b0100, 0> {
     {
         return "xor";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return lhs ^ rhs;
     }
 };
 struct srl_r : int_r<0b0101, 0> {
@@ -1447,8 +1478,10 @@ struct srl_r : int_r<0b0101, 0> {
     {
         return "srl";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return lhs >> rhs;
     }
 };
 struct sra_r : int_r<0b0101, 1> {
@@ -1457,8 +1490,10 @@ struct sra_r : int_r<0b0101, 1> {
     {
         return "sra";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return opcode::extend_sign(lhs >> rhs, lhs);
     }
 };
 struct or_r  : int_r<0b0110, 0> {
@@ -1467,8 +1502,10 @@ struct or_r  : int_r<0b0110, 0> {
     {
         return "or";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return lhs | rhs;
     }
 };
 struct and_r : int_r<0b0111, 0> {
@@ -1477,8 +1514,10 @@ struct and_r : int_r<0b0111, 0> {
     {
         return "and";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    [[nodiscard]]
+    register_t calculate(register_t lhs, register_t rhs) const override
     {
+        return lhs & rhs;
     }
 };
 
