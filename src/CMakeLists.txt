@@ -28,11 +28,13 @@ set(LIB_HEADERS
     vm_base_types.hxx
     vm_utility.hxx
     vm_opcode.hxx
+    vm_handler.hxx
 )
 set(LIB_SOURCES
     vm_base_types.cxx
     vm_utility.cxx
     vm_opcode.cxx
+    vm_handler.cxx
 )
 add_library(${LIB_NAME} STATIC)
 target_sources(
