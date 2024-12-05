@@ -625,7 +625,9 @@ struct basic_vm: public registry
     using offset_t = std::int32_t;
 
     void halt()
-    {}
+    {
+        running = false;
+    }
 
     void jump_abs(address_t dest)
     {
@@ -708,7 +710,6 @@ struct basic_vm: public registry
         inc_pc();
     }
 
-
     void set_register(register_no r, register_t value)
     {
         if (r > 0 && r <= register_count)
@@ -790,11 +791,93 @@ struct basic_vm: public registry
         return nullptr;
     }
 
+    void set_ro_size(size_t size)
+    {
+        code.resize(size);
+    }
+
+    void set_rw_size(size_t size)
+    {
+        data.resize(size);
+    }
+
+    void run_step()
+    {
+        auto* current = get_current();
+        auto handler = find_handler(current);
+        if (!handler)
+        {
+            halt();
+            return;
+        }
+        handler->exec(this, current);
+    }
+
+    void run()
+    {
+        while (is_running())
+        {
+            run_step();
+        }
+    }
+
+    void start()
+    {
+        std::fill(registers.begin(), registers.end(), 0);
+        std::fill(data.begin(), data.end(), 0);
+        running = true;
+    }
+
+    bool is_running() const
+    {
+        return running;
+    }
+
+    void init_memory()
+    {
+        init_memory(def_code_size, def_data_size);
+    }
+
+    void init_memory(size_t code_size, size_t data_size)
+    {
+        set_ro_size(code_size);
+        set_rw_size(data_size);
+    }
+
+    bool set_program(const program& bin)
+    {
+        if (!is_initialized()) return false;
+        if (bin.size() > code.size()) return false;
+
+        std::copy(bin.begin(), bin.end(), code.begin());
+
+        return true;
+    }
+
+    static constexpr address_t def_code_base = 0;
+    static constexpr address_t def_data_base = 4 * 1024 * 1024;
+
+    static constexpr size_t def_code_size = 4 * 1024 * 1024;
+    static constexpr size_t def_data_size = 4 * 1024 * 1024;
+
+    bool is_initialized() const
+    {
+        return !(code.empty() || data.empty());
+    }
+private:
+    [[nodiscard]]
+    const opcode::OpcodeBase* get_current() const
+    {
+        const auto * ptr = code.data() + get_pc();
+        return reinterpret_cast<const opcode::OpcodeBase*>(ptr);
+    }
     register_file registers{};
     code_memory_t code; // ro memory
     data_memory_t data; // rw memory
-    address_t code_base = 0;
-    address_t data_base = 4 * 1024 * 1024;
+    address_t code_base = def_code_base;
+    address_t data_base = def_data_base;
+
+    bool running = false;
 };
 
 namespace rv32i
@@ -1684,6 +1767,31 @@ int main(int argc, char** argv)
     disasm(program_file);
 
     return 0;
+}
+
+void run_vm(const program &code)
+{
+    vm::basic_vm machine;
+    vm::rv32i::add_all(&machine);
+
+    machine.init_memory();
+    auto ok = machine.set_program(code);
+    if (!ok)
+    {
+        std::cerr << "unable load program(no memory)" << std::endl;
+        return;
+    }
+    machine.start();
+    machine.run();
+}
+void run_vm(const fs::path &program_file)
+{
+    auto bin = load_program(program_file);
+
+    if (bin)
+    {
+        run_vm(*bin);
+    }
 }
 
 void disasm(const fs::path &program_file)
