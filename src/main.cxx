@@ -1665,7 +1665,14 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
-        vm->syscall();
+        if (current->decode_i())
+        {
+            vm->debug();
+        }
+        else
+        {
+            vm->syscall();
+        }
     }
 };
 
