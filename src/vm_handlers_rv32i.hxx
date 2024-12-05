@@ -8,8 +8,6 @@
 namespace vm::rv32i
 {
 
-using basic_vm = vm::vm_interface;
-
 struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
@@ -22,7 +20,7 @@ struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
     {
         return "lui";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto data = current->decode_u();
@@ -42,7 +40,7 @@ struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
     {
         return "auipc";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto data = current->decode_u();
@@ -68,7 +66,7 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
     {
         return "jal";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto offset = get_data(current);
@@ -95,7 +93,7 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
     {
         return "jalr";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto src = current->get_rs1();
@@ -127,7 +125,7 @@ struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {
 
     [[nodiscard]]
     virtual bool compare(register_t lhs, register_t rhs) const = 0;
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto lhs = vm->get_register(current->get_rs1());
         auto rhs = vm->get_register(current->get_rs2());
@@ -216,7 +214,7 @@ struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
     {
         return to_signed(current->decode_i());
     }
-    static basic_vm::address_t get_address(basic_vm *vm, const opcode::OpcodeBase* current)
+    static vm_interface::address_t get_address(vm_interface *vm, const opcode::OpcodeBase* current)
     {
         auto base = vm->get_register(current->get_rs1());
         return base + get_offset(current);
@@ -228,8 +226,8 @@ struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
         std::string base{get_register_alias(code->get_rs1())};
         return dest + ", " + base + ", " + std::to_string(get_offset(code));
     }
-    virtual register_t read_memory(basic_vm* vm, basic_vm::address_t address) const = 0;
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    virtual register_t read_memory(vm_interface* vm, vm_interface::address_t address) const = 0;
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto address = get_address(vm, current);
         auto value = read_memory(vm, address);
@@ -244,7 +242,7 @@ struct lb : load<0b0000> {
     {
         return "lb";
     }
-    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
+    register_t read_memory(vm_interface* vm, vm_interface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 1, value);
@@ -259,7 +257,7 @@ struct lh : load<0b0001> {
     {
         return "lh";
     }
-    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
+    register_t read_memory(vm_interface* vm, vm_interface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 2, value);
@@ -274,7 +272,7 @@ struct lw : load<0b0010> {
     {
         return "lw";
     }
-    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
+    register_t read_memory(vm_interface* vm, vm_interface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 4, value);
@@ -287,7 +285,7 @@ struct lbu: load<0b0100> {
     {
         return "lbu";
     }
-    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
+    register_t read_memory(vm_interface* vm, vm_interface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 1, value);
@@ -300,7 +298,7 @@ struct lhu: load<0b0101> {
     {
         return "lhu";
     }
-    register_t read_memory(basic_vm* vm, basic_vm::address_t address) const override
+    register_t read_memory(vm_interface* vm, vm_interface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 2, value);
@@ -314,7 +312,7 @@ struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
     {
         return to_signed(current->decode_s());
     }
-    static basic_vm::address_t get_address(basic_vm *vm, const opcode::OpcodeBase* current)
+    static vm_interface::address_t get_address(vm_interface *vm, const opcode::OpcodeBase* current)
     {
         auto base = vm->get_register(current->get_rs1());
         return base + get_offset(current);
@@ -326,13 +324,13 @@ struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
         std::string src{get_register_alias(code->get_rs2())};
         return src + ", " + base + ", " + std::to_string(get_offset(code));
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto value = vm->get_register(current->get_rs2());
         auto address = get_address(vm, current);
         write_memory(vm, address, value);
     }
-    virtual void write_memory(basic_vm* vm, basic_vm::address_t address, register_t value) const = 0;
+    virtual void write_memory(vm_interface* vm, vm_interface::address_t address, register_t value) const = 0;
 };
 
 struct sb: store<0b0000> {
@@ -341,7 +339,7 @@ struct sb: store<0b0000> {
     {
         return "sb";
     }
-    void write_memory(basic_vm* vm, basic_vm::address_t address, register_t value) const override
+    void write_memory(vm_interface* vm, vm_interface::address_t address, register_t value) const override
     {
         vm->write_memory(address, 1, value);
     }
@@ -352,7 +350,7 @@ struct sh: store<0b0001> {
     {
         return "sh";
     }
-    void write_memory(basic_vm* vm, basic_vm::address_t address, register_t value) const override
+    void write_memory(vm_interface* vm, vm_interface::address_t address, register_t value) const override
     {
         vm->write_memory(address, 2, value);
     }
@@ -363,7 +361,7 @@ struct sw: store<0b0010> {
     {
         return "sw";
     }
-    void write_memory(basic_vm* vm, basic_vm::address_t address, register_t value) const override
+    void write_memory(vm_interface* vm, vm_interface::address_t address, register_t value) const override
     {
         vm->write_memory(address, 4, value);
     }
@@ -390,7 +388,7 @@ struct addi : int_imm<0b0000> {
     {
         return "addi";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto src  = vm->get_register(current->get_rs1());
@@ -405,7 +403,7 @@ struct sli : int_imm<0b0010> {
     {
         return "sli";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -434,7 +432,7 @@ struct sliu: int_imm<0b0011> {
     {
         return "sliu";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -455,7 +453,7 @@ struct xori: int_imm<0b0100> {
     {
         return "xori";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -469,7 +467,7 @@ struct ori : int_imm<0b0110> {
     {
         return "ori";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -483,7 +481,7 @@ struct andi: int_imm<0b0111> {
     {
         return "andi";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -513,7 +511,7 @@ struct slli: shift_imm<0b0001, 0> {
     {
         return "slli";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -527,7 +525,7 @@ struct srli: shift_imm<0b0101, 0> {
     {
         return "srli";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -541,7 +539,7 @@ struct srai: shift_imm<0b0101, 1> {
     {
         return "srai";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -562,7 +560,7 @@ struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant
     }
     [[nodiscard]]
     virtual register_t calculate(register_t lhs, register_t rhs) const = 0;
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
         auto lhs = vm->get_register(current->get_rs1());
@@ -702,7 +700,7 @@ struct fence  : misc_mem<0b0000> {
     {
         return "fence";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         vm->barrier();
     }
@@ -713,7 +711,7 @@ struct fence_i: misc_mem<0b0001> {
     {
         return "fence.i";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         vm->barrier();
     }
@@ -726,7 +724,7 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {
     {
         return "env(call/break)";
     }
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         if (current->decode_i())
         {
@@ -741,7 +739,7 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {
 
 template<opcode::opcode_t Type>
 struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {
-    void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         vm->control();
     }
