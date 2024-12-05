@@ -33,11 +33,16 @@ using register_no = std::uint8_t;
 constexpr register_no register_count = 32;
 using register_t = std::uint32_t;
 using signed_t = std::int32_t;
+using unsigned_t = std::int32_t;
 using register_file = std::array<register_t, register_count + 1>; // generic + PC
 
 signed_t to_signed(register_t value)
 {
     return std::bit_cast<signed_t>(value);
+}
+unsigned_t to_unsigned(signed_t value)
+{
+    return std::bit_cast<unsigned_t>(value);
 }
 
 enum RegAlias: register_no
@@ -1176,7 +1181,19 @@ void add_store(registry* r)
 }
 
 template<opcode::opcode_t Type>
-struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {};
+struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {
+    static signed_t get_data(const opcode::OpcodeBase* current)
+    {
+        return to_signed(opcode::extend_sign(current->decode_i(), current->code));
+    }
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string dest{get_register_alias(code->get_rd())};
+        std::string src{get_register_alias(code->get_rs1())};
+        return dest + ", " + src + ", " + std::to_string(get_data(code));
+    }
+};
 
 struct addi : int_imm<0b0000> {
     [[nodiscard]]
@@ -1186,6 +1203,10 @@ struct addi : int_imm<0b0000> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto src  = vm->get_register(current->get_rs1());
+        auto value = src + get_data(current);
+        vm->set_register(dest, value);
     }
 };
 
@@ -1197,9 +1218,24 @@ struct sli : int_imm<0b0010> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto value = vm->get_register(current->get_rs1());
+        auto src  = to_signed(value);
+        auto data = get_data(current);
+        if (src < data)
+        {
+            vm->set_register(dest, to_unsigned(data));
+        }
     }
 };
 struct sliu: int_imm<0b0011> {
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string dest{get_register_alias(code->get_rd())};
+        std::string src{get_register_alias(code->get_rs1())};
+        return dest + ", " + src + ", " + std::to_string(code->decode_i());
+    }
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
@@ -1207,6 +1243,13 @@ struct sliu: int_imm<0b0011> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto value = vm->get_register(current->get_rs1());
+        auto data = current->decode_i();
+        if (value < data)
+        {
+            vm->set_register(dest, data);
+        }
     }
 };
 struct xori: int_imm<0b0100> {
@@ -1217,6 +1260,10 @@ struct xori: int_imm<0b0100> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto value = vm->get_register(current->get_rs1());
+        auto data = get_data(current);
+        vm->set_register(dest, value ^ data);
     }
 };
 struct ori : int_imm<0b0110> {
@@ -1227,6 +1274,10 @@ struct ori : int_imm<0b0110> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto value = vm->get_register(current->get_rs1());
+        auto data = get_data(current);
+        vm->set_register(dest, value | data);
     }
 };
 struct andi: int_imm<0b0111> {
@@ -1237,6 +1288,10 @@ struct andi: int_imm<0b0111> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto value = vm->get_register(current->get_rs1());
+        auto data = get_data(current);
+        vm->set_register(dest, value & data);
     }
 };
 
@@ -1251,7 +1306,19 @@ void add_int_imm(registry* r)
 }
 
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
-struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {};
+struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {
+    static register_t get_data(const opcode::OpcodeBase* current)
+    {
+        return current->decode_i() & opcode::mask_value<0, 5>;
+    }
+    [[nodiscard]]
+    std::string get_args(const opcode::OpcodeBase* code) const override
+    {
+        std::string dest{get_register_alias(code->get_rd())};
+        std::string src{get_register_alias(code->get_rs1())};
+        return dest + ", " + src + ", " + std::to_string(get_data(code));
+    }
+};
 
 struct slli: shift_imm<0b0001, 0> {
     [[nodiscard]]
@@ -1261,6 +1328,10 @@ struct slli: shift_imm<0b0001, 0> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto value = vm->get_register(current->get_rs1());
+        auto data = get_data(current);
+        vm->set_register(dest, value << data);
     }
 };
 struct srli: shift_imm<0b0101, 0> {
@@ -1271,6 +1342,10 @@ struct srli: shift_imm<0b0101, 0> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto value = vm->get_register(current->get_rs1());
+        auto data = get_data(current);
+        vm->set_register(dest, value >> data);
     }
 };
 struct srai: shift_imm<0b0101, 1> {
@@ -1281,6 +1356,10 @@ struct srai: shift_imm<0b0101, 1> {
     }
     void exec(basic_vm *vm, const opcode::OpcodeBase* current) const override
     {
+        auto dest = current->get_rd();
+        auto value = vm->get_register(current->get_rs1());
+        auto data = get_data(current);
+        vm->set_register(dest, opcode::extend_sign(value >> data, value));
     }
 };
 
