@@ -1226,6 +1226,10 @@ struct sli : int_imm<0b0010> {
         {
             vm->set_register(dest, to_unsigned(data));
         }
+        else
+        {
+            vm->set_register(dest, 0);
+        }
     }
 };
 struct sliu: int_imm<0b0011> {
@@ -1249,6 +1253,10 @@ struct sliu: int_imm<0b0011> {
         if (value < data)
         {
             vm->set_register(dest, data);
+        }
+        else
+        {
+            vm->set_register(dest, 0);
         }
     }
 };
