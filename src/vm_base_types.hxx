@@ -32,4 +32,6 @@ enum RegAlias: register_no
     unknown
 };
 
+std::string_view get_register_alias(register_no no);
+
 } // namespace vm

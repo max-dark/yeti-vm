@@ -14,6 +14,4 @@ inline unsigned_t to_unsigned(signed_t value)
     return std::bit_cast<unsigned_t>(value);
 }
 
-std::string_view get_register_alias(register_no no);
-
 } // namespace vm
