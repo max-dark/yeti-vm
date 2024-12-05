@@ -182,7 +182,7 @@ struct bge : branch<0b0101> {
     [[nodiscard]]
     bool compare(register_t lhs, register_t rhs) const override
     {
-        return lhs >= to_signed(rhs);
+        return to_signed(lhs) >= to_signed(rhs);
     }
 };
 struct bltu: branch<0b0110> {
