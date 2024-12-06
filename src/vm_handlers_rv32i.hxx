@@ -419,6 +419,8 @@ struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {
     }
 };
 
+/// add immediate
+/// asm: addi rd, rs, const
 struct addi : int_imm<0b0000> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -434,6 +436,8 @@ struct addi : int_imm<0b0000> {
     }
 };
 
+/// set if less than immediate
+/// asm: sli rd, rs, const
 struct sli : int_imm<0b0010> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -456,6 +460,9 @@ struct sli : int_imm<0b0010> {
         }
     }
 };
+
+/// set if less than unsigned immediate
+/// asm: sli rd, rs, const
 struct sliu: int_imm<0b0011> {
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
@@ -484,6 +491,9 @@ struct sliu: int_imm<0b0011> {
         }
     }
 };
+
+/// xor
+/// asm: xor rd, rs, const
 struct xori: int_imm<0b0100> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -498,6 +508,8 @@ struct xori: int_imm<0b0100> {
         vm->set_register(dest, value ^ data);
     }
 };
+
+/// asm: or rd, rs, const
 struct ori : int_imm<0b0110> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -512,6 +524,8 @@ struct ori : int_imm<0b0110> {
         vm->set_register(dest, value | data);
     }
 };
+
+/// asm: and rd, rs, const
 struct andi: int_imm<0b0111> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -527,6 +541,7 @@ struct andi: int_imm<0b0111> {
     }
 };
 
+/// shift by immediate
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {
     static register_t get_data(const opcode::OpcodeBase* current)
@@ -542,6 +557,7 @@ struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, 
     }
 };
 
+/// asm: sll rd, rs, const
 struct slli: shift_imm<0b0001, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -556,6 +572,8 @@ struct slli: shift_imm<0b0001, 0> {
         vm->set_register(dest, value << data);
     }
 };
+
+/// asm: srl rd, rs, const
 struct srli: shift_imm<0b0101, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -570,6 +588,9 @@ struct srli: shift_imm<0b0101, 0> {
         vm->set_register(dest, value >> data);
     }
 };
+
+/// arithmetic shift
+/// asm: sra rd, rs, const
 struct srai: shift_imm<0b0101, 1> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -585,6 +606,7 @@ struct srai: shift_imm<0b0101, 1> {
     }
 };
 
+/// integer-register
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {
     [[nodiscard]]
@@ -607,6 +629,7 @@ struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant
     }
 };
 
+/// asm: add rd, rs1, rs2
 struct add_r : int_r<0b0000, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -619,6 +642,8 @@ struct add_r : int_r<0b0000, 0> {
         return lhs + rhs;
     }
 };
+
+/// asm: sub rd, rs1, rs2
 struct sub_r : int_r<0b0000, 1> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -631,6 +656,8 @@ struct sub_r : int_r<0b0000, 1> {
         return lhs - rhs;
     }
 };
+
+/// asm: sll rd, rs1, rs2
 struct sll_r : int_r<0b0001, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -643,6 +670,9 @@ struct sll_r : int_r<0b0001, 0> {
         return lhs << rhs;
     }
 };
+
+/// set rd to 1 if rs1 < rs2, signed
+/// asm: slt rd, rs1, rs2
 struct slt_r : int_r<0b0010, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -655,6 +685,9 @@ struct slt_r : int_r<0b0010, 0> {
         return to_signed(lhs) < to_signed(rhs);
     }
 };
+
+/// set rd to 1 if rs1 < rs2, unsigned
+/// asm: sltu rd, rs1, rs2
 struct sltu_r: int_r<0b0011, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -667,6 +700,8 @@ struct sltu_r: int_r<0b0011, 0> {
         return lhs < rhs;
     }
 };
+
+/// asm: xor rd, rs1, rs2
 struct xor_r : int_r<0b0100, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -679,6 +714,8 @@ struct xor_r : int_r<0b0100, 0> {
         return lhs ^ rhs;
     }
 };
+
+/// asm: srl rd, rs1, rs2
 struct srl_r : int_r<0b0101, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -691,6 +728,9 @@ struct srl_r : int_r<0b0101, 0> {
         return lhs >> rhs;
     }
 };
+
+/// arithmetic shift
+/// asm: sra rd, rs1, rs2
 struct sra_r : int_r<0b0101, 1> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -703,6 +743,8 @@ struct sra_r : int_r<0b0101, 1> {
         return opcode::extend_sign(lhs >> rhs, lhs);
     }
 };
+
+/// asm: or rd, rs1, rs2
 struct or_r  : int_r<0b0110, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -715,6 +757,8 @@ struct or_r  : int_r<0b0110, 0> {
         return lhs | rhs;
     }
 };
+
+/// asm: and rd, rs1, rs2
 struct and_r : int_r<0b0111, 0> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -728,9 +772,11 @@ struct and_r : int_r<0b0111, 0> {
     }
 };
 
+/// MISC-MEM group
 template<opcode::opcode_t Type>
 struct misc_mem: public instruction_base<opcode::MISC_MEM, opcode::I_TYPE, Type> {};
 
+/// sync data memory
 struct fence  : misc_mem<0b0000> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -742,6 +788,8 @@ struct fence  : misc_mem<0b0000> {
         vm->barrier();
     }
 };
+
+/// sync instruction memory
 struct fence_i: misc_mem<0b0001> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -774,6 +822,7 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {
     }
 };
 
+/// CSR instructions
 template<opcode::opcode_t Type>
 struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {
     void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
@@ -782,6 +831,7 @@ struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {
     }
 };
 
+/// atomic read and write
 struct csrrw : csr<0b0001> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -789,6 +839,8 @@ struct csrrw : csr<0b0001> {
         return "csrrw";
     }
 };
+
+/// atomic read and set
 struct csrrs : csr<0b0010> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -796,6 +848,8 @@ struct csrrs : csr<0b0010> {
         return "csrrs";
     }
 };
+
+/// atomic read and clear
 struct csrrc : csr<0b0011> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -803,6 +857,8 @@ struct csrrc : csr<0b0011> {
         return "csrrc";
     }
 };
+
+/// unsigned(?) atomic read and write
 struct csrrwi: csr<0b0101> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -810,6 +866,8 @@ struct csrrwi: csr<0b0101> {
         return "csrrwi";
     }
 };
+
+/// unsigned(?) atomic read and set
 struct csrrsi: csr<0b0110> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -817,6 +875,8 @@ struct csrrsi: csr<0b0110> {
         return "csrrsi";
     }
 };
+
+/// unsigned(?) atomic read and clear
 struct csrrci: csr<0b0111> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -825,6 +885,7 @@ struct csrrci: csr<0b0111> {
     }
 };
 
+/// register RV32i set in registry
 void register_rv32i_set(registry* r);
 
 } // namespace vm::rv32i
