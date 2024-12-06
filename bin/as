@@ -1,0 +1,4 @@
+#!/bin/sh
+
+riscv64-unknown-elf-as -march=rv32im -mabi=ilp32 "$@"
+
