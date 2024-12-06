@@ -4,6 +4,7 @@
 #include <vm_handler.hxx>
 #include <vm_basic.hxx>
 #include <vm_handlers_rv32i.hxx>
+#include <vm_handlers_rv32m.hxx>
 #include <vm_base_types.hxx>
 #include <vm_utility.hxx>
 
@@ -57,6 +58,7 @@ void run_vm(const program &code)
 {
     vm::basic_vm machine;
     vm::rv32i::register_rv32i_set(&machine);
+    vm::rv32m::register_rv32m_set(&machine);
 
     machine.init_memory();
     auto ok = machine.set_program(code);
@@ -94,6 +96,7 @@ void disasm(const program &code)
     using op_type = vm::opcode::OpcodeBase;
     vm::registry registry;
     vm::rv32i::register_rv32i_set(&registry);
+    vm::rv32m::register_rv32m_set(&registry);
 
     std::cout
         << std::setw(10) << std::left << "hex"
