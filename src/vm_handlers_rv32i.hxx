@@ -803,7 +803,7 @@ struct fence_i: misc_mem<0b0001> {
 };
 
 // ECALL / EBREAK
-struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE> {
+struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, 0b0000> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
