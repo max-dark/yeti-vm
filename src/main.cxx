@@ -38,18 +38,32 @@ std::optional<program> load_program(const fs::path& programFile)
 
 void disasm(const fs::path &program_file);
 void disasm(const program &code);
+
+void run_vm(const fs::path &program_file);
 void run_vm(const program &code);
 
 int main(int argc, char** argv)
 {
-    if (argc < 2)
+    if (argc < 3)
     {
-        std::cout << "Usage: exe <path/to/file.bin>" << std::endl;
+        std::cout << "Usage: exe <v|d> <path/to/file.bin>" << std::endl;
         return 0;
     }
 
-    fs::path program_file = argv[1];
-    disasm(program_file);
+    fs::path program_file = argv[2];
+
+    switch(*argv[1])
+    {
+    case 'd':
+        disasm(program_file);
+        break;
+    case 'v':
+        run_vm(program_file);
+        break;
+    default:
+        std::cout << "Unknown option: " << argv[1] << std::endl;
+        break;
+    }
 
     return 0;
 }
@@ -57,9 +71,8 @@ int main(int argc, char** argv)
 void run_vm(const program &code)
 {
     vm::basic_vm machine;
-    vm::rv32i::register_rv32i_set(&machine);
-    vm::rv32m::register_rv32m_set(&machine);
 
+    machine.init_isa();
     machine.init_memory();
     auto ok = machine.set_program(code);
     if (!ok)
@@ -70,6 +83,7 @@ void run_vm(const program &code)
     machine.start();
     machine.run();
 }
+
 void run_vm(const fs::path &program_file)
 {
     auto bin = load_program(program_file);

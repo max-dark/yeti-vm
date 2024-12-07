@@ -4,6 +4,7 @@
 #include <vm_base_types.hxx>
 #include <vm_interface.hxx>
 #include <vm_handler.hxx>
+#include <vm_syscall.hxx>
 
 namespace vm
 {
@@ -11,8 +12,7 @@ namespace vm
 /**
  * basic implementation of rv32 VM
  */
-struct basic_vm: public registry
-        , public vm_interface
+struct basic_vm: public vm_interface
 {
     /// readonly memory
     using code_memory_t = std::vector<std::uint8_t>;
@@ -102,6 +102,9 @@ struct basic_vm: public registry
     [[nodiscard]]
     bool is_running() const;
 
+    /// enable RV32I + RV32M extension
+    void init_isa();
+
     /// resize memory to default values
     void init_memory();
 
@@ -125,10 +128,16 @@ struct basic_vm: public registry
     /// check that program can be started
     [[nodiscard]]
     bool is_initialized() const;
+
+    syscall_registry& get_syscalls();
 private:
     /// get pointer to current instruction
     [[nodiscard]]
     const opcode::OpcodeBase* get_current() const;
+
+    registry opcodes;
+    syscall_registry syscalls;
+
     /// registers container
     register_file registers{};
     code_memory_t code; // ro memory

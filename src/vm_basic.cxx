@@ -1,5 +1,8 @@
 #include "vm_basic.hxx"
 
+#include <vm_handlers_rv32i.hxx>
+#include <vm_handlers_rv32m.hxx>
+
 namespace vm
 {
 
@@ -39,6 +42,10 @@ void basic_vm::jump_if_abs(bool condition, basic_vm::address_t value)
 
 void basic_vm::syscall()
 {
+    auto handler = syscalls.find_handler(this);
+    if (handler == nullptr)
+        return halt();
+    handler->exec(this);
     inc_pc();
 }
 
@@ -178,7 +185,7 @@ void basic_vm::set_rw_size(size_t size)
 void basic_vm::run_step()
 {
     auto* current = get_current();
-    auto handler = find_handler(current);
+    auto handler = opcodes.find_handler(current);
     if (!handler)
     {
         return halt();
@@ -246,6 +253,17 @@ void basic_vm::set_ro_base(basic_vm::address_t base)
 void basic_vm::set_rw_base(basic_vm::address_t base)
 {
     data_base = base;
+}
+
+void basic_vm::init_isa()
+{
+    rv32i::register_rv32i_set(&opcodes);
+    rv32m::register_rv32m_set(&opcodes);
+}
+
+syscall_registry &basic_vm::get_syscalls()
+{
+    return syscalls;
 }
 
 } // namespace vm
