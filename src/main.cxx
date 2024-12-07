@@ -72,6 +72,46 @@ void run_vm(const program &code)
 {
     vm::basic_vm machine;
 
+    machine.enable_debugging(true);
+    machine.set_rw_base(0);
+    {
+        using vm::RegAlias;
+        using call = vm::syscall_functor;
+        auto& sys = machine.get_syscalls();
+        sys.register_handler(call::create(1024, "open", [](vm::vm_interface* m){
+            auto name_ptr = m->get_register(RegAlias::a0);
+            auto flags = m->get_register(RegAlias::a1);
+            std::cout << "open " << name_ptr << " " << flags << std::endl;
+            m->set_register(RegAlias::a0, 0);
+        }));
+        sys.register_handler(call::create(63, "read", [](vm::vm_interface* m){
+            auto file_id = m->get_register(RegAlias::a0);
+            auto buff_ptr = m->get_register(RegAlias::a1);
+            auto buff_sz = m->get_register(RegAlias::a2);
+            std::cout << "read " << file_id << " " << vm::to_signed(buff_ptr) << " " << buff_sz << std::endl;
+            m->set_register(RegAlias::a0, 0);
+        }));
+        sys.register_handler(call::create(57, "close", [](vm::vm_interface* m){
+            auto file_id = m->get_register(RegAlias::a0);
+            std::cout << "close " << file_id << std::endl;
+            m->set_register(RegAlias::a0, 0);
+        }));
+        sys.register_handler(call::create(11, "put_char", [](vm::vm_interface* m){
+            auto value = m->get_register(RegAlias::a0);
+            auto data = reinterpret_cast<const char*>(&value);
+            std::cout << *data;
+            m->set_register(RegAlias::a0, 0);
+        }));
+        sys.register_handler(call::create(1, "put_int", [](vm::vm_interface* m){
+            auto value = m->get_register(RegAlias::a0);
+            std::cout << vm::to_signed(value);
+            m->set_register(RegAlias::a0, 0);
+        }));
+        sys.register_handler(call::create(10, "exit", [](vm::vm_interface* m){
+            m->halt();
+            m->set_register(RegAlias::a0, 0);
+        }));
+    }
     machine.init_isa();
     machine.init_memory();
     auto ok = machine.set_program(code);
