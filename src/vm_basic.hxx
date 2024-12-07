@@ -129,6 +129,11 @@ struct basic_vm: public vm_interface
     [[nodiscard]]
     bool is_initialized() const;
 
+    [[nodiscard]]
+    bool is_debugging_enabled() const;
+
+    void enable_debugging(bool enable);
+
     syscall_registry& get_syscalls();
 private:
     /// get pointer to current instruction
@@ -149,6 +154,9 @@ private:
 
     /// running flag
     bool running = false;
+
+    /// debug
+    bool debugging = false;
 };
 
 } // namespace vm

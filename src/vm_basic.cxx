@@ -3,6 +3,8 @@
 #include <vm_handlers_rv32i.hxx>
 #include <vm_handlers_rv32m.hxx>
 
+#include <iostream>
+
 namespace vm
 {
 
@@ -190,7 +192,14 @@ void basic_vm::run_step()
     {
         return halt();
     }
+    if (is_debugging_enabled())
+    {
+        std::cout << std::setw(10) << std::setfill(' ') << std::left << handler->get_mnemonic()
+                  << std::setw(10) << std::setfill(' ') << std::left << handler->get_args(current)
+                  << std::endl;
+    }
     handler->exec(this, current);
+    if (!handler->skip()) inc_pc();
 }
 
 void basic_vm::run()
@@ -264,6 +273,16 @@ void basic_vm::init_isa()
 syscall_registry &basic_vm::get_syscalls()
 {
     return syscalls;
+}
+
+bool basic_vm::is_debugging_enabled() const
+{
+    return debugging;
+}
+
+void basic_vm::enable_debugging(bool enable)
+{
+    debugging = enable;
 }
 
 } // namespace vm
