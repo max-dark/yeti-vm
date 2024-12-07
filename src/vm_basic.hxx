@@ -6,6 +6,9 @@
 #include <vm_handler.hxx>
 #include <vm_syscall.hxx>
 
+#include <exception>
+#include <stdexcept>
+
 namespace vm
 {
 
@@ -14,6 +17,19 @@ namespace vm
  */
 struct basic_vm: public vm_interface
 {
+    struct unknown_instruction: std::domain_error {
+        explicit unknown_instruction(const char * message): std::domain_error{message} {}
+    };
+    struct unknown_syscall: std::domain_error {
+        explicit unknown_syscall(const char * message): std::domain_error{message} {}
+    };
+    struct code_access_error: std::domain_error {
+        explicit code_access_error(const char * message): std::domain_error{message} {}
+    };
+    struct data_access_error: std::domain_error {
+        explicit data_access_error(const char * message): std::domain_error{message} {}
+    };
+
     /// readonly memory
     using code_memory_t = std::vector<std::uint8_t>;
     /// rw(data) memory
@@ -71,11 +87,11 @@ struct basic_vm: public vm_interface
 
     /// get pointer to memory
     [[nodiscard]]
-    const void* get_ptr(address_t address) const;
+    void *get_ptr_rw(address_t address, uint8_t size);
 
     /// get pointer to memory
     [[nodiscard]]
-    void* get_ptr(address_t address);
+    const void *get_ptr_ro(address_t address, uint8_t size) const;
 
     /// set ro memory size
     void set_ro_size(size_t size);

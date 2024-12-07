@@ -81,7 +81,7 @@ void run_vm(const program &code)
         sys.register_handler(call::create(1024, "open", [](vm::vm_interface* m){
             auto name_ptr = m->get_register(RegAlias::a0);
             auto flags = m->get_register(RegAlias::a1);
-            std::cout << "open " << name_ptr << " " << flags << std::endl;
+            std::cout << "open " << vm::to_signed(name_ptr) << " " << flags << std::endl;
             m->set_register(RegAlias::a0, 0);
         }));
         sys.register_handler(call::create(63, "read", [](vm::vm_interface* m){
@@ -109,6 +109,7 @@ void run_vm(const program &code)
         }));
         sys.register_handler(call::create(10, "exit", [](vm::vm_interface* m){
             m->halt();
+            std::cout << "exit" << std::endl;
             m->set_register(RegAlias::a0, 0);
         }));
     }

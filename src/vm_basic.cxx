@@ -15,12 +15,10 @@ void basic_vm::halt()
 
 void basic_vm::jump_abs(basic_vm::address_t dest)
 {
-    bool valid = dest % sizeof(opcode::opcode_t);
-    valid = valid && (dest < code.size());
-    if (!valid)
+    if (dest % sizeof(opcode::opcode_t)) [[unlikely]]
     {
-        return halt();
-    }
+        throw code_access_error{"destination address should be aligned by instruction size"};
+    };
     set_pc(dest);
 }
 
@@ -45,10 +43,9 @@ void basic_vm::jump_if_abs(bool condition, basic_vm::address_t value)
 void basic_vm::syscall()
 {
     auto handler = syscalls.find_handler(this);
-    if (handler == nullptr)
-        return halt();
+    if (handler == nullptr) [[unlikely]]
+        throw unknown_syscall{"unknown syscall"};
     handler->exec(this);
-    inc_pc();
 }
 
 void basic_vm::debug()
@@ -68,37 +65,39 @@ void basic_vm::barrier()
 
 void basic_vm::read_memory(basic_vm::address_t from, uint8_t size, register_t &value)
 {
-    auto ptr = get_ptr(from);
-    if (!ptr)
+    auto ptr = get_ptr_ro(from, size);
+    if (!ptr) [[unlikely]]
     {
         return halt();
     }
-    if (size > sizeof(value))
+    if (size > sizeof(value)) [[unlikely]]
     {
         return halt();
     }
     std::memcpy(&value, ptr, size);
-    inc_pc();
 }
 
 void basic_vm::write_memory(basic_vm::address_t from, uint8_t size, register_t value)
 {
-    auto ptr = get_ptr(from);
-    if (!ptr)
+    if ((size == 0) || (size > sizeof(value))) [[unlikely]]
     {
-        return halt();
+        throw data_access_error{"size out of range"};
     }
-    if (size > sizeof(value))
+    auto ptr = get_ptr_rw(from, size);
+    if (!ptr) [[unlikely]]
     {
-        return halt();
+        throw data_access_error{"address out of range"};
     }
     std::memcpy(ptr, &value, size);
-    inc_pc();
 }
 
 void basic_vm::set_register(register_no r, register_t value)
 {
-    if (r > 0 && r <= register_count)
+    if (r >= register_count) [[unlikely]]
+    {
+        throw data_access_error{"register ID out of range"};
+    }
+    if (r > 0)
     {
         registers[r] = value;
     }
@@ -106,7 +105,11 @@ void basic_vm::set_register(register_no r, register_t value)
 
 register_t basic_vm::get_register(register_no r) const
 {
-    if (r > 0 && r <= register_count)
+    if (r >= register_count) [[unlikely]]
+    {
+        throw data_access_error{"register ID out of range"};
+    }
+    if (r > 0)
     {
         return registers[r];
     }
@@ -115,16 +118,16 @@ register_t basic_vm::get_register(register_no r) const
 
 register_t basic_vm::get_pc() const
 {
-    return get_register(RegAlias::pc);
+    return registers[RegAlias::pc];
 }
 
 void basic_vm::set_pc(register_t value)
 {
-    if (value + sizeof(opcode::opcode_t) >= code.size())
+    if (value + sizeof(opcode::opcode_t) >= code.size()) [[unlikely]]
     {
-        return halt();
+        throw code_access_error{"destination address outside code region"};
     }
-    set_register(RegAlias::pc, value);
+    registers[RegAlias::pc] = value;
 }
 
 void basic_vm::inc_pc()
@@ -132,45 +135,63 @@ void basic_vm::inc_pc()
     set_pc(get_pc() + sizeof(opcode::opcode_t));
 }
 
-const void *basic_vm::get_ptr(basic_vm::address_t address) const
+const void *basic_vm::get_ptr_ro(address_t address, uint8_t size) const
 {
-    if (address >= data_base)
+    auto mem_check = [address, size](auto& block, address_t base) -> const void *
     {
-        address -= data_base;
-        if (address < data.size())
+        auto block_size = block.size() * sizeof(block.at(0));
+        if (address >= base)
         {
-            return data.data() + address;
+            address_t offset = address - base;
+            if (offset < block_size)
+            {
+                if ((offset + size) > block_size)
+                {
+                    throw data_access_error{"size out of range"};
+                }
+                return block.data() + offset;
+            }
         }
-    }
-    if (address >= code_base)
+        return nullptr;
+    };
+
+    if (address % size)
     {
-        address -= code_base;
-        if (address < code.size())
-        {
-            return code.data() + address;
-        }
+        throw data_access_error{"address is not aligned"};
     }
+    if (auto ptr = mem_check(data, data_base))
+        return ptr;
+    if (auto ptr = mem_check(code, code_base))
+        return ptr;
     return nullptr;
 }
 
-void *basic_vm::get_ptr(basic_vm::address_t address)
+void *basic_vm::get_ptr_rw(vm::vm_interface::address_t address, uint8_t size)
 {
-    if (address >= data_base)
+    auto mem_check = [address, size](auto& block, address_t base) -> void *
     {
-        address -= data_base;
-        if (address < data.size())
+        auto block_size = block.size() * sizeof(block.at(0));
+        if (address >= base)
         {
-            return data.data() + address;
+            address_t offset = address - base;
+            if (offset < block_size)
+            {
+                if ((offset + size) > block_size)
+                {
+                    throw data_access_error{"size out of range"};
+                }
+                return block.data() + offset;
+            }
         }
-    }
-    if (address >= code_base)
+        return nullptr;
+    };
+
+    if (address % size)
     {
-        address -= code_base;
-        if (address < code.size())
-        {
-            return code.data() + address;
-        }
+        throw data_access_error{"address is not aligned"};
     }
+    if (auto ptr = mem_check(data, data_base))
+        return ptr;
     return nullptr;
 }
 
@@ -188,18 +209,23 @@ void basic_vm::run_step()
 {
     auto* current = get_current();
     auto handler = opcodes.find_handler(current);
-    if (!handler)
+    if (!handler) [[unlikely]]
     {
-        return halt();
+        throw unknown_instruction{"unable find handler"};
     }
-    if (is_debugging_enabled())
+    if (is_debugging_enabled()) [[unlikely]]
     {
-        std::cout << std::setw(10) << std::setfill(' ') << std::left << handler->get_mnemonic()
+        std::cout << std::setw( 8) << std::setfill('0') << std::right << get_pc() << ' '
+                  << std::setw(10) << std::setfill(' ') << std::left << handler->get_mnemonic()
                   << std::setw(10) << std::setfill(' ') << std::left << handler->get_args(current)
                   << std::endl;
     }
     handler->exec(this, current);
-    if (!handler->skip()) inc_pc();
+
+    if (!handler->skip()) [[likely]]
+    {
+        inc_pc();
+    }
 }
 
 void basic_vm::run()
