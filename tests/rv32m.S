@@ -1,3 +1,5 @@
+// test `m' extension(math)
+
 .text
 .global _start
 

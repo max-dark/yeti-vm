@@ -1,3 +1,5 @@
+// test for RV32I
+
 .text
 .global _start
 
@@ -6,7 +8,6 @@ _start:
     auipc a2, 123
     jal ra, lbl_jal
 lbl_jal :
-    # jalr al, zero, lbl_jalr # ???
     jalr ra, 4(x0)
 lbl_jalr:
     beq t4, x6, lbl_branch
@@ -16,13 +17,13 @@ lbl_jalr:
     bltu t4, x6, lbl_branch
     bgeu t4, x6, lbl_branch
 lbl_branch:
-    # load
+    // load
     lb t1, 0(zero)
     lh t1, 0(zero)
     lw t1, 0(zero)
     lbu t1, 0(zero)
     lhu t1, 0(zero)
-    # store
+    // store
     sb t1, 0(zero)
     sh t1, 0(zero)
     sw t1, 0(zero)
@@ -49,8 +50,20 @@ lbl_branch:
     or  t1, t2, t3
     and t1, t2, t3
 
-    # env
+    // env
     ecall
     ebreak
+
+    fence iorw, iorw
+    // fence.i // extension `zifencei' required
+
+    // extension `zicsr' required
+    // csrrw t1, time, t2
+    // csrrs t1, time, t2
+    // csrrc t1, time, t2
+
+    // csrrwi t1, time, 0
+    // csrrsi t1, time, 0
+    // csrrci t1, time, 0
 
     jal zero, _start
