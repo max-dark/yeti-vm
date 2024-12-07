@@ -20,7 +20,7 @@ struct basic_vm: public vm_interface
     using data_memory_t = std::vector<std::uint8_t>;
 
     /// stop VM
-    void halt();
+    void halt() final;
 
     /// jump to absolute address
     void jump_abs(address_t dest) override;
