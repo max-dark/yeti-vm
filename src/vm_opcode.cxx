@@ -81,7 +81,7 @@ std::string_view get_op_id(OpcodeType code) {
 
 bool have_ext_a(opcode_t code) {
     switch (code) {
-        case LUI: case AUIPC: case JAL: return false;
+        case LUI: case AUIPC: case JAL: case JALR: return false;
         default: return true;
     }
 }
