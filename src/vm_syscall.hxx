@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vm_interface.hxx>
+#include <functional>
 
 namespace vm
 {
@@ -17,6 +18,43 @@ struct syscall_interface
     virtual std::string_view get_name() const = 0;
 
     virtual ~syscall_interface();
+};
+
+struct syscall_functor final: public syscall_interface
+{
+    using callback_type = std::function<void(vm_interface* vm)>;
+
+    syscall_functor(register_t id, std::string name, callback_type callback)
+        : id{id}
+        , name{std::move(name)}
+        , callback{std::move(callback)}
+    {}
+
+    static ptr create(register_t id, std::string name, callback_type callback)
+    {
+        return std::make_shared<syscall_functor>(id, std::move(name), std::move(callback));
+    }
+
+    void exec(vm_interface* vm) final
+    {
+        callback(vm);
+    }
+
+    [[nodiscard]]
+    register_t get_id() const final
+    {
+        return id;
+    }
+
+    [[nodiscard]]
+    std::string_view get_name() const final
+    {
+        return name;
+    }
+private:
+    callback_type callback;
+    std::string name;
+    register_t id;
 };
 
 struct syscall_registry
