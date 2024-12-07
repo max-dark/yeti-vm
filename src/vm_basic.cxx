@@ -215,10 +215,14 @@ void basic_vm::run_step()
     }
     if (is_debugging_enabled()) [[unlikely]]
     {
-        std::cout << std::setw( 8) << std::setfill('0') << std::right << get_pc() << ' '
-                  << std::setw(10) << std::setfill(' ') << std::left << handler->get_mnemonic()
-                  << std::setw(10) << std::setfill(' ') << std::left << handler->get_args(current)
-                  << std::endl;
+        std::cout
+                << std::setw( 8) << std::setfill('0') << std::right << get_pc() << ' '
+                << std::setw(10) << std::setfill(' ') << std::left << handler->get_mnemonic()
+                << std::setw(10) << std::setfill(' ') << std::left << handler->get_args(current)
+                << std::setw(10) << std::right << std::hex << get_register(current->get_rd())
+                << std::setw(10) << std::right << std::hex << get_register(current->get_rs1())
+                << std::setw(10) << std::right << std::hex << get_register(current->get_rs2())
+                << std::endl;
     }
     handler->exec(this, current);
 
