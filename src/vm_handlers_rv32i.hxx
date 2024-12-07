@@ -807,7 +807,19 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, 0b0000>
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
-        return "env(call/break)";
+        return "env";
+    }
+    [[nodiscard]]
+    std::string get_args(opcode::opcode_t code) const override
+    {
+        auto args = opcode::get_bits(code, 20, 12);
+        switch (args)
+        {
+            case 0: return "call";
+            case 1: return "break";
+            default: break;
+        }
+        return opcode::to_hex(args);
     }
     void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
@@ -886,6 +898,6 @@ struct csrrci: csr<0b0111> {
 };
 
 /// register RV32i set in registry
-void register_rv32i_set(registry* r);
+bool register_rv32i_set(registry* r);
 
 } // namespace vm::rv32i

@@ -58,6 +58,11 @@ static_assert(get_bits<0, 1>(0b0000'0001) == opcode_t{0b0000'0001}, "something w
 static_assert(get_bits<0, 2>(0b0000'0011) == opcode_t{0b0000'0011}, "something wrong");
 static_assert(get_bits<1, 1>(0b0000'0010) == opcode_t{0b0000'0001}, "something wrong");
 
+static_assert(get_bits< 0, 7>(0x02c58533) == opcode_t{0b0011'0011}, "something wrong");
+static_assert(get_bits<12, 3>(0x02c58533) == opcode_t{0b0000'0000}, "something wrong");
+static_assert(get_bits<12, 3>(0x02c5c533) == opcode_t{0b0000'0100}, "something wrong");
+static_assert(get_bits<12, 3>(0x02c5f533) == opcode_t{0b0000'0111}, "something wrong");
+
 /// get bit field
 constexpr data_t get_bits(opcode_t code, uint8_t start, uint8_t length)
 {

@@ -16,6 +16,7 @@ inline constexpr opcode::opcode_t no_func_b = 1 << 8;
 /// Instruction ID
 struct InstructionId
 {
+private:
     /// basic OPCODE
     opcode::opcode_t code = 0;
     /// encoding format
@@ -25,14 +26,25 @@ struct InstructionId
     /// function ID
     opcode::opcode_t funcB = no_func_b;
 
+    opcode::opcode_t id = 0;
+public:
+    InstructionId(
+            opcode::opcode_t group,
+            opcode::BaseFormat fmt,
+            opcode::opcode_t func_a,
+            opcode::opcode_t func_b
+        )
+        : code{group}
+        , format{fmt}
+        , funcA{func_a}
+        , funcB{func_b}
+    {
+        id = code | (funcA << 8) | (funcB << 16);
+    }
     /// comparator for std::map
     bool operator<(const InstructionId& rhs) const
     {
-        bool result = code < rhs.code;
-        //result = result && (format < rhs.format);
-        result = result && (funcA < rhs.funcA);
-        result = result && (funcB < rhs.funcB);
-        return result;
+        return id < rhs.id;
     }
 };
 
@@ -100,10 +112,7 @@ struct instruction_base : public interface
     const InstructionId& get_id() const final
     {
         static const InstructionId id{
-                .code = CodeBase,
-                .format = Format,
-                .funcA = FuncA,
-                .funcB = FuncB
+            CodeBase, Format, FuncA, FuncB
         };
 
         return id;
@@ -151,27 +160,26 @@ struct instruction_base : public interface
 struct registry
 {
     using handler_ptr = const interface*;
-    using type_map = std::map<InstructionId, interface::ptr>;
-    using base_map = std::map<opcode::opcode_t, type_map>;
+    using handler_map = std::map<InstructionId, interface::ptr>;
 
     /**
      * register handler by type
      * @tparam Handler
      */
     template<typename Handler>
-    inline void register_handler()
+    inline bool register_handler()
     {
         static_assert(std::is_base_of_v<interface, Handler>, "Wrong type of Handler");
-        register_handler(std::make_shared<Handler>());
+        return register_handler(std::make_shared<Handler>());
     }
     /// register handler by pointer
-    void register_handler(interface::ptr handler);
+    bool register_handler(interface::ptr handler);
 
     /// find handler by instruction code
     handler_ptr find_handler(const opcode::OpcodeBase* code) const;
 
     /// handlers container
-    base_map handlers;
+    handler_map handlers;
 };
 
 

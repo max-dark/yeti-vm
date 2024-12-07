@@ -95,8 +95,11 @@ void disasm(const program &code)
     using namespace std::literals;
     using op_type = vm::opcode::OpcodeBase;
     vm::registry registry;
-    vm::rv32i::register_rv32i_set(&registry);
-    vm::rv32m::register_rv32m_set(&registry);
+    bool rv32i_ok = vm::rv32i::register_rv32i_set(&registry);
+    bool rv32m_ok = vm::rv32m::register_rv32m_set(&registry);
+
+    std::cout << std::boolalpha << "rv32i_ok = " << rv32i_ok << std::endl;
+    std::cout << std::boolalpha << "rv32m_ok = " << rv32m_ok << std::endl;
 
     std::cout
         << std::setw(10) << std::left << "hex"
