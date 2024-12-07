@@ -117,7 +117,7 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
 
 /// branch (conditional jump)
 template<opcode::opcode_t Type>
-struct branch: public instruction_base<opcode::JALR, opcode::B_TYPE, Type> {
+struct branch: public instruction_base<opcode::BRANCH, opcode::B_TYPE, Type> {
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
     {
