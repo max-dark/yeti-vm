@@ -79,29 +79,6 @@ std::string_view get_op_id(OpcodeType code) {
     return "UNKNOWN";
 }
 
-bool have_ext_a(opcode_t code) {
-    switch (code) {
-        case LUI: case AUIPC: case JAL: case JALR: return false;
-        default: return true;
-    }
-}
-
-bool have_ext_b(opcode_t code) {
-    switch (code) {
-        case OP: {
-            // @see int_r
-            return true;
-        }
-        case OP_IMM: {
-            // @see shift_imm
-            OpcodeBase tmp{ .code = code };
-            auto f = tmp.get_func3();
-            return (f == 0b0001 || f == 0b0101);
-        }
-        default: return false;
-    }
-}
-
 data_t OpcodeBase::decode_i() const {
     return shift_bits<20, 0, 12>(code);
 }

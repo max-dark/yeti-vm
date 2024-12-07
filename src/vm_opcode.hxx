@@ -235,10 +235,4 @@ enum OpcodeType: opcode_t
 /// get mnemonic of opcode group ID
 std::string_view get_op_id(OpcodeType code);
 
-/// check that instruction have "func A"
-bool have_ext_a(opcode_t code);
-
-/// check that instruction have "func B"
-bool have_ext_b(opcode_t code);
-
 } //namespace vm::opcode

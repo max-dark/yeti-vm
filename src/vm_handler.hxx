@@ -180,6 +180,10 @@ struct registry
 
     /// handlers container
     handler_map handlers;
+    /// mark that instruction have "func A"
+    std::set<opcode::opcode_t> func_b;
+    /// mark that instruction have "func B"
+    std::set<opcode::opcode_t> func_a;
 };
 
 
