@@ -41,6 +41,36 @@ struct executable
             return fileHeader()->e_type;
         }
 
+        auto programHeaderOffset() const
+        {
+            return fileHeader()->e_phoff;
+        }
+        auto sectionHeaderOffset() const
+        {
+            return fileHeader()->e_shoff;
+        }
+
+        auto programHeaderCount() const
+        {
+            return fileHeader()->e_phnum;
+        }
+        auto sectionHeaderCount() const
+        {
+            return fileHeader()->e_shnum;
+        }
+        auto stringsSectionIndex() const
+        {
+            return fileHeader()->e_shstrndx;
+        }
+        auto programHeaders()
+        {
+            return exe->get<ProgramHeader>(programHeaderOffset());
+        }
+        auto sectionHeaders()
+        {
+            return exe->get<SectionHeader>(sectionHeaderOffset());
+        }
+
         explicit elf(const executable* exe): exe{exe} {}
     private:
         const executable* exe = nullptr;

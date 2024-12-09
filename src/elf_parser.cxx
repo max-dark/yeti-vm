@@ -27,7 +27,7 @@ void print_file_header(ElfFile exe)
 {
     auto header = exe.fileHeader();
     std::cout << "File header:" << std::endl;
-    print_raw("e_type", header->e_type);
+    print_raw("e_type", exe.fileType());
     print_raw("e_machine", header->e_machine);
     print_raw("e_version", header->e_version);
     print_hex("e_entry", header->e_entry);
@@ -46,6 +46,31 @@ void print_file_header(ElfFile exe)
     print_raw("e_shnum", header->e_shnum);
 
     print_raw("e_shstrndx", header->e_shstrndx);
+}
+
+template<typename ElfFile>
+void print_program_headers(ElfFile exe)
+{
+    auto headers = exe.programHeaders();
+    auto count = exe.programHeaderCount();
+
+    std::cout << "Program headers:" << std::endl;
+    for (size_t i = 0; i < count; ++i)
+    {
+        auto ptr = headers + i;
+        print_raw("begin", i);
+
+        print_hex("p_type", ptr->p_type);
+        print_raw("p_offset", ptr->p_offset);
+        print_hex("p_vaddr", ptr->p_vaddr);
+        print_hex("p_paddr", ptr->p_paddr);
+        print_raw("p_filesz", ptr->p_filesz);
+        print_raw("p_memsz", ptr->p_memsz);
+        print_hex("p_flags", ptr->p_flags);
+        print_raw("p_align", ptr->p_align);
+
+        print_raw("end", i);
+    }
 }
 
 int main(int argc, char** argv)
@@ -74,11 +99,15 @@ int main(int argc, char** argv)
 
     if (auto exe32 = parser->to_32bit())
     {
-        print_file_header(exe32.value());
+        auto& exe = exe32.value();
+        print_file_header(exe);
+        print_program_headers(exe);
     }
     else if (auto exe64 = parser->to_64bit())
     {
-        print_file_header(exe64.value());
+        auto& exe = exe64.value();
+        print_file_header(exe);
+        print_program_headers(exe);
     }
     else
     {
