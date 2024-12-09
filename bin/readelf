@@ -1,0 +1,4 @@
+#!/bin/sh
+
+riscv64-unknown-elf-readelf "$@"
+
