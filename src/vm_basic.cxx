@@ -222,9 +222,17 @@ void basic_vm::run_step()
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rd())
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rs1())
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rs2())
-                << std::endl;
+        ;
     }
     handler->exec(this, current);
+    if (is_debugging_enabled()) [[unlikely]]
+    {
+        std::cout
+                << std::setw(10) << std::right << std::hex << get_register(current->get_rd())
+                << std::setw(10) << std::right << std::hex << get_register(current->get_rs1())
+                << std::setw(10) << std::right << std::hex << get_register(current->get_rs2())
+                << std::endl;
+    }
 
     if (!handler->skip()) [[likely]]
     {
