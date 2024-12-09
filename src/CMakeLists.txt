@@ -14,7 +14,7 @@ target_include_directories(
 target_sources(
     shared
     INTERFACE
-        stdlib.hxx
+        vm_stdlib.hxx
 )
 
 set(APP_NAME risc-vm)
