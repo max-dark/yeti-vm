@@ -39,8 +39,8 @@ std::optional<program> load_program(const fs::path& programFile)
 void disasm(const fs::path &program_file);
 void disasm(const program &code);
 
-void run_vm(const fs::path &program_file);
-void run_vm(const program &code);
+void run_vm(const fs::path &program_file, bool debug);
+void run_vm(const program &code, bool debug);
 
 int main(int argc, char** argv)
 {
@@ -58,7 +58,10 @@ int main(int argc, char** argv)
         disasm(program_file);
         break;
     case 'v':
-        run_vm(program_file);
+        run_vm(program_file, false);
+        break;
+    case 'V':
+        run_vm(program_file, true);
         break;
     default:
         std::cout << "Unknown option: " << argv[1] << std::endl;
@@ -68,11 +71,11 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void run_vm(const program &code)
+void run_vm(const program &code, bool debug)
 {
     vm::basic_vm machine;
 
-    machine.enable_debugging(true);
+    machine.enable_debugging(debug);
     machine.set_rw_base(0);
     {
         using vm::RegAlias;
@@ -125,13 +128,13 @@ void run_vm(const program &code)
     machine.run();
 }
 
-void run_vm(const fs::path &program_file)
+void run_vm(const fs::path &program_file, bool debug)
 {
     auto bin = load_program(program_file);
 
     if (bin)
     {
-        run_vm(*bin);
+        run_vm(*bin, debug);
     }
 }
 
