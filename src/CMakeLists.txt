@@ -23,6 +23,40 @@ set(APP_SOURCES
     main.cxx
 )
 
+set(ELF_LIB elf-loader)
+set(ELF_HEADERS
+    elf_loader.hxx
+)
+set(ELF_SOURCES
+    elf_loader.cxx
+)
+add_library(${ELF_LIB} STATIC)
+target_sources(
+    ${ELF_LIB}
+    PRIVATE
+        ${ELF_SOURCES}
+    PUBLIC
+        ${ELF_HEADERS}
+)
+target_link_libraries(
+    ${ELF_LIB}
+    PUBLIC
+        shared
+)
+
+set(ELF_PARSER_APP elf-parser)
+add_executable(${ELF_PARSER_APP})
+target_sources(
+    ${ELF_PARSER_APP}
+    PRIVATE
+        elf_parser.cxx
+)
+target_link_libraries(
+    ${ELF_PARSER_APP}
+    PRIVATE
+        ${ELF_LIB}
+)
+
 set(LIB_NAME rvm)
 set(LIB_HEADERS
     vm_base_types.hxx
