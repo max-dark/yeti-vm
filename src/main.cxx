@@ -137,6 +137,8 @@ void disasm(const vm::program_code_t &code)
         auto mnemonic = handler ? handler->get_mnemonic() : "UNKNOWN"sv;
         auto args = handler ? handler->get_args(op) : "UNKNOWN"s;
         std::cout << std::hex
+                  << std::setw(8) << std::setfill('0') << std::right << i
+                  << "  "
                   << std::setw(8) << std::setfill('0') << std::right << op->code
                   << "  "
                   << std::setw(10) << std::setfill(' ') << std::left << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(op->get_code()))

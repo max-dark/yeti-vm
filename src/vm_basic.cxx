@@ -76,11 +76,11 @@ void basic_vm::read_memory(basic_vm::address_t from, uint8_t size, register_t &v
     auto ptr = get_ptr_ro(from, size);
     if (!ptr) [[unlikely]]
     {
-        throw data_access_error{std::format("address {:08x} out of range", from)};;
+        throw data_access_error{std::format("load: address {:08x} out of range", from)};;
     }
     if (size > sizeof(value)) [[unlikely]]
     {
-        throw data_access_error{"size out of range"};
+        throw data_access_error{"load: size out of range"};
     }
     std::memcpy(&value, ptr, size);
 }
@@ -89,12 +89,12 @@ void basic_vm::write_memory(basic_vm::address_t from, uint8_t size, register_t v
 {
     if ((size == 0) || (size > sizeof(value))) [[unlikely]]
     {
-        throw data_access_error{"size out of range"};
+        throw data_access_error{"store: size out of range"};
     }
     auto ptr = get_ptr_rw(from, size);
     if (!ptr) [[unlikely]]
     {
-        throw data_access_error{std::format("address {:08x} out of range", from)};
+        throw data_access_error{std::format("store: address {:08x} out of range", from)};
     }
     std::memcpy(ptr, &value, size);
 }
@@ -226,7 +226,7 @@ void basic_vm::run_step()
         std::cout
                 << std::setw( 8) << std::setfill('0') << std::right << get_pc() << ' '
                 << std::setw(10) << std::setfill(' ') << std::left << handler->get_mnemonic()
-                << std::setw(10) << std::setfill(' ') << std::left << handler->get_args(current)
+                << std::setw(20) << std::setfill(' ') << std::left << handler->get_args(current)
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rd())
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rs1())
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rs2())
