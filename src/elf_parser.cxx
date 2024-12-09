@@ -73,6 +73,33 @@ void print_program_headers(ElfFile exe)
     }
 }
 
+template<typename ElfFile>
+void print_section_headers(ElfFile exe)
+{
+    auto headers = exe.sectionHeaders();
+    auto count = exe.sectionHeaderCount();
+
+    std::cout << "Section headers:" << std::endl;
+    for (size_t i = 0; i < count; ++i)
+    {
+        auto ptr = headers + i;
+        print_raw("begin", i);
+
+        print_raw("sh_name", ptr->sh_name);
+        print_hex("sh_type", ptr->sh_type);
+        print_hex("sh_flags", ptr->sh_flags);
+        print_hex("sh_addr", ptr->sh_addr);
+        print_hex("sh_offset", ptr->sh_offset);
+        print_raw("sh_size", ptr->sh_size);
+        print_raw("sh_link", ptr->sh_link);
+        print_raw("sh_info", ptr->sh_info);
+        print_raw("sh_addralign", ptr->sh_addralign);
+        print_raw("sh_entsize", ptr->sh_entsize);
+
+        print_raw("end", i);
+    }
+}
+
 int main(int argc, char** argv)
 {
     using exe = elf_loader::executable;
@@ -102,12 +129,14 @@ int main(int argc, char** argv)
         auto& exe = exe32.value();
         print_file_header(exe);
         print_program_headers(exe);
+        print_section_headers(exe);
     }
     else if (auto exe64 = parser->to_64bit())
     {
         auto& exe = exe64.value();
         print_file_header(exe);
         print_program_headers(exe);
+        print_section_headers(exe);
     }
     else
     {
