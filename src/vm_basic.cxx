@@ -252,6 +252,9 @@ void basic_vm::start()
 {
     std::fill(registers.begin(), registers.end(), 0);
     std::fill(data.begin(), data.end(), 0);
+
+    set_register(vm::RegAlias::gp, data_base + data.size());
+    set_register(vm::RegAlias::sp, data_base + data.size());
     running = true;
 }
 

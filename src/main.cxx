@@ -76,7 +76,6 @@ void run_vm(const program &code, bool debug)
     vm::basic_vm machine;
 
     machine.enable_debugging(debug);
-    machine.set_rw_base(0);
     {
         using vm::RegAlias;
         using call = vm::syscall_functor;
@@ -125,7 +124,6 @@ void run_vm(const program &code, bool debug)
         return;
     }
     machine.start();
-    machine.set_register(vm::RegAlias::sp, vm::basic_vm::def_data_size);
     machine.run();
 }
 
