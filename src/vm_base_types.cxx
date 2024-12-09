@@ -20,19 +20,19 @@ std::string_view get_register_alias(register_no no) {
         case tp:
             return "tp";
         case t0:
-            return "t0/al";
+            return "t0";
         case t1:
             return "t1";
         case t2:
             return "t2";
         case s0:
-            return "s0/fp";
+            return "s0";
         case s1:
             return "s1";
         case a0:
-            return "a0/r0";
+            return "a0";
         case a1:
-            return "a1/r1";
+            return "a1";
         case a2:
             return "a2";
         case a3:
