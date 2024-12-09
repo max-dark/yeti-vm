@@ -125,6 +125,7 @@ void run_vm(const program &code, bool debug)
         return;
     }
     machine.start();
+    machine.set_register(vm::RegAlias::sp, vm::basic_vm::def_data_size);
     machine.run();
 }
 
