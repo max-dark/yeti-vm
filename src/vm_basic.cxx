@@ -4,6 +4,7 @@
 #include <vm_handlers_rv32m.hxx>
 
 #include <iostream>
+#include <format>
 
 namespace vm
 {
@@ -17,7 +18,9 @@ void basic_vm::jump_abs(basic_vm::address_t dest)
 {
     if (dest % sizeof(opcode::opcode_t)) [[unlikely]]
     {
-        throw code_access_error{"destination address should be aligned by instruction size"};
+        throw code_access_error{
+            std::format("destination address({:08x}) should be aligned by instruction size", dest)
+        };
     };
     set_pc(dest);
 }
@@ -68,11 +71,11 @@ void basic_vm::read_memory(basic_vm::address_t from, uint8_t size, register_t &v
     auto ptr = get_ptr_ro(from, size);
     if (!ptr) [[unlikely]]
     {
-        return halt();
+        throw data_access_error{std::format("address {:08x} out of range", from)};;
     }
     if (size > sizeof(value)) [[unlikely]]
     {
-        return halt();
+        throw data_access_error{"size out of range"};
     }
     std::memcpy(&value, ptr, size);
 }
@@ -86,7 +89,7 @@ void basic_vm::write_memory(basic_vm::address_t from, uint8_t size, register_t v
     auto ptr = get_ptr_rw(from, size);
     if (!ptr) [[unlikely]]
     {
-        throw data_access_error{"address out of range"};
+        throw data_access_error{std::format("address {:08x} out of range", from)};
     }
     std::memcpy(ptr, &value, size);
 }
@@ -95,7 +98,7 @@ void basic_vm::set_register(register_no r, register_t value)
 {
     if (r >= register_count) [[unlikely]]
     {
-        throw data_access_error{"register ID out of range"};
+        throw data_access_error{std::format("register ID({}) out of range", r)};
     }
     if (r > 0)
     {
@@ -107,7 +110,7 @@ register_t basic_vm::get_register(register_no r) const
 {
     if (r >= register_count) [[unlikely]]
     {
-        throw data_access_error{"register ID out of range"};
+        throw data_access_error{std::format("register ID({}) out of range", r)};
     }
     if (r > 0)
     {
@@ -125,7 +128,7 @@ void basic_vm::set_pc(register_t value)
 {
     if (value + sizeof(opcode::opcode_t) >= code.size()) [[unlikely]]
     {
-        throw code_access_error{"destination address outside code region"};
+        throw code_access_error{std::format("destination address {:08x} outside code region", value)};
     }
     registers[RegAlias::pc] = value;
 }
@@ -157,7 +160,7 @@ const void *basic_vm::get_ptr_ro(address_t address, uint8_t size) const
 
     if (address % size)
     {
-        throw data_access_error{"address is not aligned"};
+        throw data_access_error{std::format("address {:08x} is not aligned", address)};
     }
     if (auto ptr = mem_check(data, data_base))
         return ptr;
@@ -188,7 +191,7 @@ void *basic_vm::get_ptr_rw(vm::vm_interface::address_t address, uint8_t size)
 
     if (address % size)
     {
-        throw data_access_error{"address is not aligned"};
+        throw data_access_error{std::format("address {:08x} is not aligned", address)};
     }
     if (auto ptr = mem_check(data, data_base))
         return ptr;
@@ -211,7 +214,7 @@ void basic_vm::run_step()
     auto handler = opcodes.find_handler(current);
     if (!handler) [[unlikely]]
     {
-        throw unknown_instruction{"unable find handler"};
+        throw unknown_instruction{std::format("unable find handler for {:08x}", current->code)};
     }
     if (is_debugging_enabled()) [[unlikely]]
     {

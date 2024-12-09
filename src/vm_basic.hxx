@@ -18,16 +18,16 @@ namespace vm
 struct basic_vm: public vm_interface
 {
     struct unknown_instruction: std::domain_error {
-        explicit unknown_instruction(const char * message): std::domain_error{message} {}
+        explicit unknown_instruction(const std::string& message): std::domain_error{message} {}
     };
     struct unknown_syscall: std::domain_error {
-        explicit unknown_syscall(const char * message): std::domain_error{message} {}
+        explicit unknown_syscall(const std::string& message): std::domain_error{message} {}
     };
     struct code_access_error: std::domain_error {
-        explicit code_access_error(const char * message): std::domain_error{message} {}
+        explicit code_access_error(const std::string& message): std::domain_error{message} {}
     };
     struct data_access_error: std::domain_error {
-        explicit data_access_error(const char * message): std::domain_error{message} {}
+        explicit data_access_error(const std::string& message): std::domain_error{message} {}
     };
 
     /// readonly memory
