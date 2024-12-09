@@ -56,6 +56,9 @@ struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
 /// jump and link, stores return address in dest
 /// asm: jal dest, const
 struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
+    [[nodiscard]]
+    bool skip() const final { return true; }
+
     static opcode::signed_t get_data(const opcode::OpcodeBase* code)
     {
         auto value = opcode::extend_sign(code->decode_j(), code->code);
@@ -85,6 +88,9 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
 /// jump and link by register
 /// asm: jalr dest, src, const
 struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
+    [[nodiscard]]
+    bool skip() const final { return true; }
+
     static opcode::signed_t get_data(const opcode::OpcodeBase* code)
     {
         auto value = opcode::extend_sign(code->decode_i(), code->code);
@@ -118,6 +124,9 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
 /// branch (conditional jump)
 template<opcode::opcode_t Type>
 struct branch: public instruction_base<opcode::BRANCH, opcode::B_TYPE, Type> {
+    [[nodiscard]]
+    bool skip() const final { return true; }
+
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
     {

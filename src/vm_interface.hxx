@@ -13,6 +13,9 @@ struct vm_interface
     /// address offset
     using offset_t = std::int32_t;
 
+    /// stop VM
+    virtual void halt() = 0;
+
     /// jump to absolute address
     virtual void jump_abs(address_t dest) = 0;
 

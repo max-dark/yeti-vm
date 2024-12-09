@@ -4,6 +4,10 @@
 #include <vm_base_types.hxx>
 #include <vm_interface.hxx>
 #include <vm_handler.hxx>
+#include <vm_syscall.hxx>
+
+#include <exception>
+#include <stdexcept>
 
 namespace vm
 {
@@ -11,16 +15,28 @@ namespace vm
 /**
  * basic implementation of rv32 VM
  */
-struct basic_vm: public registry
-        , public vm_interface
+struct basic_vm: public vm_interface
 {
+    struct unknown_instruction: std::domain_error {
+        explicit unknown_instruction(const std::string& message): std::domain_error{message} {}
+    };
+    struct unknown_syscall: std::domain_error {
+        explicit unknown_syscall(const std::string& message): std::domain_error{message} {}
+    };
+    struct code_access_error: std::domain_error {
+        explicit code_access_error(const std::string& message): std::domain_error{message} {}
+    };
+    struct data_access_error: std::domain_error {
+        explicit data_access_error(const std::string& message): std::domain_error{message} {}
+    };
+
     /// readonly memory
     using code_memory_t = std::vector<std::uint8_t>;
     /// rw(data) memory
     using data_memory_t = std::vector<std::uint8_t>;
 
     /// stop VM
-    void halt();
+    void halt() final;
 
     /// jump to absolute address
     void jump_abs(address_t dest) override;
@@ -71,11 +87,11 @@ struct basic_vm: public registry
 
     /// get pointer to memory
     [[nodiscard]]
-    const void* get_ptr(address_t address) const;
+    void *get_ptr_rw(address_t address, uint8_t size);
 
     /// get pointer to memory
     [[nodiscard]]
-    void* get_ptr(address_t address);
+    const void *get_ptr_ro(address_t address, uint8_t size) const;
 
     /// set ro memory size
     void set_ro_size(size_t size);
@@ -102,6 +118,9 @@ struct basic_vm: public registry
     [[nodiscard]]
     bool is_running() const;
 
+    /// enable RV32I + RV32M extension
+    void init_isa();
+
     /// resize memory to default values
     void init_memory();
 
@@ -125,10 +144,21 @@ struct basic_vm: public registry
     /// check that program can be started
     [[nodiscard]]
     bool is_initialized() const;
+
+    [[nodiscard]]
+    bool is_debugging_enabled() const;
+
+    void enable_debugging(bool enable);
+
+    syscall_registry& get_syscalls();
 private:
     /// get pointer to current instruction
     [[nodiscard]]
     const opcode::OpcodeBase* get_current() const;
+
+    registry opcodes;
+    syscall_registry syscalls;
+
     /// registers container
     register_file registers{};
     code_memory_t code; // ro memory
@@ -140,6 +170,9 @@ private:
 
     /// running flag
     bool running = false;
+
+    /// debug
+    bool debugging = false;
 };
 
 } // namespace vm

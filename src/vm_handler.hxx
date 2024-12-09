@@ -90,6 +90,12 @@ struct interface
      * @param current pointer to current instruction
      */
     virtual void exec(vm_interface* vm, const opcode::OpcodeBase* current) const = 0;
+
+    /**
+     * skip PC increment
+     */
+    [[nodiscard]]
+    virtual bool skip() const = 0;
 };
 
 /**
@@ -152,6 +158,9 @@ struct instruction_base : public interface
     {
         return Format;
     }
+
+    [[nodiscard]]
+    bool skip() const override { return false; }
 };
 
 /**
