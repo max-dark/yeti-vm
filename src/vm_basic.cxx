@@ -45,9 +45,14 @@ void basic_vm::jump_if_abs(bool condition, basic_vm::address_t value)
 
 void basic_vm::syscall()
 {
-    auto handler = syscalls.find_handler(this);
+    auto syscall_id = syscalls.get_syscall_id(this);
+    auto handler = syscalls.find_handler(syscall_id);
     if (handler == nullptr) [[unlikely]]
-        throw unknown_syscall{"unknown syscall"};
+    {
+        throw unknown_syscall{
+                std::format("unknown syscall #{:08x}", syscall_id)
+        };
+    }
     handler->exec(this);
 }
 

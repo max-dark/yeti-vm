@@ -12,13 +12,18 @@ bool syscall_registry::register_handler(syscall_interface::ptr handler)
     return ok;
 }
 
-syscall_registry::handler_ptr syscall_registry::find_handler(const vm_interface *vm) const
+syscall_registry::handler_ptr syscall_registry::find_handler(syscall_registry::syscall_id id) const
 {
-    auto handler = handlers.find(vm->get_register(vm::RegAlias::a7));
+    auto handler = handlers.find(id);
     if (handler != handlers.end())
     {
         return handler->second.get();
     }
     return nullptr;
+}
+
+syscall_registry::syscall_id syscall_registry::get_syscall_id(const vm_interface *vm) const
+{
+    return vm->get_register(RegAlias::a7);
 }
 }// namespace vm

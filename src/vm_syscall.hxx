@@ -62,6 +62,7 @@ struct syscall_registry
     using interface = syscall_interface;
     using handler_ptr = syscall_interface*;
     using key_type = register_t;
+    using syscall_id = register_t;
     using handler_map = std::map<key_type, interface::ptr>;
 
     /**
@@ -79,7 +80,9 @@ struct syscall_registry
 
     /// find handler by ID
     [[nodiscard]]
-    handler_ptr find_handler(const vm_interface* vm) const;
+    handler_ptr find_handler(syscall_id id) const;
+    /// get syscall handler ID
+    syscall_id get_syscall_id(const vm_interface* vm) const;
 
     handler_map handlers;
 };
