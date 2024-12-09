@@ -78,7 +78,10 @@ void print_section_headers(ElfFile exe)
 {
     auto headers = exe.sectionHeaders();
     auto count = exe.sectionHeaderCount();
+    auto str_tbl = exe.stringsSectionIndex();
+    auto names = exe.readStrings(str_tbl);
 
+    std::cout << "Section names: " << names.size() << std::endl;
     std::cout << "Section headers:" << std::endl;
     for (size_t i = 0; i < count; ++i)
     {
@@ -86,6 +89,10 @@ void print_section_headers(ElfFile exe)
         print_raw("begin", i);
 
         print_raw("sh_name", ptr->sh_name);
+        if (ptr->sh_name < names.size())
+        {
+            print_raw("sh_str_name", names.at(ptr->sh_name));
+        }
         print_hex("sh_type", ptr->sh_type);
         print_hex("sh_flags", ptr->sh_flags);
         print_hex("sh_addr", ptr->sh_addr);

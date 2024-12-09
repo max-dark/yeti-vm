@@ -62,13 +62,42 @@ struct executable
         {
             return fileHeader()->e_shstrndx;
         }
-        auto programHeaders()
+        auto stringsSection() const
+        {
+            return sectionHeaders() + stringsSectionIndex();
+        }
+        auto programHeaders() const
         {
             return exe->get<ProgramHeader>(programHeaderOffset());
         }
-        auto sectionHeaders()
+        auto sectionHeaders() const
         {
             return exe->get<SectionHeader>(sectionHeaderOffset());
+        }
+
+        auto read(size_type offset, size_type size) const
+        {
+            return binary_view{ exe->get<byte>(offset), size };
+        }
+
+        auto readStrings(size_type sectionIdx) const
+        {
+            std::vector<std::string_view> result;
+            auto header = sectionHeaders() + sectionIdx;
+            auto offset = header->sh_offset;
+            auto size = header->sh_size;
+
+            auto ptr = exe->get<char>(offset);
+
+            for (size_type i = 0; i < size;)
+            {
+                std::string_view tmp = ptr + i;
+
+                i += tmp.size() + 1;
+                result.emplace_back(tmp);
+            }
+
+            return result;
         }
 
         explicit elf(const executable* exe): exe{exe} {}
