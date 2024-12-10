@@ -1,4 +1,4 @@
-/// @file stdlib.hxx
+/// @file vm_stdlib.hxx
 /// standard C++ include
 #pragma once
 

@@ -6,6 +6,15 @@
 namespace vm
 {
 
+namespace fs = std::filesystem;
+
+/**
+ * load binary file
+ * @param programFile
+ * @return
+ */
+std::optional<vm::program_code_t> load_program(const fs::path& programFile);
+
 /// interpret value as signed
 inline signed_t to_signed(unsigned_t value)
 {
