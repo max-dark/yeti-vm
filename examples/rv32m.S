@@ -1,4 +1,6 @@
-// test `m' extension(math)
+// test for 'm' extension(math)
+// compile:
+// ../bin/build rv32m rv32m.S
 
 .text
 .global _start
