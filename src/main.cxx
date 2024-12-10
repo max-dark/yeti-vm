@@ -125,6 +125,7 @@ void disasm(const vm::program_code_t &code)
     std::cout << std::boolalpha << "rv32m_ok = " << rv32m_ok << std::endl;
 
     std::cout
+        << std::setw(10) << std::left << "addr"
         << std::setw(10) << std::left << "hex"
         << std::setw(10) << std::left << "group"
         << std::setw(10) << std::left << "instr"
