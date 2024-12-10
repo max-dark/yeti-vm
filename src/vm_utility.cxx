@@ -77,7 +77,7 @@ hex_record parse_hex_record(std::string_view line)
     hex_record record;
     const auto bytes = from_hex(line);
 
-    record.sum_calculated = hex_checksum(&bytes.front(), &bytes.back() - 1);
+    record.sum_calculated = hex_checksum(&bytes.front(), &bytes.back());
     record.count = bytes[0];
     record.offset = (bytes[1] << 8u) | bytes[2]; // should int16_t be used?
     record.type = bytes[3];
