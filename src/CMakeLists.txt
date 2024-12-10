@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(RiscVM LANGUAGES CXX)
+project(YetiVM LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(APP_NAME risc-vm)
+set(APP_NAME yeti-vm)
 
 set(APP_SOURCES
     main.cxx
@@ -17,3 +17,4 @@ target_sources(
     PRIVATE
         ${APP_SOURCES}
 )
+
