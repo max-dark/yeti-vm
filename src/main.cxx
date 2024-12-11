@@ -28,9 +28,15 @@ int main(int argc, char** argv)
 
     auto program = vm::load_program(program_file);
 
-    if (program->empty())
+    if (!program)
     {
         std::cerr << "Unable load program from " << program_file;
+        return EXIT_FAILURE;
+    }
+    if (program->empty())
+    {
+        std::cerr << "Empty program file " << program_file;
+        return EXIT_FAILURE;
     }
 
     switch(*argv[1])
@@ -46,10 +52,10 @@ int main(int argc, char** argv)
         break;
     default:
         std::cout << "Unknown option: " << argv[1] << std::endl;
-        break;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void init_syscalls(vm::syscall_registry &sys);
