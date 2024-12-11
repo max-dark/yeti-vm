@@ -36,6 +36,29 @@ int main()
         vm::ensure(!a.in_range(110, 100), "110, 100: should not be in range");
     }
 
+    {
+        vm::memory_management_unit mmu;
+
+        vm::ensure(mmu.add_block<vm::generic_memory>(100, 100), "should return true");
+
+        auto test_find = [&mmu](auto start, auto size, bool expected)
+        {
+            auto ptr = mmu.find_block(start, size);
+            bool is_null = nullptr == ptr;
+            vm::ensure(is_null == expected, expected ? "should be null" : "should not be null");
+        };
+
+        test_find(0, 10, true);
+        test_find(100, 110, true);
+        test_find(110, 100, true);
+        test_find(200, 100, true);
+
+        test_find(100, 100, false);
+        test_find(100,  10, false);
+        test_find(110,  10, false);
+        test_find(110,  90, false);
+    }
+
     std::cout << "ok" << std::endl;
     return EXIT_SUCCESS;
 }
