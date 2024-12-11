@@ -67,9 +67,17 @@ void run_vm(const vm::program_code_t &code, bool debug)
     machine.enable_debugging(debug);
 
     init_syscalls(machine.get_syscalls());
-    machine.init_isa();
-    machine.init_memory();
-    auto ok = machine.set_program(code);
+    bool isa_ok = machine.init_isa();
+    bool mem_ok = machine.init_memory();
+    bool init_ok = isa_ok && mem_ok;
+    if (!init_ok)
+    {
+        std::cerr
+            << std::format("Unable init VM: isa = {} / mem = {}", isa_ok, mem_ok)
+            << std::endl;
+        return;
+    }
+    auto ok = machine.set_program(code, 0);
     if (!ok)
     {
         std::cerr << "unable load program(no memory)" << std::endl;

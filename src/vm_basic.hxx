@@ -5,6 +5,7 @@
 #include <vm_interface.hxx>
 #include <vm_handler.hxx>
 #include <vm_syscall.hxx>
+#include <vm_memory.hxx>
 
 #include <exception>
 #include <stdexcept>
@@ -29,11 +30,6 @@ struct basic_vm: public vm_interface
     struct data_access_error: std::domain_error {
         explicit data_access_error(const std::string& message): std::domain_error{message} {}
     };
-
-    /// readonly memory
-    using code_memory_t = std::vector<std::uint8_t>;
-    /// rw(data) memory
-    using data_memory_t = std::vector<std::uint8_t>;
 
     /// stop VM
     void halt() final;
@@ -87,23 +83,27 @@ struct basic_vm: public vm_interface
 
     /// get pointer to memory
     [[nodiscard]]
-    void *get_ptr_rw(address_t address, uint8_t size);
+    memory_block *get_ptr_rw(address_t address, uint8_t size);
 
     /// get pointer to memory
     [[nodiscard]]
-    const void *get_ptr_ro(address_t address, uint8_t size) const;
+    const memory_block *get_ptr_ro(address_t address, uint8_t size) const;
 
     /// set ro memory size
-    void set_ro_size(size_t size);
+    [[nodiscard]]
+    bool set_ro_size(size_t size);
 
     /// set rw memory size
-    void set_rw_size(size_t size);
+    [[nodiscard]]
+    bool set_rw_size(size_t size);
 
     /// set start of RO memory
-    void set_ro_base(address_t base);
+    [[nodiscard]]
+    bool set_ro_base(address_t base);
 
     /// set start of RW memory
-    void set_rw_base(address_t base);
+    [[nodiscard]]
+    bool set_rw_base(address_t base);
 
     /// single emulation step
     void run_step();
@@ -119,16 +119,35 @@ struct basic_vm: public vm_interface
     bool is_running() const;
 
     /// enable RV32I + RV32M extension
-    void init_isa();
+    [[nodiscard]]
+    bool init_isa();
 
     /// resize memory to default values
-    void init_memory();
+    [[nodiscard]]
+    bool init_memory();
 
     /// set memory size
-    void init_memory(size_t code_size, size_t data_size);
+    [[nodiscard]]
+    bool init_memory(size_t code_size, size_t data_size);
+
+    [[nodiscard]]
+    bool add_memory(address_t address, size_t size);
+
+    [[nodiscard]]
+    bool add_memory(memory_block::ptr ptr);
+
+    [[nodiscard]]
+    bool add_code_block(address_t address, size_t size);
+
+    [[nodiscard]]
+    bool add_data_block(address_t address, size_t size);
 
     /// load program into ro memory
-    bool set_program(const program_code_t& bin);
+    [[nodiscard]]
+    bool set_program(const program_code_t &bin, address_t pc_value);
+
+    [[nodiscard]]
+    bool init_pc(address_t address);
 
     /// default start of RO memory block
     static constexpr address_t def_code_base = 0;
@@ -156,17 +175,50 @@ private:
     [[nodiscard]]
     const opcode::OpcodeBase* get_current() const;
 
+    using init_flags_t = std::uint8_t;
+    enum InitFlag: init_flags_t
+    {
+        HAVE_CODE_BLOCK = 1 << 0,
+        HAVE_DATA_BLOCK = 1 << 1,
+        ISA_INITIALIZED = 1 << 2,
+        PC_INITIALIZED  = 1 << 3,
+
+        ALL_FLAGS_MASK
+            = HAVE_DATA_BLOCK
+            | HAVE_CODE_BLOCK
+            | ISA_INITIALIZED
+            | PC_INITIALIZED
+            ,
+    };
+
+    init_flags_t initFlags = 0;
+
+    [[nodiscard]]
+    bool is_flag_set(InitFlag flag) const;
+    void set_flag(InitFlag flag);
+    void clear_flag(InitFlag flag);
+
+    [[nodiscard]]
+    bool have_code_block() const;
+    [[nodiscard]]
+    bool have_data_block() const;
+
     registry opcodes;
     syscall_registry syscalls;
+    memory_management_unit mmu;
 
     /// registers container
     register_file registers{};
-    code_memory_t code; // ro memory
-    data_memory_t data; // rw memory
+
+    size_t ro_size = def_code_size;
+    size_t rw_size = def_data_size;
+
     /// RO memory offset
     address_t code_base = def_code_base;
     /// RW memory offset
     address_t data_base = def_data_base;
+
+    address_t initial_pc = 0;
 
     /// running flag
     bool running = false;

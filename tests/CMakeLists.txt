@@ -49,3 +49,16 @@ target_link_libraries(
     PRIVATE
         rvm
 )
+
+add_executable(mmu_tests)
+target_sources(
+    mmu_tests
+    PRIVATE
+        mmu_tests.cxx
+)
+target_link_libraries(
+    mmu_tests
+    PRIVATE
+        rvm
+)
+add_test(NAME "MMU tests" COMMAND mmu_tests)
