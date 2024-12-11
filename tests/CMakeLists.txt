@@ -35,7 +35,7 @@ target_link_libraries(
         rvm
 )
 
-add_test(NAME "HEX parser" COMMAND view_hex_file)
+add_test(NAME "HEX parser" COMMAND test_hex_parser)
 
 add_executable(view_hex_file)
 target_sources(
