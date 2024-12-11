@@ -40,6 +40,12 @@ int main()
         vm::memory_management_unit mmu;
 
         vm::ensure(mmu.add_block<vm::generic_memory>(100, 100), "should return true");
+        vm::ensure(mmu.add_block<vm::generic_memory>(250, 100), "should return true");
+
+        vm::ensure(!mmu.add_block<vm::generic_memory>( 90, 100), "add overlapped region :should return false");
+        vm::ensure(!mmu.add_block<vm::generic_memory>(190, 100), "add overlapped region :should return false");
+        vm::ensure(!mmu.add_block<vm::generic_memory>(100, 100), "add overlapped region :should return false");
+        vm::ensure(!mmu.add_block<vm::generic_memory>(250, 100), "add overlapped region :should return false");
 
         auto test_find = [&mmu](auto start, auto size, bool expected)
         {
