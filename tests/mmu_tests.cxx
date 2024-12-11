@@ -20,6 +20,18 @@ int main()
         vm::ensure(c.is_overlap(b), "!c.is_overlap(b)");
     }
 
+    {
+        range a{100, 100};
+
+        vm::ensure(a.in_range(100), "should be in range: ");
+        vm::ensure(a.in_range(199), "should be in range");
+        vm::ensure(!a.in_range(  0), "should not be in range");
+        vm::ensure(!a.in_range(250), "should not be in range");
+
+        vm::ensure(a.in_range(100, 100), "100, 100: should be in range");
+        vm::ensure(a.in_range(110,  50), "110,  50: should be in range");
+    }
+
     std::cout << "ok" << std::endl;
     return EXIT_SUCCESS;
 }
