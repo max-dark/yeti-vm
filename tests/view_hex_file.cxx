@@ -27,8 +27,9 @@ int main(int argc, char** argv)
         << std::setw(10) << std::internal << "count"
         << std::setw(10) << std::internal << "offset"
         << std::setw(10) << std::internal << "is valid"
-        << std::setw(10) << std::internal << "calculated"
+        << std::setw(10) << std::internal << "actual"
         << std::setw(10) << std::internal << "expected"
+        << std::setw(10) << std::internal << "address"
         << std::endl;
     size_t idx = 1;
     for (auto& r : records)
@@ -41,8 +42,9 @@ int main(int argc, char** argv)
                 << std::setw(10) << std::internal << std::uint32_t(r.offset)
                 << std::setw(10) << std::internal << r.is_valid()
                 << std::hex
-                << std::setw(10) << std::internal << uint32_t (r.sum_calculated)
+                << std::setw(10) << std::internal << uint32_t (r.sum_actual)
                 << std::setw(10) << std::internal << uint32_t (r.sum_expected)
+                << std::setw(10) << std::internal << ((r.is_start() | r.is_extend()) ? (r.get_extend() | r.get_start()) : 0)
                 << std::endl;
     }
 

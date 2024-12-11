@@ -75,7 +75,7 @@ hex_record parse_hex_record(std::string_view line)
     hex_record record;
     const auto bytes = from_hex(line);
 
-    record.sum_calculated = hex_checksum(&bytes.front(), &bytes.back());
+    record.sum_actual = hex_checksum(&bytes.front(), &bytes.back());
     record.count = bytes[0];
     record.offset = (bytes[1] << 8u) | bytes[2]; // should int16_t be used?
     record.type = bytes[3];
@@ -157,7 +157,7 @@ hex_record::record_type hex_record::get_type() const
 
 bool hex_record::is_valid() const
 {
-    return sum_calculated == sum_expected;
+    return sum_actual == sum_expected;
 }
 
 std::string_view hex_record::get_type_name() const
@@ -172,6 +172,54 @@ std::string_view hex_record::get_type_name() const
         case HEX_LINEAR_START: return "HEX_LINEAR_START";
         case HEX_UNKNOWN: return "HEX_UNKNOWN";
     }
+    return "IMPOSSIBLE";
+}
+
+uint32_t hex_record::get_extend() const
+{
+    if (data.size() == 2)
+        return ((data[0] << 8u) | (data[1] << 0u)) << 4u; // value * 16
+    return 0;
+}
+
+uint32_t hex_record::get_start() const
+{
+    if (data.size() == 4)
+        return ((data[0] << 24u) | (data[1] << 16u) | (data[2] << 8u) | (data[3] << 0u));
+    return 0;
+}
+
+bool hex_record::is_data() const
+{
+    return get_type() == record_type::HEX_DATA;
+}
+
+bool hex_record::is_start() const
+{
+    switch (get_type())
+    {
+    case HEX_SEGMENT_START:
+    case HEX_LINEAR_START:
+        return true;
+    default: return false;
+    }
+}
+
+bool hex_record::is_extend() const
+{
+    switch (get_type())
+    {
+        case HEX_LINEAR_EXTEND:
+        case HEX_SEGMENT_EXTEND:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool hex_record::is_eof() const
+{
+    return get_type() == record_type::HEX_EOF;
 }
 
 } // namespace vm

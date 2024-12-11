@@ -45,24 +45,43 @@ struct hex_record
     uint8_t count;
     uint8_t type;
     uint8_t sum_expected;
-    uint8_t sum_calculated;
+    uint8_t sum_actual;
     uint16_t offset;
 
+    /// convert raw type to record_type
     [[nodiscard]]
     record_type get_type() const;
 
+    ///@return true if it is EOF record
     [[nodiscard]]
-    bool is_eof() const
-    {
-        return get_type() == record_type::HEX_EOF;
-    }
+    bool is_eof() const;
 
     [[nodiscard]]
     std::string_view get_type_name() const;
 
+    ///@return true if checksums is same
     [[nodiscard]]
     bool is_valid() const;
 
+    ///@return address extend
+    [[nodiscard]]
+    uint32_t get_extend() const;
+    ///@return start address
+    [[nodiscard]]
+    uint32_t get_start() const;
+
+    ///@return true if it is DATA record
+    [[nodiscard]]
+    bool is_data() const;
+
+    ///@return true if it is HEX_*_START record
+    [[nodiscard]]
+    bool is_start() const;
+    ///@return true if it is HEX_*_EXTEND record
+    [[nodiscard]]
+    bool is_extend() const;
+
+    /// record payload data
     std::vector<uint8_t> data;
 };
 
