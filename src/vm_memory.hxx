@@ -1,9 +1,13 @@
 #pragma once
 
 #include <vm_stdlib.hxx>
+#include <concepts>
 
 namespace vm
 {
+
+template<typename T>
+concept standard_layout = std::is_standard_layout_v<T>;
 
 /**
  * Memory region
@@ -27,6 +31,8 @@ struct memory_block
             return block_start < rhs.block_start;
         }
 
+        [[nodiscard]]
+        address_type offset(address_type address) const noexcept;
         [[nodiscard]]
         bool in_range(address_type address) const noexcept;
         [[nodiscard]]
@@ -76,9 +82,28 @@ struct memory_block
     [[nodiscard]]
     virtual bool store(memory_block::address_type address, const void * source, memory_block::size_type size) = 0;
 
+    template<standard_layout Type>
+    [[nodiscard]]
+    const Type * get_ro_ptr(address_type address) const
+    {
+        return static_cast<const Type*>(get_ro(address, sizeof(Type)));
+    }
+
+    template<standard_layout Type>
+    [[nodiscard]]
+    Type * get_rw_ptr(address_type address)
+    {
+        return static_cast<Type*>(get_rw(address, sizeof(Type)));
+    }
+
     virtual ~memory_block();
 protected:
     explicit memory_block(address_type address, size_type size);
+
+    [[nodiscard]]
+    virtual const void * get_ro(address_type address, size_type size) const = 0;
+    [[nodiscard]]
+    virtual void * get_rw(address_type address, size_type size) = 0;
 protected:
     params block_params;
 };
@@ -115,6 +140,11 @@ struct generic_memory: public memory_block
 
     bool store(memory_block::address_type address, const void *source, memory_block::size_type size) override;
 
+protected:
+    [[nodiscard]]
+    const void * get_ro(address_type address, size_type size) const override;
+    [[nodiscard]]
+    void * get_rw(address_type address, size_type size) override;
 private:
     using storage_type = std::vector<std::uint8_t>;
     using storage_size = storage_type::size_type;

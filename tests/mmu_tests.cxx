@@ -5,6 +5,35 @@
 
 using range = vm::memory_block::params;
 
+struct A
+{
+    template<typename T>
+    T* get(size_t pos)
+    {
+        return static_cast<T*>(get(pos, sizeof(T)));
+    }
+protected:
+    virtual void * get(size_t pos, size_t sz) = 0;
+};
+
+struct B: public A
+{
+protected:
+    void * get(size_t pos, size_t sz) override { return nullptr; }
+};
+
+struct C: public A
+{
+protected:
+    void * get(size_t pos, size_t sz) override { return nullptr; }
+};
+
+void test(A* a)
+{
+    auto v = a->get<int>(1);
+}
+
+
 int main()
 {
     {
@@ -53,7 +82,7 @@ int main()
         {
             auto ptr = mmu.find_block(start, size);
             bool is_null = nullptr == ptr;
-            vm::ensure(is_null == expected, expected ? "should be null" : "should not be null");
+            vm::ensure(is_null == expected, expected ? "should be null" : "should be not null");
         };
 
         test_find(0, 10, true);
@@ -65,6 +94,34 @@ int main()
         test_find(100,  10, false);
         test_find(110,  10, false);
         test_find(110,  90, false);
+
+        auto test_set_get = [&mmu](auto start, auto value, bool expectedNull = false)
+        {
+            using value_type = decltype(value);
+
+            auto* load = mmu.find_block(start, sizeof(value));
+            auto* store = mmu.find_block(start, sizeof(value));
+            bool a_is_null = nullptr == load;
+            bool b_is_null = nullptr == store;
+            vm::ensure(a_is_null == expectedNull, expectedNull ? "a: should be null" : "a: should be not null");
+            vm::ensure(b_is_null == expectedNull, expectedNull ? "b: should be null" : "b: should be not null");
+            vm::ensure(load == store, "a & b should be same");
+
+            if (expectedNull) return;
+
+            auto load_ptr = load->template get_ro_ptr<value_type>(start); // Oo
+            auto store_ptr = store->template get_rw_ptr<value_type>(start); // oO
+            vm::ensure(load_ptr != nullptr, "ptr: should be not null");
+            vm::ensure(load_ptr == store_ptr, "ptr: a & b should be same");
+            vm::ensure(*load_ptr == *store_ptr, "value: a & b should be same");
+        };
+
+        test_set_get(100, int8_t{0x01});
+        test_set_get(110, uint8_t{0x0f});
+        test_set_get(120, int16_t{0xa1});
+        test_set_get(130, uint16_t{0xb1});
+        test_set_get(140, int16_t{0xc1});
+        test_set_get(150, uint16_t{0xd1});
     }
 
     std::cout << "ok" << std::endl;
