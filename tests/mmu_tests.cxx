@@ -39,6 +39,8 @@ int main()
     {
         vm::memory_management_unit mmu;
 
+        vm::ensure(!mmu.add_block<vm::generic_memory>(100, 0), "empty blocks is not allowed");
+
         vm::ensure(mmu.add_block<vm::generic_memory>(100, 100), "should return true");
         vm::ensure(mmu.add_block<vm::generic_memory>(250, 100), "should return true");
 

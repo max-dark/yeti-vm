@@ -7,6 +7,9 @@ memory_block::~memory_block() = default;
 
 bool memory_management_unit::add_block(memory_management_unit::value_type block)
 {
+    if (block->get_size() == 0)
+        return false;
+
     const auto& k = block->get_params();
     for (const auto& pair: memory)
     {
