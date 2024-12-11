@@ -79,7 +79,7 @@ bool memory_block::params::in_range(memory_block::address_type address, memory_b
     if (in_range(address))
     {
         auto start = address - block_start;
-        return (start + size) < block_size;
+        return (start + size) <= block_size;
     }
     return false;
 }
