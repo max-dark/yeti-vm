@@ -66,7 +66,7 @@ bool memory_block::params::is_overlap(memory_block::address_type address, memory
         auto end = address + size;
         return end >= block_start;
     }
-    return in_range(address, size);
+    return in_range(address);
 }
 
 bool memory_block::params::in_range(memory_block::address_type address) const noexcept
