@@ -216,6 +216,10 @@ void basic_vm::set_rw_size(size_t size)
 void basic_vm::run_step()
 {
     auto* current = get_current();
+    if (!current) [[unlikely]]
+    {
+        throw unknown_instruction{std::format("unable fetch instruction from {:08x}", get_pc())};
+    }
     auto handler = opcodes.find_handler(current);
     if (!handler) [[unlikely]]
     {
@@ -299,7 +303,7 @@ bool basic_vm::is_initialized() const
 
 const opcode::OpcodeBase *basic_vm::get_current() const
 {
-    const auto * ptr = code.data() + get_pc();
+    const auto * ptr = get_ptr_ro(get_pc(), sizeof(opcode::opcode_t));
     return reinterpret_cast<const opcode::OpcodeBase*>(ptr);
 }
 
