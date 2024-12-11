@@ -40,7 +40,7 @@ std::optional<hex_file> parse_hex(const fs::path &hexFile)
             while (std::getline(hex, tmp))
             {
                 std::string_view line = tmp;
-                constexpr size_t min_record_size = sizeof(':') + 2 + 4 + 2 + 2; // ':'<count><address><type><checksum>
+                constexpr size_t min_record_size = 1 + (1 + 2 + 1 + 1) * 2; // ':'<count><address><type><checksum>
                 size_t record_size = min_record_size;
                 auto pos = line.find(':');
                 if (pos > line.size())
@@ -51,17 +51,15 @@ std::optional<hex_file> parse_hex(const fs::path &hexFile)
                 {
                     return std::nullopt;
                 }
-                line = line.substr(pos + 1);
-
-                record_size += (from_hex(line[0]) << 4u) | from_hex(line[1]);
+                line = line.substr(pos);
+                record_size += (from_hex(line[1]) << 4u) | from_hex(line[2]);
 
                 if (record_size > line.size())
                 {
                     return std::nullopt;
                 }
-                line = line.substr(0, record_size); // TODO: handle tail of line
                 auto& record = result.emplace_back();
-                record = parse_hex_record(line);
+                record = parse_hex_record(line.substr(1)); // Note: ignore garbage at eol
 
                 if (record.is_eof()) // skip data after EOF record
                     break;
