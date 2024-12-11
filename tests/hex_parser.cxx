@@ -14,11 +14,12 @@ inline void ensure(bool ok, const std::string& message)
 
 using record_type = vm::hex_record::record_type;
 
-void test_parse_record(std::string_view hex, uint8_t expectedSum, record_type expectedType)
+void test_parse_record(std::string_view hex, uint8_t expectedSum, uint8_t expectedType)
 {
     ensure(hex.size() % 2 == 0, "input size should be even");
     const auto record = vm::parse_hex_record(hex);
-    ensure(record.sum_calculated == expectedSum, std::format("wrong result = {:02x}, expected = {:02x}, data = {}", record.sum_calculated, expectedSum, hex));
+    ensure(record.type == expectedType, std::format("wrong type = {:02x}, expected = {:02x}, data = {}", record.type, expectedType, hex));
+    ensure(record.sum_calculated == expectedSum, std::format("wrong checksum = {:02x}, expected = {:02x}, data = {}", record.sum_calculated, expectedSum, hex));
 }
 
 int main(int argc, char** argv)
