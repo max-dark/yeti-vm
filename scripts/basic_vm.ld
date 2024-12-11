@@ -16,7 +16,7 @@ SECTIONS
     } > ROM
     .data : {
         *(.data)
-    } > ROM AT > RAM
+    } > RAM AT > ROM
     .bss  : {
         *(.bss )
     } > RAM
