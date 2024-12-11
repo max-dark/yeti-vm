@@ -30,6 +30,10 @@ int main()
 
         vm::ensure(a.in_range(100, 100), "100, 100: should be in range");
         vm::ensure(a.in_range(110,  50), "110,  50: should be in range");
+        vm::ensure(a.in_range(110,  90), "110,  90: should be in range");
+
+        vm::ensure(!a.in_range(10, 100), "10, 100: should not be in range");
+        vm::ensure(!a.in_range(110, 100), "110, 100: should not be in range");
     }
 
     std::cout << "ok" << std::endl;
