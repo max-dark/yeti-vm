@@ -1,4 +1,6 @@
 // test for RV32I
+// compile:
+// ../bin/build rv32i rv32i.S
 
 .text
 .global _start
