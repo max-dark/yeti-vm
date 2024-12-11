@@ -7,6 +7,14 @@ memory_block::~memory_block() = default;
 
 bool memory_management_unit::add_block(memory_management_unit::value_type block)
 {
+    const auto& k = block->get_params();
+    for (const auto& pair: memory)
+    {
+        if (pair.first.is_overlap(k))
+        {
+            return false;
+        }
+    }
     auto [it, ok] = memory.try_emplace(block->get_params(), block);
     return ok;
 }
@@ -14,11 +22,11 @@ bool memory_management_unit::add_block(memory_management_unit::value_type block)
 memory_management_unit::pointer
 memory_management_unit::find_block(memory_block::address_type address, memory_block::size_type size) const
 {
-    for (auto& [params, block]: memory)
+    for (const auto& pair: memory)
     {
-        if (params.in_range(address, size))
+        if (pair.first.in_range(address, size))
         {
-            return block.get();
+            return pair.second.get();
         }
     }
 
