@@ -48,8 +48,8 @@ int main(int argc, char** argv)
                 << std::dec
                 << std::setw(5) << std::left << idx++
                 << std::setw(20) << std::left << r.get_type_name()
-                << std::setw(10) << std::internal << std::uint32_t(r.count)
-                << std::setw(10) << std::internal << std::uint32_t(r.offset) << ' '
+                << std::setw(10) << std::right << std::uint32_t(r.count)
+                << std::setw(10) << std::right << std::hex << std::uint32_t(r.offset) << ' '
                 << std::setw(10) << std::left << r.is_valid()
                 << std::setw(10) << std::left << to_hex(r)
                 << std::endl;
