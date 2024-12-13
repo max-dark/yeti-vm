@@ -41,6 +41,16 @@ function(riscv_compile_source NAME)
     set(_keys SOURCE OUTPUT)
     set(_lists OPTIONS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
+
+    set(_command rv_tools::_gcc) # TODO: c++ support
+
+    add_custom_command(
+            TARGET "${NAME}"
+            COMMENT "compile ${var_SOURCE}"
+            COMMAND ${_command}
+            ARGS ${var_OPTIONS} -c "${var_SOURCE}" -o "${var_OUTPUT}"
+            DEPENDS "${var_SOURCE}"
+    )
 endfunction()
 
 function(riscv_create_lib NAME)
