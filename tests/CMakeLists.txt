@@ -7,6 +7,36 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_testing()
 
+add_executable(test_hex_checksum)
+target_sources(
+    test_hex_checksum
+    PRIVATE
+        hex_checksum.cxx
+)
+
+target_link_libraries(
+    test_hex_checksum
+    PRIVATE
+        rvm
+)
+
+add_test(NAME "HEX checksum" COMMAND test_hex_checksum)
+
+add_executable(test_hex_parser)
+target_sources(
+    test_hex_parser
+    PRIVATE
+        hex_parser.cxx
+)
+
+target_link_libraries(
+    test_hex_parser
+    PRIVATE
+        rvm
+)
+
+add_test(NAME "HEX parser" COMMAND test_hex_parser)
+
 add_executable(mmu_tests)
 target_sources(
     mmu_tests

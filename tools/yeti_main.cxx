@@ -9,31 +9,112 @@
 #include <vm_utility.hxx>
 
 #include <iostream>
+#include <variant>
 
 namespace fs = std::filesystem;
 
+struct load_helper
+{
+    using bin_data = vm::program_code_t;
+    using hex_data = vm::hex_file;
+    using bin_opt = std::optional<bin_data>;
+    using hex_opt = std::optional<hex_data>;
+    using program_data = std::variant<bin_opt, hex_opt, std::nullptr_t>;
+
+    [[nodiscard]]
+    bool load_file(const fs::path& fileName)
+    {
+        const auto ext = fileName.extension();
+        data = nullptr;
+
+        if (ext == ".bin")
+        {
+            data = vm::load_program(fileName);
+        }
+        else if (ext == ".hex")
+        {
+            data = vm::parse_hex(fileName);
+        }
+
+        return !is_null();
+    }
+
+    [[nodiscard]]
+    const bin_opt* as_bin() const
+    {
+        return std::get_if<bin_opt>(&data);
+    }
+    [[nodiscard]]
+    const hex_opt* as_hex() const
+    {
+        return std::get_if<hex_opt>(&data);
+    }
+
+    [[nodiscard]]
+    bool is_bin() const
+    {
+        return holds_alternative<bin_opt>(data);
+    }
+    [[nodiscard]]
+    bool is_hex() const
+    {
+        return holds_alternative<hex_opt>(data);
+    }
+    [[nodiscard]]
+    bool is_null() const
+    {
+        return holds_alternative<std::nullptr_t>(data);
+    }
+
+    [[nodiscard]]
+    bool is_empty() const
+    {
+        bool empty = is_null();
+
+        empty &= is_bin() && (as_bin()->value_or(bin_data{}).empty());
+        empty &= is_hex() && (as_hex()->value_or(hex_data{}).empty());
+
+        return empty;
+    }
+
+    [[nodiscard]]
+    bool set_program(vm::basic_vm& vm, vm::basic_vm::address_t pc_value = 0) const
+    {
+        if (is_empty()) return false;
+        if (is_bin()) return vm.set_program(as_bin()->value(), pc_value);
+        if (is_hex()) return vm.set_program(as_hex()->value());
+        return false;
+    }
+
+    program_data data = nullptr;
+};
+
 void disasm(const vm::program_code_t &code);
 
-void run_vm(const vm::program_code_t &code, bool debug);
+void run_vm(const load_helper &code, bool debug);
 
 int main(int argc, char** argv)
 {
     if (argc < 3)
     {
-        std::cout << "Usage: exe <v|V|d> <path/to/file.bin>" << std::endl;
+        std::cout << "Usage:" << std::endl;
+        std::cout << "\texe d <path/to/file.bin> - disasm bin file" << std::endl;
+        std::cout << "\texe <v|V> <path/to/program> - run 'bin' or 'hex' file." << std::endl;
+        std::cout << "\t\tv - no debug output" << std::endl;
+        std::cout << "\t\tV - enable debug output" << std::endl;
         return 0;
     }
 
     fs::path program_file = argv[2];
 
-    auto program = vm::load_program(program_file);
+    load_helper helper;
 
-    if (!program)
+    if (!helper.load_file(program_file))
     {
         std::cerr << "Unable load program from " << program_file;
         return EXIT_FAILURE;
     }
-    if (program->empty())
+    if (helper.is_empty())
     {
         std::cerr << "Empty program file " << program_file;
         return EXIT_FAILURE;
@@ -42,13 +123,18 @@ int main(int argc, char** argv)
     switch(*argv[1])
     {
     case 'd':
-        disasm(program.value());
+        if (!helper.is_bin())
+        {
+            std::cerr << "unable disasm not '.bin' file" << std::endl;
+            return EXIT_FAILURE;
+        }
+        disasm(helper.as_bin()->value());
         break;
     case 'v':
-        run_vm(program.value(), false);
+        run_vm(helper, false);
         break;
     case 'V':
-        run_vm(program.value(), true);
+        run_vm(helper, true);
         break;
     default:
         std::cout << "Unknown option: " << argv[1] << std::endl;
@@ -60,7 +146,7 @@ int main(int argc, char** argv)
 
 void init_syscalls(vm::syscall_registry &sys);
 
-void run_vm(const vm::program_code_t &code, bool debug)
+void run_vm(const load_helper &code, bool debug)
 {
     vm::basic_vm machine;
 
@@ -77,7 +163,7 @@ void run_vm(const vm::program_code_t &code, bool debug)
             << std::endl;
         return;
     }
-    auto ok = machine.set_program(code, 0);
+    auto ok = code.set_program(machine, 0);
     if (!ok)
     {
         std::cerr << "unable load program(no memory)" << std::endl;
