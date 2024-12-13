@@ -237,6 +237,7 @@ void basic_vm::run()
 void basic_vm::start()
 {
     std::fill(registers.begin(), registers.end(), 0);
+    set_pc(initial_pc);
     running = is_initialized();
 }
 
