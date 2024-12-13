@@ -70,7 +70,7 @@ function(riscv_make_hex INPUT OUTPUT)
     add_custom_command(
             TARGET "${INPUT}"
             COMMAND rv_tools::_objcopy
-            ARGS -O ihex "${INPUT}.elf" "${OUTPUT}.bin"
+            ARGS -O ihex "${INPUT}.elf" "${OUTPUT}.hex"
             COMMENT "${INPUT} : generate hex '${OUTPUT}'"
             DEPENDS "${INPUT}.elf"
     )
