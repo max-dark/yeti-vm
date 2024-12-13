@@ -79,9 +79,32 @@ function(riscv_compile_source NAME)
     )
 endfunction()
 
-function(riscv_create_lib NAME)
+function(riscv_compile NAME)
     set(_options)
     set(_keys OUTPUT)
+    set(_lists SOURCES OPTIONS)
+    cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
+
+    if (NOT DEFINED var_OUTPUT)
+        message(FATAL_ERROR "OUTPUT is not set")
+    endif ()
+    set(_objects)
+    foreach (_src IN LISTS var_SOURCES)
+        set(_obj "${CMAKE_CURRENT_BINARY_DIR}/${_src}.o")
+        list(APPEND _objects "${_obj}")
+        riscv_compile_source(
+                "${NAME}"
+                SOURCE "${CMAKE_CURRENT_LIST_DIR}/${_src}"
+                OUTPUT "${_obj}"
+                OPTIONS ${var_OPTIONS}
+        )
+    endforeach ()
+    set(${var_OUTPUT} ${_objects} PARENT_SCOPE)
+endfunction()
+
+function(riscv_create_lib NAME)
+    set(_options)
+    set(_keys OUTPUT LIB_FILE)
     set(_lists SOURCES OPTIONS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
 
@@ -91,19 +114,18 @@ function(riscv_create_lib NAME)
     set(_output "${CMAKE_CURRENT_BINARY_DIR}/lib${var_OUTPUT}.a")
 
     add_custom_command(
-            TARGET "${NAME}"
-            PRE_BUILD
             OUTPUT "${_output}"
             COMMENT "create lib ${NAME}"
             COMMAND rv_tools::_ar
-            ARGS crs "${_output}" ${SOURCES}
-            DEPENDS ${SOURCES}
+            ARGS crs "${_output}" ${var_SOURCES}
+            DEPENDS ${var_SOURCES}
     )
+    set(${var_LIB_FILE} ${_output} PARENT_SCOPE)
 endfunction()
 
 function(riscv_link_exe NAME)
     set(_options)
-    set(_keys OUTPUT)
+    set(_keys OUTPUT LINK_SCRIPT)
     set(_lists SOURCES OPTIONS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
 
@@ -115,7 +137,7 @@ function(riscv_link_exe NAME)
             COMMAND ${_command}
             # note: order of args - objects, link params, output
             ARGS ${var_SOURCES} ${var_OPTIONS} -o "${var_OUTPUT}"
-            DEPENDS ${var_SOURCES}
+            DEPENDS ${var_SOURCES} ${var_LINK_SCRIPT}
     )
 endfunction()
 
@@ -143,7 +165,6 @@ endfunction()
 
 function(riscv_add_library NAME)
     set(_options)
-    set(_keys LINK_SCRIPT)
     set(_lists SOURCES HEADERS LIBS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
 
@@ -151,6 +172,23 @@ function(riscv_add_library NAME)
     message(DEBUG "${NAME} : LINK_SCRIPT = '${var_LINK_SCRIPT}'")
     message(DEBUG "${NAME} : SOURCES = '${var_SOURCES}'")
     message(DEBUG "${NAME} : HEADERS = '${var_HEADERS}'")
+
+    set(_objects)
+    set(_options -march=rv32im -mabi=ilp32 -nostdlib)
+    riscv_compile(
+            "${NAME}"
+            OUTPUT _objects
+            SOURCES ${var_SOURCES}
+            OPTIONS ${_options}
+    )
+    riscv_create_lib(
+            "${NAME}"
+            OUTPUT "${NAME}"
+            LIB_FILE _deps
+            SOURCES ${_objects}
+    )
+
+    riscv_add_dummy("${NAME}" "c" "${_deps}")
 endfunction()
 
 
@@ -172,28 +210,25 @@ function(riscv_add_executable NAME)
     set(_objects)
     set(_options -march=rv32im -mabi=ilp32 -nostdlib)
 
-    foreach (_src IN LISTS var_SOURCES)
-        set(_obj "${CMAKE_CURRENT_BINARY_DIR}/${_src}.o")
-        list(APPEND _objects "${_obj}")
-        riscv_compile_source(
-                "${NAME}"
-                SOURCE "${CMAKE_CURRENT_LIST_DIR}/${_src}"
-                OUTPUT "${_obj}"
-                OPTIONS ${_options}
-        )
-    endforeach ()
+    riscv_compile(
+            "${NAME}"
+            OUTPUT _objects
+            SOURCES ${var_SOURCES}
+            OPTIONS ${_options}
+    )
 
     set(_link_script)
     if (DEFINED var_LINK_SCRIPT)
         get_filename_component(_link_abs "${var_LINK_SCRIPT}" ABSOLUTE)
         set(_link_script -T "${_link_abs}")
     else ()
-        message(WARNING "${NAME} : LINK_SCRIPT is not set")
+        message(FATAL_ERROR "${NAME} : LINK_SCRIPT is not set")
     endif ()
 
     riscv_link_exe(
             "${NAME}"
             OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.elf"
+            LINK_SCRIPT "${_link_abs}"
             OPTIONS ${_options}
                 ${_link_script}
             SOURCES ${_objects}

@@ -26,3 +26,7 @@ riscv_add_executable(sys_calls BIN HEX
         SOURCES sys_calls_asm.S sys_calls_main.c
 )
 
+riscv_add_library(
+        noname
+        SOURCES lib_test.c
+)
