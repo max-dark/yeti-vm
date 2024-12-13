@@ -56,7 +56,7 @@ function(riscv_link_exe NAME)
 endfunction()
 
 function(riscv_make_bin INPUT OUTPUT)
-    message(STATUS "${INPUT} : generate bin '${OUTPUT}'")
+    message(DEBUG "${INPUT} : generate bin '${OUTPUT}'")
     add_custom_command(
             TARGET "${INPUT}"
             COMMAND rv_tools::_objcopy
@@ -67,6 +67,7 @@ function(riscv_make_bin INPUT OUTPUT)
 endfunction()
 
 function(riscv_make_hex INPUT OUTPUT)
+    message(DEBUG "${INPUT} : generate hex '${OUTPUT}'")
     add_custom_command(
             TARGET "${INPUT}"
             COMMAND rv_tools::_objcopy
@@ -82,10 +83,10 @@ function(riscv_add_library NAME)
     set(_lists SOURCES HEADERS LIBS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
 
-    message(STATUS "add lib: ${NAME}")
-    message(STATUS "${NAME} : LINK_SCRIPT = '${var_LINK_SCRIPT}'")
-    message(STATUS "${NAME} : SOURCES = '${var_SOURCES}'")
-    message(STATUS "${NAME} : HEADERS = '${var_HEADERS}'")
+    message(DEBUG "add lib: ${NAME}")
+    message(DEBUG "${NAME} : LINK_SCRIPT = '${var_LINK_SCRIPT}'")
+    message(DEBUG "${NAME} : SOURCES = '${var_SOURCES}'")
+    message(DEBUG "${NAME} : HEADERS = '${var_HEADERS}'")
 endfunction()
 
 
@@ -95,14 +96,14 @@ function(riscv_add_executable NAME)
     set(_lists SOURCES HEADERS LIBS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
 
-    message(STATUS "add exe: ${NAME}")
-    message(STATUS "${NAME} : ${CMAKE_CURRENT_BINARY_DIR}")
-    message(STATUS "${NAME} : ${CMAKE_CURRENT_LIST_DIR}")
-    message(STATUS "${NAME} : LINK_SCRIPT = '${var_LINK_SCRIPT}'")
-    message(STATUS "${NAME} : SOURCES = '${var_SOURCES}'")
-    message(STATUS "${NAME} : HEADERS = '${var_HEADERS}'")
-    message(STATUS "${NAME} : BIN = '${var_BIN}'")
-    message(STATUS "${NAME} : HEX = '${var_HEX}'")
+    message(DEBUG "add exe: ${NAME}")
+    message(DEBUG "${NAME} : ${CMAKE_CURRENT_BINARY_DIR}")
+    message(DEBUG "${NAME} : ${CMAKE_CURRENT_LIST_DIR}")
+    message(DEBUG "${NAME} : LINK_SCRIPT = '${var_LINK_SCRIPT}'")
+    message(DEBUG "${NAME} : SOURCES = '${var_SOURCES}'")
+    message(DEBUG "${NAME} : HEADERS = '${var_HEADERS}'")
+    message(DEBUG "${NAME} : BIN = '${var_BIN}'")
+    message(DEBUG "${NAME} : HEX = '${var_HEX}'")
 
     add_custom_target("${NAME}")
 
