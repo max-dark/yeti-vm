@@ -129,6 +129,13 @@ uint8_t hex_checksum(const uint8_t* first, const uint8_t* last);
  */
 std::optional<hex_file> parse_hex(const fs::path& hexFile);
 
+/**
+ * parse hex stream
+ * @param stream stream to parse
+ * @return list of parsed records
+ */
+std::optional<hex_file> parse_hex(std::istream& stream);
+
 hex_record parse_hex_record(std::string_view line);
 
 /// interpret value as signed

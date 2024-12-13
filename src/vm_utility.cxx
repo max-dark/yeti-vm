@@ -1,5 +1,6 @@
-#include <valarray>
 #include "vm_utility.hxx"
+#include <istream>
+#include <ostream>
 
 namespace vm
 {
@@ -27,7 +28,6 @@ std::optional<vm::program_code_t> load_program(const fs::path &programFile)
 
 std::optional<hex_file> parse_hex(const fs::path &hexFile)
 {
-    hex_file result;
 
     if (fs::is_regular_file(hexFile))
     {
@@ -35,39 +35,46 @@ std::optional<hex_file> parse_hex(const fs::path &hexFile)
 
         if (hex.is_open())
         {
-            std::string tmp;
-
-            while (std::getline(hex, tmp))
-            {
-                std::string_view line = tmp;
-                constexpr size_t min_record_size = 1 + (1 + 2 + 1 + 1) * 2; // ':'<count><address><type><checksum>
-                size_t record_size = min_record_size;
-                auto pos = line.find(':');
-                if (pos > line.size())
-                {
-                    continue;
-                }
-                if (record_size > line.size())
-                {
-                    return std::nullopt;
-                }
-                line = line.substr(pos);
-                record_size += (from_hex(line[1]) << 4u) | from_hex(line[2]);
-
-                if (record_size > line.size())
-                {
-                    return std::nullopt;
-                }
-                auto& record = result.emplace_back();
-                record = parse_hex_record(line.substr(1)); // Note: ignore garbage at eol
-
-                if (record.is_eof()) // skip data after EOF record
-                    break;
-            }
-            return result;
+            return parse_hex(hex);
         }
     }
     return std::nullopt;
+}
+
+std::optional<hex_file> parse_hex(std::istream &stream)
+{
+    hex_file result;
+
+    std::string tmp;
+
+    while (std::getline(stream, tmp))
+    {
+        std::string_view line = tmp;
+        constexpr size_t min_record_size = 1 + (1 + 2 + 1 + 1) * 2; // ':'<count><address><type><checksum>
+        size_t record_size = min_record_size;
+        auto pos = line.find(':');
+        if (pos > line.size())
+        {
+            continue;
+        }
+        if (record_size > line.size())
+        {
+            return std::nullopt;
+        }
+        line = line.substr(pos);
+        record_size += (from_hex(line[1]) << 4u) | from_hex(line[2]);
+
+        if (record_size > line.size())
+        {
+            return std::nullopt;
+        }
+        auto& record = result.emplace_back();
+        record = parse_hex_record(line.substr(1)); // Note: ignore garbage at eol
+
+        if (record.is_eof()) // skip data after EOF record
+            break;
+    }
+    return result;
 }
 
 hex_record parse_hex_record(std::string_view line)
