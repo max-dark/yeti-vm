@@ -19,7 +19,7 @@ struct load_helper
     using hex_data = vm::hex_file;
     using bin_opt = std::optional<bin_data>;
     using hex_opt = std::optional<hex_data>;
-    using program_data = std::variant<bin_opt, hex_opt, std::nullptr_t>;
+    using program_data = std::variant<bin_data, hex_data, std::nullptr_t>;
 
     [[nodiscard]]
     bool load_file(const fs::path& fileName)
@@ -29,36 +29,40 @@ struct load_helper
 
         if (ext == ".bin")
         {
-            data = vm::load_program(fileName);
+            auto code = vm::load_program(fileName);
+            if (code)
+                data = code.value();
         }
         else if (ext == ".hex")
         {
-            data = vm::parse_hex(fileName);
+            auto code = vm::parse_hex(fileName);
+            if (code)
+                data = code.value();
         }
 
-        return !is_null();
+        return is_bin() || is_hex();
     }
 
     [[nodiscard]]
-    const bin_opt* as_bin() const
+    const auto * as_bin() const
     {
-        return std::get_if<bin_opt>(&data);
+        return std::get_if<bin_data>(&data);
     }
     [[nodiscard]]
-    const hex_opt* as_hex() const
+    const auto * as_hex() const
     {
-        return std::get_if<hex_opt>(&data);
+        return std::get_if<hex_data>(&data);
     }
 
     [[nodiscard]]
     bool is_bin() const
     {
-        return holds_alternative<bin_opt>(data);
+        return holds_alternative<bin_data>(data);
     }
     [[nodiscard]]
     bool is_hex() const
     {
-        return holds_alternative<hex_opt>(data);
+        return holds_alternative<hex_data>(data);
     }
     [[nodiscard]]
     bool is_null() const
@@ -71,8 +75,8 @@ struct load_helper
     {
         bool empty = is_null();
 
-        empty &= is_bin() && (as_bin()->value_or(bin_data{}).empty());
-        empty &= is_hex() && (as_hex()->value_or(hex_data{}).empty());
+        empty |= is_bin() && as_bin()->empty();
+        empty |= is_hex() && as_hex()->empty();
 
         return empty;
     }
@@ -81,8 +85,8 @@ struct load_helper
     bool set_program(vm::basic_vm& vm, vm::basic_vm::address_t pc_value = 0) const
     {
         if (is_empty()) return false;
-        if (is_bin()) return vm.set_program(as_bin()->value(), pc_value);
-        if (is_hex()) return vm.set_program(as_hex()->value());
+        if (is_bin()) return vm.set_program(*as_bin(), pc_value);
+        if (is_hex()) return vm.set_program(*as_hex());
         return false;
     }
 
@@ -128,7 +132,7 @@ int main(int argc, char** argv)
             std::cerr << "unable disasm not '.bin' file" << std::endl;
             return EXIT_FAILURE;
         }
-        disasm(helper.as_bin()->value());
+        disasm(*helper.as_bin());
         break;
     case 'v':
         run_vm(helper, false);
