@@ -37,19 +37,6 @@ target_link_libraries(
 
 add_test(NAME "HEX parser" COMMAND test_hex_parser)
 
-add_executable(view_hex_file)
-target_sources(
-    view_hex_file
-    PRIVATE
-        view_hex_file.cxx
-)
-
-target_link_libraries(
-    view_hex_file
-    PRIVATE
-        rvm
-)
-
 add_executable(mmu_tests)
 target_sources(
     mmu_tests
