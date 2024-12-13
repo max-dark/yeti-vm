@@ -237,6 +237,7 @@ void basic_vm::run()
 void basic_vm::start()
 {
     std::fill(registers.begin(), registers.end(), 0);
+    set_pc(initial_pc);
     running = is_initialized();
 }
 
@@ -269,6 +270,57 @@ bool basic_vm::set_program(const program_code_t &bin, address_t pc_value)
     auto code = mmu.find_block(code_base, bin.size());
     if (!code) return false;
     return code->store(code_base, bin.data(), bin.size());
+}
+
+bool basic_vm::set_program(const hex_file &hex)
+{
+    if (!have_code_block()) return false; // no memory for code
+    if (is_flag_set(PC_INITIALIZED)) return false; // program loaded
+
+    address_t offset = 0;
+    address_t pc_value = 0;
+
+    for (const hex_record& record: hex)
+    {
+        if (!record.is_valid()) [[unlikely]] return false;
+
+        switch (record.get_type())
+        {
+        case hex_record::HEX_DATA: // load data to memory
+        {
+            auto data_ptr = record.data.data();
+            auto data_sz = record.data.size();
+            address_t address = offset + record.offset;
+            auto mem_block = mmu.find_block(address, data_sz);
+
+            bool ok = mem_block != nullptr;
+            ok = ok && data_ptr != nullptr;
+            ok = ok && mem_block->store(address, data_ptr, data_sz);
+            if (!ok) [[unlikely]] return false;
+            break;
+        }
+        case hex_record::HEX_EOF:
+        {
+            return init_pc(pc_value); // EOF record: load finished
+        }
+        case hex_record::HEX_SEGMENT_START:
+        case hex_record::HEX_LINEAR_START:
+        {
+            pc_value = record.get_start(); // use as entry point
+            break;
+        }
+        case hex_record::HEX_SEGMENT_EXTEND:
+        case hex_record::HEX_LINEAR_EXTEND:
+        {
+            offset = record.get_extend(); // offset for next data records
+            break;
+        }
+        case hex_record::HEX_UNKNOWN:
+            return false; // can't load
+        }
+    }
+
+    return false; // EOF record is required
 }
 
 bool basic_vm::is_initialized() const

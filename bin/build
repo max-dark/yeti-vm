@@ -27,9 +27,17 @@ make_bin()
   $OBJCOPY -O binary "$@"
 }
 
+make_hex()
+{
+  echo $OBJCOPY -O ihex "$@"
+  $OBJCOPY -O ihex "$@"
+}
+
 ELF_NAME="${1}.elf"
 BIN_NAME="${1}.bin"
+HEX_NAME="${1}.hex"
 shift
 
 compile_c "$@" -o ${ELF_NAME}
 make_bin ${ELF_NAME} ${BIN_NAME}
+make_hex ${ELF_NAME} ${HEX_NAME}
