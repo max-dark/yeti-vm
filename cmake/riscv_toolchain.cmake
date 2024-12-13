@@ -34,6 +34,32 @@ function(find_riscv_toolchain)
         add_executable(${_tool} IMPORTED)
         set_property(TARGET ${_tool} PROPERTY IMPORTED_LOCATION "${${_var_name}}")
     endforeach ()
+
+    set(_options "${TOOL_PREFIX}_options")
+    set(_tool_options "${TOOL_PREFIX}::_options")
+    add_library(${_options} INTERFACE)
+
+    add_library(${_tool_options} ALIAS ${_options})
+
+#    get_target_property(_prop ${_tool_options} LANGUAGE)
+#    message("${_tool_options} : ${_prop}")
+endfunction()
+
+
+function(riscv_add_dummy NAME EXT DEPS)
+    set(_file "${NAME}.dummy.${EXT}")
+    add_custom_command(
+            OUTPUT ${_file}
+            COMMENT "Generate dummy source ${_file}"
+            COMMAND make_dummy "${_file}" "${NAME}"
+            DEPENDS "${DEPS}"
+    )
+    add_library("${NAME}-dummy" STATIC)
+    target_sources(
+        "${NAME}-dummy"
+        PUBLIC
+            "${_file}"
+    )
 endfunction()
 
 function(riscv_compile_source NAME)
@@ -45,7 +71,7 @@ function(riscv_compile_source NAME)
     set(_command rv_tools::_gcc) # TODO: c++ support
 
     add_custom_command(
-            TARGET "${NAME}"
+            OUTPUT "${var_OUTPUT}"
             COMMENT "compile ${var_SOURCE}"
             COMMAND ${_command}
             ARGS ${var_OPTIONS} -c "${var_SOURCE}" -o "${var_OUTPUT}"
@@ -59,11 +85,18 @@ function(riscv_create_lib NAME)
     set(_lists SOURCES OPTIONS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
 
+    if (NOT DEFINED var_OUTPUT)
+        message(FATAL_ERROR "OUTPUT is not set")
+    endif ()
+    set(_output "${CMAKE_CURRENT_BINARY_DIR}/lib${var_OUTPUT}.a")
+
     add_custom_command(
             TARGET "${NAME}"
+            PRE_BUILD
+            OUTPUT "${_output}"
             COMMENT "create lib ${NAME}"
             COMMAND rv_tools::_ar
-            ARGS crs "lib${NAME}.a" ${SOURCES}
+            ARGS crs "${_output}" ${SOURCES}
             DEPENDS ${SOURCES}
     )
 endfunction()
@@ -77,7 +110,7 @@ function(riscv_link_exe NAME)
     set(_command rv_tools::_gcc) # TODO: c++ support
 
     add_custom_command(
-            TARGET "${NAME}"
+            OUTPUT "${var_OUTPUT}"
             COMMENT "link ${var_OUTPUT}"
             COMMAND ${_command}
             # note: order of args - objects, link params, output
@@ -89,22 +122,22 @@ endfunction()
 function(riscv_make_bin INPUT OUTPUT)
     message(DEBUG "${INPUT} : generate bin '${OUTPUT}'")
     add_custom_command(
-            TARGET "${INPUT}"
+            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT}.bin"
             COMMAND rv_tools::_objcopy
-            ARGS -O binary "${INPUT}.elf" "${OUTPUT}.bin"
+            ARGS -O binary "${CMAKE_CURRENT_BINARY_DIR}/${INPUT}.elf" "${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT}.bin"
             COMMENT "${INPUT} : generate bin '${OUTPUT}'"
-            DEPENDS "${INPUT}.elf"
+            DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${INPUT}.elf"
             )
 endfunction()
 
 function(riscv_make_hex INPUT OUTPUT)
     message(DEBUG "${INPUT} : generate hex '${OUTPUT}'")
     add_custom_command(
-            TARGET "${INPUT}"
+            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT}.hex"
             COMMAND rv_tools::_objcopy
-            ARGS -O ihex "${INPUT}.elf" "${OUTPUT}.hex"
+            ARGS -O ihex "${CMAKE_CURRENT_BINARY_DIR}/${INPUT}.elf" "${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT}.hex"
             COMMENT "${INPUT} : generate hex '${OUTPUT}'"
-            DEPENDS "${INPUT}.elf"
+            DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${INPUT}.elf"
     )
 endfunction()
 
@@ -136,8 +169,6 @@ function(riscv_add_executable NAME)
     message(DEBUG "${NAME} : BIN = '${var_BIN}'")
     message(DEBUG "${NAME} : HEX = '${var_HEX}'")
 
-    add_custom_target("${NAME}")
-
     set(_objects)
     set(_options -march=rv32im -mabi=ilp32 -nostdlib)
 
@@ -162,16 +193,21 @@ function(riscv_add_executable NAME)
 
     riscv_link_exe(
             "${NAME}"
-            OUTPUT "${NAME}.elf"
+            OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.elf"
             OPTIONS ${_options}
                 ${_link_script}
             SOURCES ${_objects}
     )
 
+    list(APPEND _deps "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.elf")
     if (var_BIN)
         riscv_make_bin("${NAME}" "${NAME}")
+        list(APPEND _deps "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.bin")
     endif ()
     if (var_HEX)
         riscv_make_hex("${NAME}" "${NAME}")
+        list(APPEND _deps "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.hex")
     endif ()
+
+    riscv_add_dummy("${NAME}" "c" "${_deps}")
 endfunction()
