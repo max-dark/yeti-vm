@@ -20,3 +20,22 @@ target_link_libraries(
     PRIVATE
         rvm
 )
+
+set(APP_NAME yeti-vm)
+set(APP_SOURCES
+    yeti_main.cxx
+)
+set(APP_DEPS
+    vm_basic
+)
+add_executable(${APP_NAME})
+target_sources(
+    ${APP_NAME}
+    PRIVATE
+        ${APP_SOURCES}
+)
+target_link_libraries(
+    ${APP_NAME}
+    PRIVATE
+        ${APP_DEPS}
+)
