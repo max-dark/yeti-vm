@@ -5,22 +5,16 @@ project(YetiVM LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(shared INTERFACE)
+add_library(vm_shared INTERFACE)
 target_include_directories(
-    shared
+    vm_shared
     INTERFACE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 target_sources(
-    shared
+    vm_shared
     INTERFACE
         vm_stdlib.hxx
-)
-
-set(APP_NAME yeti-vm)
-
-set(APP_SOURCES
-    main.cxx
 )
 
 set(ELF_LIB elf-loader)
@@ -41,7 +35,7 @@ target_sources(
 target_link_libraries(
     ${ELF_LIB}
     PUBLIC
-        shared
+        vm_shared
 )
 
 set(ELF_PARSER_APP elf-parser)
@@ -65,7 +59,6 @@ set(LIB_HEADERS
     vm_handler.hxx
     vm_interface.hxx
     vm_memory.hxx
-    vm_basic.hxx
     vm_syscall.hxx
     vm_handlers_rv32i.hxx
     vm_handlers_rv32m.hxx
@@ -77,7 +70,6 @@ set(LIB_SOURCES
     vm_handler.cxx
     vm_interface.cxx
     vm_memory.cxx
-    vm_basic.cxx
     vm_syscall.cxx
     vm_handlers_rv32i.cxx
     vm_handlers_rv32m.cxx
@@ -93,17 +85,20 @@ target_sources(
 target_link_libraries(
     ${LIB_NAME}
     PUBLIC
-        shared
+        vm_shared
 )
 
-add_executable(${APP_NAME})
+set(LIB_BASIC_VM vm_basic)
+add_library(${LIB_BASIC_VM} STATIC)
 target_sources(
-    ${APP_NAME}
+    ${LIB_BASIC_VM}
+    PUBLIC
+        vm_basic.hxx
     PRIVATE
-        ${APP_SOURCES}
+        vm_basic.cxx
 )
-target_link_libraries(${APP_NAME}
-    PRIVATE
+target_link_libraries(
+    ${LIB_BASIC_VM}
+    PUBLIC
         ${LIB_NAME}
-        shared
 )
