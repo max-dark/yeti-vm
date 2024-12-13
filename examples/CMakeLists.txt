@@ -11,12 +11,12 @@ include(riscv_toolchain)
 
 find_riscv_toolchain()
 
-riscv_add_executable(rv32i BIN
+riscv_add_executable(rv32i BIN HEX
         LINK_SCRIPT basic_vm.ld
         SOURCES rv32i.S
 )
 
-riscv_add_executable(rv32m HEX
+riscv_add_executable(rv32m BIN HEX
         LINK_SCRIPT basic_vm.ld
         SOURCES rv32m.S
 )
