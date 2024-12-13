@@ -3,6 +3,7 @@
 function(find_riscv_toolchain)
     set(TOOL_PREFIX rv_tools)
     set(_prefix "riscv64-unknown-elf-")
+    set(_gcc "${_prefix}gcc")
     set(_c "${_prefix}gcc")
     set(_cxx "${_prefix}g++")
     set(_asm "${_prefix}as")
@@ -14,6 +15,7 @@ function(find_riscv_toolchain)
     set(_var_prefix "rv_tool")
 
     set(_var_names
+            _gcc
             _c
             _cxx
             _asm
