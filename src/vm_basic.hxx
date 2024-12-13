@@ -6,6 +6,7 @@
 #include <vm_handler.hxx>
 #include <vm_syscall.hxx>
 #include <vm_memory.hxx>
+#include <vm_utility.hxx>
 
 #include <exception>
 #include <stdexcept>
@@ -145,6 +146,10 @@ struct basic_vm: public vm_interface
     /// load program into ro memory
     [[nodiscard]]
     bool set_program(const program_code_t &bin, address_t pc_value);
+
+    /// load program into ro memory
+    [[nodiscard]]
+    bool set_program(const hex_file &hex);
 
     [[nodiscard]]
     bool init_pc(address_t address);
