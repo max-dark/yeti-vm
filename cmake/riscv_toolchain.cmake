@@ -138,6 +138,27 @@ function(riscv_add_executable NAME)
 
     add_custom_target("${NAME}")
 
+    set(_objects)
+    set(_options -march=rv32im -mabi=ilp32 -nostdlib)
+
+    foreach (_src IN LISTS var_SOURCES)
+        set(_obj "${CMAKE_CURRENT_BINARY_DIR}/${_src}.o")
+        list(APPEND _objects "${_obj}")
+        riscv_compile_source(
+                "${NAME}"
+                SOURCE "${CMAKE_CURRENT_LIST_DIR}/${_src}"
+                OUTPUT "${_obj}"
+                OPTIONS ${_options}
+        )
+    endforeach ()
+
+    riscv_link_exe(
+            "${NAME}"
+            OUTPUT "${NAME}.elf"
+            OPTIONS ${_options}
+            SOURCES ${_objects}
+    )
+
     if (var_BIN)
         riscv_make_bin("${NAME}" "${NAME}")
     endif ()
