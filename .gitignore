@@ -7,6 +7,12 @@ build/
 *.user
 *.elf
 *.exe
+*.dll
+*.lib
+*.obj
 *.o
 *.bin
 *.hex
+*.a
+*.so
+
