@@ -157,7 +157,7 @@ hex_record::record_type hex_record::get_type() const
 
 bool hex_record::is_valid() const
 {
-    return sum_actual == sum_expected;
+    return (sum_actual == sum_expected) && (count == data.size());
 }
 
 std::string_view hex_record::get_type_name() const
@@ -177,15 +177,25 @@ std::string_view hex_record::get_type_name() const
 
 uint32_t hex_record::get_extend() const
 {
-    if (data.size() == 2)
-        return ((data[0] << 8u) | (data[1] << 0u)) << 4u; // value * 16
+    if (data.size() == 2) [[likely]]
+    {
+        uint32_t value = ((data[0] << 8u) | (data[1] << 0u));
+        if (is_extend_segment()) return value <<  4u;
+        if (is_extend_linear() ) return value << 16u;
+    }
     return 0;
 }
 
 uint32_t hex_record::get_start() const
 {
-    if (data.size() == 4)
-        return ((data[0] << 24u) | (data[1] << 16u) | (data[2] << 8u) | (data[3] << 0u));
+    if (data.size() == 4) [[likely]]
+    {
+        if (is_start_linear() | is_start_segment()) [[likely]]
+        {
+            uint32_t value =  ((data[0] << 24u) | (data[1] << 16u) | (data[2] << 8u) | (data[3] << 0u));
+            return value;
+        }
+    }
     return 0;
 }
 
@@ -194,32 +204,29 @@ bool hex_record::is_data() const
     return get_type() == record_type::HEX_DATA;
 }
 
-bool hex_record::is_start() const
+bool hex_record::is_start_segment() const
 {
-    switch (get_type())
-    {
-    case HEX_SEGMENT_START:
-    case HEX_LINEAR_START:
-        return true;
-    default: return false;
-    }
+    return type == HEX_SEGMENT_START;
 }
 
-bool hex_record::is_extend() const
+bool hex_record::is_extend_segment() const
 {
-    switch (get_type())
-    {
-        case HEX_LINEAR_EXTEND:
-        case HEX_SEGMENT_EXTEND:
-            return true;
-        default:
-            return false;
-    }
+    return type == HEX_SEGMENT_EXTEND;
 }
 
 bool hex_record::is_eof() const
 {
     return get_type() == record_type::HEX_EOF;
+}
+
+bool hex_record::is_start_linear() const
+{
+    return type == HEX_LINEAR_START;
+}
+
+bool hex_record::is_extend_linear() const
+{
+    return type == HEX_LINEAR_EXTEND;
 }
 
 } // namespace vm

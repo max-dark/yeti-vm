@@ -59,7 +59,7 @@ struct hex_record
     [[nodiscard]]
     std::string_view get_type_name() const;
 
-    ///@return true if checksums is same
+    ///@return true if checksums and sizes is same
     [[nodiscard]]
     bool is_valid() const;
 
@@ -74,12 +74,19 @@ struct hex_record
     [[nodiscard]]
     bool is_data() const;
 
-    ///@return true if it is HEX_*_START record
+    ///@return true if it is HEX_SEGMENT_START record
     [[nodiscard]]
-    bool is_start() const;
-    ///@return true if it is HEX_*_EXTEND record
+    bool is_start_segment() const;
+    ///@return true if it is HEX_SEGMENT_EXTEND record
     [[nodiscard]]
-    bool is_extend() const;
+    bool is_extend_segment() const;
+
+    ///@return true if it is HEX_LINEAR_START record
+    [[nodiscard]]
+    bool is_start_linear() const;
+    ///@return true if it is HEX_LINEAR_EXTEND record
+    [[nodiscard]]
+    bool is_extend_linear() const;
 
     /// record payload data
     std::vector<uint8_t> data;
