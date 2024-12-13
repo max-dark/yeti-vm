@@ -152,10 +152,19 @@ function(riscv_add_executable NAME)
         )
     endforeach ()
 
+    set(_link_script)
+    if (DEFINED var_LINK_SCRIPT)
+        get_filename_component(_link_abs "${var_LINK_SCRIPT}" ABSOLUTE)
+        set(_link_script -T "${_link_abs}")
+    else ()
+        message(WARNING "${NAME} : LINK_SCRIPT is not set")
+    endif ()
+
     riscv_link_exe(
             "${NAME}"
             OUTPUT "${NAME}.elf"
             OPTIONS ${_options}
+                ${_link_script}
             SOURCES ${_objects}
     )
 
