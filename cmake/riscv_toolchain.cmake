@@ -58,6 +58,14 @@ function(riscv_create_lib NAME)
     set(_keys OUTPUT)
     set(_lists SOURCES OPTIONS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
+
+    add_custom_command(
+            TARGET "${NAME}"
+            COMMENT "create lib ${NAME}"
+            COMMAND rv_tools::_ar
+            ARGS crs "lib${NAME}.a" ${SOURCES}
+            DEPENDS ${SOURCES}
+    )
 endfunction()
 
 function(riscv_link_exe NAME)
