@@ -73,6 +73,17 @@ function(riscv_link_exe NAME)
     set(_keys OUTPUT)
     set(_lists SOURCES OPTIONS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
+
+    set(_command rv_tools::_gcc) # TODO: c++ support
+
+    add_custom_command(
+            TARGET "${NAME}"
+            COMMENT "link ${var_OUTPUT}"
+            COMMAND ${_command}
+            # note: order of args - objects, link params, output
+            ARGS ${var_SOURCES} ${var_OPTIONS} -o "${var_OUTPUT}"
+            DEPENDS ${var_SOURCES}
+    )
 endfunction()
 
 function(riscv_make_bin INPUT OUTPUT)
