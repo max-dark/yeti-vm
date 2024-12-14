@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_testing()
 
+option(YETI_ENABLE_EXAMPLES "Build examples" ON)
+
+if(YETI_ENABLE_EXAMPLES)
+
 include(riscv_toolchain)
 
 find_riscv_toolchain()
@@ -34,3 +38,5 @@ riscv_add_executable(sys_calls BIN HEX
 #        noname
 #        SOURCES lib_test.c
 #)
+
+endif() # YETI_ENABLE_EXAMPLES
