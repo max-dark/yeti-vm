@@ -200,6 +200,12 @@ void init_syscalls(vm::syscall_registry &sys)
         auto file_id = m->get_register(vm::a0);
         auto buff_ptr = m->get_register(vm::a1);
         auto buff_sz = m->get_register(vm::a2);
+
+        for (vm::vm_interface::address_t i = 0; i < buff_sz; i+= sizeof(vm::register_t))
+        {
+            m->write_memory(buff_ptr + i, sizeof(vm::register_t), i * i);
+        }
+
         std::cout << "read " << file_id << " " << vm::to_signed(buff_ptr) << " " << buff_sz << std::endl;
         m->set_register(vm::a0, 0);
     }));
