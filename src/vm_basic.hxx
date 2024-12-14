@@ -175,6 +175,8 @@ struct basic_vm: public vm_interface
     void enable_debugging(bool enable);
 
     syscall_registry& get_syscalls();
+
+    void dump_state(std::ostream& dump) const;
 private:
     /// get pointer to current instruction
     [[nodiscard]]

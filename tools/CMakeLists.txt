@@ -39,3 +39,5 @@ target_link_libraries(
     PRIVATE
         ${APP_DEPS}
 )
+
+add_executable(make_dummy make_dummy.cxx)
