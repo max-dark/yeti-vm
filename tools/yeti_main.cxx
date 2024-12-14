@@ -174,7 +174,16 @@ void run_vm(const load_helper &code, bool debug)
         return;
     }
     machine.start();
-    machine.run();
+    try
+    {
+        machine.run();
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Exception" << e.what() << std::endl;
+        machine.dump_state(std::cerr);
+        throw ;
+    }
 }
 
 void init_syscalls(vm::syscall_registry &sys)

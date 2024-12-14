@@ -6,8 +6,13 @@
 #include <vm_interface.hxx>
 #include <vm_utility.hxx>
 
+#include <limits>
+
 namespace vm::rv32m
 {
+using signed_limits = std::numeric_limits<signed_t>;
+using unsigned_limits = std::numeric_limits<unsigned_t>;
+
 using result_signed_t = std::int64_t;
 using result_unsigned_t = std::uint64_t;
 static constexpr result_unsigned_t result_mask = register_t{~0u};
@@ -91,7 +96,13 @@ struct div: math<0b0100> {
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
-        result_signed_t result = to_signed(lhs) / to_signed(rhs);
+        auto l = to_signed(lhs);
+        auto r = to_signed(rhs);
+        // (lhs == int_min && rhs == -1) -> lhs
+        if (l == signed_limits::min() && r == -1) return rhs;
+        // rhs == 0 -> -1
+        if (rhs == 0) return unsigned_limits::max();
+        result_signed_t result = l / r;
         return result & result_mask;
     }
 };
@@ -103,6 +114,8 @@ struct divu: math<0b0101> {
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
+        // rhs == 0 -> uint_max
+        if (rhs == 0) return unsigned_limits::max();
         result_unsigned_t result = lhs / rhs;
         return result & result_mask;
     }
@@ -115,7 +128,13 @@ struct rem: math<0b0110> {
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
-        result_signed_t result = to_signed(lhs) % to_signed(rhs);
+        auto l = to_signed(lhs);
+        auto r = to_signed(rhs);
+        // (lhs == int_min && rhs == -1) -> 0
+        if (l == signed_limits::min() && r == -1) return 0;
+        // rhs == 0 -> lhs
+        if (rhs == 0) return lhs;
+        result_signed_t result = l / r;
         return result & result_mask;
     }
 };
@@ -127,6 +146,7 @@ struct remu: math<0b0111> {
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
+        if (rhs == 0) return lhs;
         result_unsigned_t result = lhs % rhs;
         return result & result_mask;
     }
