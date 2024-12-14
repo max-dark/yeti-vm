@@ -437,4 +437,52 @@ bool basic_vm::have_data_block() const
     return is_flag_set(HAVE_DATA_BLOCK);
 }
 
+void basic_vm::dump_state(std::ostream &dump) const
+{
+    {
+        auto code = get_current();
+        if (code)
+        {
+            auto handler = opcodes.find_handler(code);
+            dump << "current: " << vm::opcode::get_op_id(static_cast<vm::opcode::OpcodeType>(code->get_code())) << std::endl;
+            dump << "\tcode: " << std::hex << code->code << std::endl;
+            dump << "\thandler: " << (handler ? "found" : "not found" ) << std::endl;
+
+            dump
+                    << "\trd  = " << std::setw(4) << vm::get_register_alias(code->get_rd())
+                    << std::endl
+                    << "\trs1 = " << std::setw(4) << vm::get_register_alias(code->get_rs1())
+                    << std::endl
+                    << "\trs2 = " << std::setw(4) << vm::get_register_alias(code->get_rs2())
+                    << std::endl
+                    << std::hex
+                    << "\ti = " << std::setw(4) << code->decode_i() << std::endl
+                    << "\tb = " << std::setw(4) << code->decode_b() << std::endl
+                    << "\tj = " << std::setw(4) << code->decode_j() << std::endl
+                    << "\ts = " << std::setw(4) << code->decode_s() << std::endl
+                    << "\tu = " << std::setw(4) << code->decode_u() << std::endl
+                ;
+            if (handler)
+            {
+                dump << "\tdecoded: " << handler->get_mnemonic() << "\t" << handler->get_args(code) << std::endl;
+            }
+        }
+        else
+        {
+            dump << "unable fetch instruction" << std::endl;
+        }
+    }
+    dump << "REG dump:" << std::endl;
+    dump << "PC: " << std::setw(10) << std::hex << get_pc() << std::endl;
+
+    for (vm::register_no i = 0; i < vm::register_count; ++i)
+    {
+        dump
+            << std::dec << std::setw(2) << std::uint32_t(i)
+            << std::setw(4) << vm::get_register_alias(i)
+            << std::setw(10) << std::hex << get_register(i) << std::endl;
+    }
+
+}
+
 } // namespace vm
