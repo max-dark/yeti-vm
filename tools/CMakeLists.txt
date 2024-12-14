@@ -18,7 +18,7 @@ target_sources(
 target_link_libraries(
     ${HEX_VIEWER}
     PRIVATE
-        rvm
+        YetiVM::runtime
 )
 
 set(APP_NAME yeti-vm)
@@ -26,7 +26,7 @@ set(APP_SOURCES
     yeti_main.cxx
 )
 set(APP_DEPS
-    vm_basic
+    YetiVM::basic_vm
 )
 add_executable(${APP_NAME})
 target_sources(

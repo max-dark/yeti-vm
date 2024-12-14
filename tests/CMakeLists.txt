@@ -24,7 +24,7 @@ function(yeti_add_test)
     add_executable(${var_COMMAND})
     target_sources(${var_COMMAND} PRIVATE ${var_SOURCES})
 
-    target_link_libraries(${var_COMMAND} PRIVATE rvm ${var_LIBRARIES})
+    target_link_libraries(${var_COMMAND} PRIVATE YetiVM::runtime ${var_LIBRARIES})
     add_test(NAME "${var_NAME}" COMMAND ${var_COMMAND})
 endfunction()
 

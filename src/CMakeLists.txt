@@ -5,19 +5,20 @@ project(YetiVM LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(vm_shared INTERFACE)
+add_library(yeti_vm_shared INTERFACE)
 target_include_directories(
-    vm_shared
+    yeti_vm_shared
     INTERFACE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 target_sources(
-    vm_shared
+    yeti_vm_shared
     INTERFACE
         vm_stdlib.hxx
 )
+add_library(YetiVM::shared ALIAS yeti_vm_shared)
 
-set(LIB_NAME rvm)
+set(LIB_NAME yeti_vm_runtime)
 set(LIB_HEADERS
     vm_base_types.hxx
     vm_utility.hxx
@@ -51,10 +52,11 @@ target_sources(
 target_link_libraries(
     ${LIB_NAME}
     PUBLIC
-        vm_shared
+        YetiVM::shared
 )
+add_library(YetiVM::runtime ALIAS ${LIB_NAME})
 
-set(LIB_BASIC_VM vm_basic)
+set(LIB_BASIC_VM yeti_vm_basic)
 add_library(${LIB_BASIC_VM} STATIC)
 target_sources(
     ${LIB_BASIC_VM}
@@ -66,5 +68,6 @@ target_sources(
 target_link_libraries(
     ${LIB_BASIC_VM}
     PUBLIC
-        ${LIB_NAME}
+        YetiVM::runtime
 )
+add_library(YetiVM::basic_vm ALIAS ${LIB_BASIC_VM})
