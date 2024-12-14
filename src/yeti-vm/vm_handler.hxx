@@ -1,8 +1,8 @@
 /// instruction handler interfaces
 #pragma once
 
-#include <vm_base_types.hxx>
-#include <vm_opcode.hxx>
+#include "vm_base_types.hxx"
+#include "vm_opcode.hxx"
 
 namespace vm
 {

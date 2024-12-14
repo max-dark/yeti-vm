@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <vm_utility.hxx>
+#include "yeti-vm/vm_utility.hxx"
 #include <format>
 
 std::string to_hex(const vm::hex_record& r)

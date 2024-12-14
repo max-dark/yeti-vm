@@ -1,12 +1,12 @@
 /// basic implementation of rv32 VM
 #pragma once
 
-#include <vm_base_types.hxx>
-#include <vm_interface.hxx>
-#include <vm_handler.hxx>
-#include <vm_syscall.hxx>
-#include <vm_memory.hxx>
-#include <vm_utility.hxx>
+#include "vm_base_types.hxx"
+#include "vm_interface.hxx"
+#include "vm_handler.hxx"
+#include "vm_syscall.hxx"
+#include "vm_memory.hxx"
+#include "vm_utility.hxx"
 
 #include <exception>
 #include <stdexcept>

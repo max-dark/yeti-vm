@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vm_stdlib.hxx>
+#include "vm_shared.hxx"
 
 namespace vm
 {

@@ -1,12 +1,12 @@
-#include "vm_stdlib.hxx"
+#include <yeti-vm/vm_shared.hxx>
 
-#include <vm_opcode.hxx>
-#include <vm_handler.hxx>
-#include <vm_basic.hxx>
-#include <vm_handlers_rv32i.hxx>
-#include <vm_handlers_rv32m.hxx>
-#include <vm_base_types.hxx>
-#include <vm_utility.hxx>
+#include "yeti-vm/vm_opcode.hxx"
+#include "yeti-vm/vm_handler.hxx"
+#include "yeti-vm/vm_basic.hxx"
+#include "yeti-vm/vm_handlers_rv32i.hxx"
+#include "yeti-vm/vm_handlers_rv32m.hxx"
+#include "yeti-vm/vm_base_types.hxx"
+#include "yeti-vm/vm_utility.hxx"
 
 #include <iostream>
 #include <variant>

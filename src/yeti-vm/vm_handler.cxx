@@ -1,5 +1,5 @@
 #include "vm_handler.hxx"
-#include <vm_utility.hxx>
+#include "vm_utility.hxx"
 
 namespace vm
 {

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <vm_utility.hxx>
+#include "yeti-vm/vm_utility.hxx"
 #include <format>
 #include <sstream>
 

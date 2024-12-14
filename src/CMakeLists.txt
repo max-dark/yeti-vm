@@ -14,32 +14,32 @@ target_include_directories(
 target_sources(
     yeti_vm_shared
     INTERFACE
-        vm_stdlib.hxx
+        yeti-vm/vm_shared.hxx
 )
 add_library(YetiVM::shared ALIAS yeti_vm_shared)
 
 set(LIB_NAME yeti_vm_runtime)
 set(LIB_HEADERS
-    vm_base_types.hxx
-    vm_utility.hxx
-    vm_opcode.hxx
-    vm_handler.hxx
-    vm_interface.hxx
-    vm_memory.hxx
-    vm_syscall.hxx
-    vm_handlers_rv32i.hxx
-    vm_handlers_rv32m.hxx
+        yeti-vm/vm_base_types.hxx
+        yeti-vm/vm_utility.hxx
+        yeti-vm/vm_opcode.hxx
+        yeti-vm/vm_handler.hxx
+        yeti-vm/vm_interface.hxx
+        yeti-vm/vm_memory.hxx
+        yeti-vm/vm_syscall.hxx
+        yeti-vm/vm_handlers_rv32i.hxx
+        yeti-vm/vm_handlers_rv32m.hxx
 )
 set(LIB_SOURCES
-    vm_base_types.cxx
-    vm_utility.cxx
-    vm_opcode.cxx
-    vm_handler.cxx
-    vm_interface.cxx
-    vm_memory.cxx
-    vm_syscall.cxx
-    vm_handlers_rv32i.cxx
-    vm_handlers_rv32m.cxx
+        yeti-vm/vm_base_types.cxx
+        yeti-vm/vm_utility.cxx
+        yeti-vm/vm_opcode.cxx
+        yeti-vm/vm_handler.cxx
+        yeti-vm/vm_interface.cxx
+        yeti-vm/vm_memory.cxx
+        yeti-vm/vm_syscall.cxx
+        yeti-vm/vm_handlers_rv32i.cxx
+        yeti-vm/vm_handlers_rv32m.cxx
 )
 add_library(${LIB_NAME} STATIC)
 target_sources(
@@ -61,9 +61,9 @@ add_library(${LIB_BASIC_VM} STATIC)
 target_sources(
     ${LIB_BASIC_VM}
     PUBLIC
-        vm_basic.hxx
+        yeti-vm/vm_basic.hxx
     PRIVATE
-        vm_basic.cxx
+        yeti-vm/vm_basic.cxx
 )
 target_link_libraries(
     ${LIB_BASIC_VM}

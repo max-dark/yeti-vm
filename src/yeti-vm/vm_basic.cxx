@@ -1,7 +1,7 @@
 #include "vm_basic.hxx"
 
-#include <vm_handlers_rv32i.hxx>
-#include <vm_handlers_rv32m.hxx>
+#include "vm_handlers_rv32i.hxx"
+#include "vm_handlers_rv32m.hxx"
 
 #include <iostream>
 #include <format>

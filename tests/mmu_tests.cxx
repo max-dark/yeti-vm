@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include <vm_memory.hxx>
-#include <vm_utility.hxx>
+#include "yeti-vm/vm_memory.hxx"
+#include "yeti-vm/vm_utility.hxx"
 
 using range = vm::memory_block::params;
 

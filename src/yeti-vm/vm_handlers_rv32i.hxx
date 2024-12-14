@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vm_base_types.hxx>
-#include <vm_handler.hxx>
-#include <vm_interface.hxx>
-#include <vm_utility.hxx>
+#include "vm_base_types.hxx"
+#include "vm_handler.hxx"
+#include "vm_interface.hxx"
+#include "vm_utility.hxx"
 
 namespace vm::rv32i
 {
