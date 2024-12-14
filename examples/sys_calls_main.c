@@ -29,14 +29,15 @@ int32_t result[NUM_LINES][NUM_ELEM];
 void app_main();
 
 [[noreturn]]
-void _start_old()
+void _start()
 {
-    //app_main();
+    app_main();
     sys_exit();
 }
 
-//void app_main()
-void _start()
+void print_matrix(const int32_t m[NUM_LINES][NUM_ELEM]);
+
+void app_main()
 {
     int fd = sys_open(fileName, 0);
     sys_read(fd, buffer, sizeof(buffer));
@@ -51,6 +52,8 @@ void _start()
             ++idx;
         }
     }
+
+    print_matrix(input);
 
     int k = 0;
     int max_sum = ~0;
@@ -75,11 +78,16 @@ void _start()
         }
     }
 
+    print_matrix(result);
+}
+
+void print_matrix(const int32_t m[NUM_LINES][NUM_ELEM])
+{
     for (int row = 0; row < NUM_LINES; ++row)
     {
         for (int col = 0; col < ELEM_PER_LINE; ++col)
         {
-            put_int(result[row][col]);
+            put_int(m[row][col]);
             put_char(' ');
         }
         put_char('\n');
