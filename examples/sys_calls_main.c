@@ -29,13 +29,14 @@ int32_t result[NUM_LINES][NUM_ELEM];
 void app_main();
 
 [[noreturn]]
-void _start()
+void _start_old()
 {
-    app_main();
+    //app_main();
     sys_exit();
 }
 
-void app_main()
+//void app_main()
+void _start()
 {
     int fd = sys_open(fileName, 0);
     sys_read(fd, buffer, sizeof(buffer));

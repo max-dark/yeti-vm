@@ -14,16 +14,19 @@ find_riscv_toolchain()
 riscv_add_executable(rv32i BIN HEX
         LINK_SCRIPT basic_vm.ld
         SOURCES rv32i.S
+        startup.S
 )
 
 riscv_add_executable(rv32m BIN HEX
         LINK_SCRIPT basic_vm.ld
         SOURCES rv32m.S
+        startup.S
 )
 
 riscv_add_executable(sys_calls BIN HEX
         LINK_SCRIPT basic_vm.ld
         SOURCES sys_calls_asm.S sys_calls_main.c
+        startup.c
 )
 
 riscv_add_library(
