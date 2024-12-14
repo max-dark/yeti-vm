@@ -7,45 +7,39 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_testing()
 
-add_executable(test_hex_checksum)
-target_sources(
-    test_hex_checksum
-    PRIVATE
-        hex_checksum.cxx
+# yeti_add_test(NAME <"title"> COMMAND <exe_name> SOURCES <sources> [LIBRARIES <libs>])
+#
+# NAME - test title, required
+# COMMAND - executable name, required
+# SOURCES - list of sources, required
+# LIBRARIES - additional libraries, optional
+function(yeti_add_test)
+    set(_options)
+    set(_keys NAME COMMAND)
+    set(_lists SOURCES LIBRARIES)
+    cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
+
+    add_executable(${var_COMMAND})
+    target_sources(${var_COMMAND} PRIVATE ${var_SOURCES})
+
+    target_link_libraries(${var_COMMAND} PRIVATE rvm ${var_LIBRARIES})
+    add_test(NAME "${var_NAME}" COMMAND ${var_COMMAND})
+endfunction()
+
+yeti_add_test(
+        NAME "HEX checksum"
+        COMMAND test_hex_checksum
+        SOURCES hex_checksum.cxx
 )
 
-target_link_libraries(
-    test_hex_checksum
-    PRIVATE
-        rvm
+yeti_add_test(
+        NAME "HEX parser"
+        COMMAND test_hex_parser
+        SOURCES hex_parser.cxx
 )
 
-add_test(NAME "HEX checksum" COMMAND test_hex_checksum)
-
-add_executable(test_hex_parser)
-target_sources(
-    test_hex_parser
-    PRIVATE
-        hex_parser.cxx
+yeti_add_test(
+        NAME "MMU tests"
+        COMMAND mmu_tests
+        SOURCES mmu_tests.cxx
 )
-
-target_link_libraries(
-    test_hex_parser
-    PRIVATE
-        rvm
-)
-
-add_test(NAME "HEX parser" COMMAND test_hex_parser)
-
-add_executable(mmu_tests)
-target_sources(
-    mmu_tests
-    PRIVATE
-        mmu_tests.cxx
-)
-target_link_libraries(
-    mmu_tests
-    PRIVATE
-        rvm
-)
-add_test(NAME "MMU tests" COMMAND mmu_tests)
