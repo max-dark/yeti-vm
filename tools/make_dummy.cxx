@@ -16,7 +16,8 @@ std::string generate(const char* name)
     return std::format(
 R"(// generated file
 // do not edit
-int {}_generated() {}
+// see: {}
+int _generated() {}
 )", name, "{ return 42; }");
 }
 

@@ -35,14 +35,11 @@ function(find_riscv_toolchain)
         set_property(TARGET ${_tool} PROPERTY IMPORTED_LOCATION "${${_var_name}}")
     endforeach ()
 
-    set(_options "${TOOL_PREFIX}_options")
-    set(_tool_options "${TOOL_PREFIX}::_options")
-    add_library(${_options} INTERFACE)
-
-    add_library(${_tool_options} ALIAS ${_options})
-
-#    get_target_property(_prop ${_tool_options} LANGUAGE)
-#    message("${_tool_options} : ${_prop}")
+#    set(_options "${TOOL_PREFIX}_options")
+#    set(_tool_options "${TOOL_PREFIX}::_options")
+#    add_library(${_options} INTERFACE)
+#
+#    add_library(${_tool_options} ALIAS ${_options})
 endfunction()
 
 
@@ -54,9 +51,9 @@ function(riscv_add_dummy NAME EXT DEPS)
             COMMAND make_dummy "${_file}" "${NAME}"
             DEPENDS "${DEPS}"
     )
-    add_library("${NAME}-dummy" STATIC)
+    add_library("${NAME}" SHARED)
     target_sources(
-        "${NAME}-dummy"
+        "${NAME}"
         PUBLIC
             "${_file}"
     )
@@ -168,6 +165,7 @@ function(riscv_add_library NAME)
     set(_lists SOURCES HEADERS LIBS)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
 
+    message(FATAL_ERROR "riscv_add_library: libraries is not supported") # FIXME: temporary disabled
     message(DEBUG "add lib: ${NAME}")
     message(DEBUG "${NAME} : LINK_SCRIPT = '${var_LINK_SCRIPT}'")
     message(DEBUG "${NAME} : SOURCES = '${var_SOURCES}'")

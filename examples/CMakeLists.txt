@@ -29,7 +29,8 @@ riscv_add_executable(sys_calls BIN HEX
         startup.c
 )
 
-riscv_add_library(
-        noname
-        SOURCES lib_test.c
-)
+# riscv_add_library: libraries is not supported
+#riscv_add_library(
+#        noname
+#        SOURCES lib_test.c
+#)
