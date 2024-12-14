@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_testing()
 
+option(YETI_ENABLE_TESTS "Build tests" ON)
+
 # yeti_add_test(NAME <"title"> COMMAND <exe_name> SOURCES <sources> [LIBRARIES <libs>])
 #
 # NAME - test title, required
@@ -26,6 +28,8 @@ function(yeti_add_test)
     add_test(NAME "${var_NAME}" COMMAND ${var_COMMAND})
 endfunction()
 
+if(YETI_ENABLE_TESTS)
+
 yeti_add_test(
         NAME "HEX checksum"
         COMMAND test_hex_checksum
@@ -43,3 +47,5 @@ yeti_add_test(
         COMMAND mmu_tests
         SOURCES mmu_tests.cxx
 )
+
+endif()
