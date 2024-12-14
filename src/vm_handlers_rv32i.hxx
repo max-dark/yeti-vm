@@ -242,7 +242,8 @@ template<opcode::opcode_t Type>
 struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
     static signed_t get_offset(const opcode::OpcodeBase* current)
     {
-        return to_signed(current->decode_i());
+        auto value = opcode::extend_sign(current->decode_i(), current->code);
+        return to_signed(value);
     }
     static vm_interface::address_t get_address(vm_interface *vm, const opcode::OpcodeBase* current)
     {
@@ -350,7 +351,8 @@ template<opcode::opcode_t Type>
 struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
     static signed_t get_offset(const opcode::OpcodeBase* current)
     {
-        return to_signed(current->decode_s());
+        auto value = opcode::extend_sign(current->decode_s(), current->code);
+        return to_signed(value);
     }
     static vm_interface::address_t get_address(vm_interface *vm, const opcode::OpcodeBase* current)
     {
