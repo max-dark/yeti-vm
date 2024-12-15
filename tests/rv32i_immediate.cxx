@@ -99,3 +99,24 @@ TEST(ImmediateParser, DecodeTypeB)
         ASSERT_EQ(value & extend, extend)  << std::hex << std::showbase << "wrong extend for i = " << i;
     }
 }
+
+// test for "U-type immediate"
+TEST(ImmediateParser, DecodeTypeU)
+{
+    constexpr opcode_t range  = make_mask< 0, 20>();
+    constexpr opcode_t values = make_mask<12, 20>();
+    constexpr opcode_t v_mask = ~0u; // make_mask<0, 32>();
+
+    for (opcode_t i = 0; i <= range; ++i)
+    {
+        auto encoded = i << 12;
+        auto sign = encoded & sign_mask;
+        OpcodeBase parser{.code = encoded};
+        auto value = parser.decode_u();
+
+        ASSERT_EQ(value & values, encoded) << std::hex << std::showbase << "wrong value for i = " << i;
+        ASSERT_EQ(value & sign_mask, sign)  << std::hex << std::showbase << "wrong sign for i = " << i;
+        auto extend = sign ? ~v_mask : 0;
+        ASSERT_EQ(value & extend, extend)  << std::hex << std::showbase << "wrong extend for i = " << i;
+    }
+}
