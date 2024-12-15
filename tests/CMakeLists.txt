@@ -7,6 +7,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_testing()
 
+find_package(GTest REQUIRED)
+include(GoogleTest)
+
+function(add_gtest)
+    set(_options)
+    set(_keys NAME COMMAND)
+    set(_lists SOURCES LIBRARIES)
+    cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
+
+    add_executable(${var_COMMAND})
+    target_sources(${var_COMMAND} PRIVATE ${var_SOURCES})
+
+    target_link_libraries(${var_COMMAND} PRIVATE YetiVM::runtime GTest::gtest_main ${var_LIBRARIES})
+    gtest_discover_tests(${var_COMMAND})
+endfunction()
+
 # yeti_add_test(NAME <"title"> COMMAND <exe_name> SOURCES <sources> [LIBRARIES <libs>])
 #
 # NAME - test title, required
