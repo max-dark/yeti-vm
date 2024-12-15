@@ -448,6 +448,7 @@ struct addi : int_imm<0b0000> {
 };
 
 /// set if less than immediate
+/// rd = (rs < const) ? 1 : 0;
 /// asm: slti rd, rs, const
 struct slti : int_imm<0b0010> {
     [[nodiscard]]
@@ -458,21 +459,14 @@ struct slti : int_imm<0b0010> {
     void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
         auto dest = current->get_rd();
-        auto value = vm->get_register(current->get_rs1());
-        auto src  = to_signed(value);
+        auto value = to_signed(vm->get_register(current->get_rs1()));
         auto data = get_data(current);
-        if (src < data)
-        {
-            vm->set_register(dest, to_unsigned(data));
-        }
-        else
-        {
-            vm->set_register(dest, 0);
-        }
+        vm->set_register(dest, value < data);
     }
 };
 
 /// set if less than unsigned immediate
+/// rd = (rs < const) ? 1 : 0;
 /// asm: sltiu rd, rs, const
 struct sltiu: int_imm<0b0011> {
     [[nodiscard]]
@@ -491,15 +485,8 @@ struct sltiu: int_imm<0b0011> {
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
-        auto data = current->decode_i();
-        if (value < data)
-        {
-            vm->set_register(dest, data);
-        }
-        else
-        {
-            vm->set_register(dest, 0);
-        }
+        auto data = current->decode_i_u();
+        vm->set_register(dest, value < data);
     }
 };
 
