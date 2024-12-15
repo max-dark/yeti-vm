@@ -3,4 +3,4 @@
 
 @PACKAGE_INIT@
 
-include("${CMAKE_CURRENT_LIST_DIR}/YetiProjectTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/@YetiVM_Package@Targets.cmake")
