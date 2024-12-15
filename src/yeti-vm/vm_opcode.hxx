@@ -162,6 +162,10 @@ struct OpcodeBase
     [[nodiscard]]
     data_t decode_i() const;
 
+    /// decode immediate / I-type / unsigned
+    [[nodiscard]]
+    data_t decode_i_u() const;
+
     /// decode immediate / S-type
     [[nodiscard]]
     data_t decode_s() const;

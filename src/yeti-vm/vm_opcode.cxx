@@ -89,6 +89,10 @@ data_t OpcodeBase::decode_i() const {
     return shift_bits<20, 0, 12>(code);
 }
 
+data_t OpcodeBase::decode_i_u() const {
+    return shift_bits<20, 0, 12>(code);
+}
+
 data_t OpcodeBase::decode_s() const {
     auto a = shift_bits< 7, 0, 5>(code);
     auto b = shift_bits<25, 5, 7>(code);
