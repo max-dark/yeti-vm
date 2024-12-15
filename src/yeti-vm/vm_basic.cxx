@@ -456,11 +456,11 @@ void basic_vm::dump_state(std::ostream &dump) const
                     << "\trs2 = " << std::setw(4) << vm::get_register_alias(code->get_rs2())
                     << std::endl
                     << std::hex
-                    << "\ti = " << std::setw(4) << code->decode_i() << std::endl
-                    << "\tb = " << std::setw(4) << code->decode_b() << std::endl
-                    << "\tj = " << std::setw(4) << code->decode_j() << std::endl
-                    << "\ts = " << std::setw(4) << code->decode_s() << std::endl
-                    << "\tu = " << std::setw(4) << code->decode_u() << std::endl
+                    << "\ti = " << std::setw(4) << code->decode_i_u() << std::endl
+                    << "\tb = " << std::setw(4) << code->decode_b_u() << std::endl
+                    << "\tj = " << std::setw(4) << code->decode_j_u() << std::endl
+                    << "\ts = " << std::setw(4) << code->decode_s_u() << std::endl
+                    << "\tu = " << std::setw(4) << code->decode_u_u() << std::endl
                 ;
             if (handler)
             {

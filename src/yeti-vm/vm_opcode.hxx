@@ -158,25 +158,43 @@ struct OpcodeBase
         return get_bits(code, 25, 7);
     }
 
-    /// decode immediate / I-type
+    /// decode immediate / I-type / sign extended
     [[nodiscard]]
     data_t decode_i() const;
 
-    /// decode immediate / S-type
+    /// decode immediate / I-type / zero extended
+    [[nodiscard]]
+    data_t decode_i_u() const;
+
+    /// decode immediate / S-type / sign extended
     [[nodiscard]]
     data_t decode_s() const;
 
-    /// decode immediate / B-type
+    /// decode immediate / S-type / zero extended
+    [[nodiscard]]
+    data_t decode_s_u() const;
+
+    /// decode immediate / B-type / sign extended
     [[nodiscard]]
     data_t decode_b() const;
+
+    /// decode immediate / B-type / zero extended
+    [[nodiscard]]
+    data_t decode_b_u() const;
 
     /// decode immediate / U-type
     [[nodiscard]]
     data_t decode_u() const;
+    [[nodiscard]]
+    data_t decode_u_u() const { return decode_u(); }
 
-    /// decode immediate / J-type
+    /// decode immediate / J-type / sign extended
     [[nodiscard]]
     data_t decode_j() const;
+
+    /// decode immediate / J-type / zero extended
+    [[nodiscard]]
+    data_t decode_j_u() const;
 };
 static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
 
@@ -209,7 +227,7 @@ enum OpcodeType: opcode_t
     CUSTOM_0 = make_opcode(0b00, 0b010), // for extensions
     CUSTOM_1 = make_opcode(0b01, 0b010), // for extensions
     NMSUB    = make_opcode(0b10, 0b010), // "Multiple and Sub"(float/double)
-    // R_11_010 = make_opcode(0b11, 0b010), // reserved
+    R_11_010 = make_opcode(0b11, 0b010), // reserved
 
     MISC_MEM = make_opcode(0b00, 0b011), // sync, barriers, etc
     AMO      = make_opcode(0b01, 0b011), // atomic ops
@@ -223,8 +241,8 @@ enum OpcodeType: opcode_t
 
     AUIPC = make_opcode(0b00, 0b101), // "Add upper immediate to PC"
     LUI   = make_opcode(0b01, 0b101), // "Load upper immediate"
-    // R_10_101 = make_opcode(0b01, 0b101), // reserved
-    // R_11_101 = make_opcode(0b11, 0b101), // reserved
+    R_10_101 = make_opcode(0b10, 0b101), // reserved
+    R_11_101 = make_opcode(0b11, 0b101), // reserved
 
     OP_IMM_32 = make_opcode(0b00, 0b110), // only for 64bit
     OP_32     = make_opcode(0b01, 0b110), // only for 64bit
