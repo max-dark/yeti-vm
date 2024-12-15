@@ -158,7 +158,7 @@ struct OpcodeBase
         return get_bits(code, 25, 7);
     }
 
-    /// decode immediate / I-type
+    /// decode immediate / I-type / sign extended
     [[nodiscard]]
     data_t decode_i() const;
 

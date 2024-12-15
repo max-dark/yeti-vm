@@ -86,7 +86,7 @@ std::string_view get_op_id(OpcodeType code) {
 }
 
 data_t OpcodeBase::decode_i() const {
-    return shift_bits<20, 0, 12>(code);
+    return extend_sign(decode_i_u(), code);
 }
 
 data_t OpcodeBase::decode_i_u() const {
