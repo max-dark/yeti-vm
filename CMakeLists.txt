@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(Yeti LANGUAGES CXX)
+include(cmake/YetiVersion.cmake)
+
+project(Yeti LANGUAGES CXX
+        VERSION ${YetiVersion}
+        DESCRIPTION "${YetiProject}"
+)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
