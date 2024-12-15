@@ -116,6 +116,6 @@ data_t OpcodeBase::decode_j() const {
     auto a = shift_bits<12, 12, 8>(code); // [19:12]
     auto b = shift_bits<20, 11, 1>(code); // [20]
     auto c = shift_bits<21,  1,10>(code); // [30:21]
-    return s | a | b | c | 0;
+    return extend_sign(s | a | b | c | 0, code);
 }
 } //namespace vm::opcode
