@@ -5,35 +5,6 @@
 
 using range = vm::memory_block::params;
 
-struct A
-{
-    template<typename T>
-    T* get(size_t pos)
-    {
-        return static_cast<T*>(get(pos, sizeof(T)));
-    }
-protected:
-    virtual void * get(size_t pos, size_t sz) = 0;
-};
-
-struct B: public A
-{
-protected:
-    void * get(size_t pos, size_t sz) override { return nullptr; }
-};
-
-struct C: public A
-{
-protected:
-    void * get(size_t pos, size_t sz) override { return nullptr; }
-};
-
-void test(A* a)
-{
-    auto v = a->get<int>(1);
-}
-
-
 int main()
 {
     {
