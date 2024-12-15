@@ -72,3 +72,30 @@ TEST(ImmediateParser, DecodeTypeS)
         ASSERT_EQ(value & extend, extend)  << std::hex << std::showbase << "wrong extend for i = " << i;
     }
 }
+
+// test for "B-type immediate"
+TEST(ImmediateParser, DecodeTypeB)
+{
+    constexpr opcode_t range = make_mask<0, 13>();
+    constexpr opcode_t values = make_mask<1, 12>();
+    constexpr opcode_t v_mask = make_mask<0, 13>();
+
+    for (opcode_t i = 0; i <= range; i += 2) // only even, v[0] == 0
+    {
+        ASSERT_EQ(i & 1, 0) << "wrong test range: v[0] != 0";
+        auto a = shift_bits<12, 31, 1>(i);
+        auto c = shift_bits<11,  7, 1>(i);
+        auto b = shift_bits< 5, 25, 6>(i);
+        auto d = shift_bits< 1,  8, 4>(i);
+
+        auto encoded = (a | b | c | d | 0);
+        auto sign = encoded & sign_mask;
+        OpcodeBase parser{.code = encoded};
+        auto value = parser.decode_b();
+
+        ASSERT_EQ(value & values, i) << std::hex << std::showbase << "wrong value for i = " << i;
+        ASSERT_EQ(value & sign_mask, sign)  << std::hex << std::showbase << "wrong sign for i = " << i;
+        auto extend = sign ? ~v_mask : 0;
+        ASSERT_EQ(value & extend, extend)  << std::hex << std::showbase << "wrong extend for i = " << i;
+    }
+}
