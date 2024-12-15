@@ -76,6 +76,7 @@ target_link_libraries(
 )
 add_library(YetiVM::basic_vm ALIAS ${LIB_BASIC_VM})
 
+# using *NIX-style dir structure
 include(GNUInstallDirs)
 
 # standard paths are used, so specifying 'DESTINATION ...' is not necessary
@@ -83,16 +84,44 @@ install(TARGETS
         yeti_vm_shared
         yeti_vm_runtime
         yeti_vm_basic
-        EXPORT YetiVMTargets
+        EXPORT YetiProjectTargets
         LIBRARY COMPONENT Runtime
         RUNTIME COMPONENT Runtime
-        ARCHIVE COMPONENT Libraries
+        ARCHIVE COMPONENT Development
 #        PUBLIC_HEADER COMPONENT Headers # target_sources produce cmake error when add headers as PUBLIC files
-        FILE_SET HEADERS COMPONENT Headers
+        FILE_SET HEADERS COMPONENT Development
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-install(EXPORT YetiVMTargets
+set(_cmake_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/YetiVM")
+
+install(EXPORT YetiProjectTargets
 #        CONFIGURATIONS Debug Release
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/YetiVM
+        DESTINATION ${_cmake_install_dir}
 )
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+        "${CMAKE_CURRENT_LIST_DIR}/YetiProjectConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/YetiProjectConfig.cmake"
+        INSTALL_DESTINATION ${_cmake_install_dir}
+        NO_SET_AND_CHECK_MACRO
+        NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/YetiProjectConfigVersion.cmake"
+        VERSION "${YetiVersion}"
+        COMPATIBILITY ExactVersion # TODO: do not forget change after API stabilisation
+)
+
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/YetiProjectConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/YetiProjectConfigVersion.cmake"
+        COMPONENT Development
+        DESTINATION ${_cmake_install_dir}
+)
+
+unset(_cmake_install_dir)
+
