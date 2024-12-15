@@ -94,7 +94,9 @@ install(TARGETS
 )
 
 set(_package_prefix "${YetiVM_Package}")
-set(_cmake_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/YetiVM")
+# install data to INSTALL_PREFIX/share
+set(_project_data_dir "${CMAKE_INSTALL_DATADIR}/${YetiVM_Package}-${YetiVersion}")
+set(_cmake_install_dir "${_project_data_dir}/cmake")
 
 install(EXPORT "${YetiVM_Package}Targets"
 #        CONFIGURATIONS Debug Release
@@ -125,5 +127,6 @@ install(FILES
 )
 
 unset(_cmake_install_dir)
+unset(_project_data_dir)
 unset(_package_prefix)
 
