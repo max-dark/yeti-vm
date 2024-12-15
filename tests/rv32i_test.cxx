@@ -86,3 +86,41 @@ TEST(InstructionParser, GetRS2)
         ASSERT_EQ(parser.get_rs2(), expected);
     }
 }
+
+TEST(InstructionParser, GetA)
+{
+    constexpr uint8_t reg_start = 12;
+    constexpr uint8_t reg_size  =  3;
+    constexpr uint8_t reg_last  =  reg_start + reg_size;
+    constexpr opcode_t mask = make_mask<reg_start, reg_size>();
+    constexpr opcode_t lo = make_mask<0, reg_start - 2>();
+    constexpr opcode_t hi = make_mask<0, reg_last  + 2>();
+    OpcodeBase parser{};
+    auto& code = parser.code;
+
+    for (opcode_t i = lo; i <= hi; ++i)
+    {
+        code = i;
+        auto expected = (i & mask) >> reg_start;
+        ASSERT_EQ(parser.get_func3(), expected);
+    }
+}
+
+TEST(InstructionParser, GetB)
+{
+    constexpr uint8_t reg_start = 25;
+    constexpr uint8_t reg_size  =  7;
+    //constexpr uint8_t reg_last  =  reg_start + reg_size;
+    constexpr opcode_t mask = make_mask<reg_start, reg_size>();
+    constexpr opcode_t lo = make_mask<0, reg_size + 2>();
+    //constexpr opcode_t hi = lo << (reg_start - 2);
+    OpcodeBase parser{};
+    auto& code = parser.code;
+
+    for (opcode_t i = 0; i <= lo; ++i)
+    {
+        code = i << (reg_start - 2);
+        auto expected = (code & mask) >> reg_start;
+        ASSERT_EQ(parser.get_func7(), expected);
+    }
+}
