@@ -61,8 +61,7 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
 
     static opcode::signed_t get_data(const opcode::OpcodeBase* code)
     {
-        auto value = opcode::extend_sign(code->decode_j(), code->code);
-        return std::bit_cast<opcode::signed_t>(value);
+        return std::bit_cast<opcode::signed_t>(code->decode_j());
     }
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
@@ -93,8 +92,7 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
 
     static opcode::signed_t get_data(const opcode::OpcodeBase* code)
     {
-        auto value = opcode::extend_sign(code->decode_i(), code->code);
-        return std::bit_cast<opcode::signed_t>(value);
+        return std::bit_cast<opcode::signed_t>(code->decode_i());
     }
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
@@ -138,8 +136,7 @@ struct branch: public instruction_base<opcode::BRANCH, opcode::B_TYPE, Type> {
     [[nodiscard]]
     static opcode::signed_t get_data(const opcode::OpcodeBase* current)
     {
-        auto value = opcode::extend_sign(current->decode_b(), current->code);
-        return std::bit_cast<opcode::signed_t>(value);
+        return std::bit_cast<opcode::signed_t>(current->decode_b());
     }
 
     [[nodiscard]]
@@ -242,8 +239,7 @@ template<opcode::opcode_t Type>
 struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
     static signed_t get_offset(const opcode::OpcodeBase* current)
     {
-        auto value = opcode::extend_sign(current->decode_i(), current->code);
-        return to_signed(value);
+        return to_signed(current->decode_i());
     }
     static vm_interface::address_t get_address(vm_interface *vm, const opcode::OpcodeBase* current)
     {
@@ -351,8 +347,7 @@ template<opcode::opcode_t Type>
 struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
     static signed_t get_offset(const opcode::OpcodeBase* current)
     {
-        auto value = opcode::extend_sign(current->decode_s(), current->code);
-        return to_signed(value);
+        return to_signed(current->decode_s());
     }
     static vm_interface::address_t get_address(vm_interface *vm, const opcode::OpcodeBase* current)
     {
@@ -419,7 +414,7 @@ template<opcode::opcode_t Type>
 struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {
     static signed_t get_data(const opcode::OpcodeBase* current)
     {
-        return to_signed(opcode::extend_sign(current->decode_i(), current->code));
+        return to_signed(current->decode_i());
     }
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
@@ -544,7 +539,7 @@ template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {
     static register_t get_data(const opcode::OpcodeBase* current)
     {
-        return current->decode_i() & opcode::mask_value<0, 5>;
+        return current->decode_i_u() & opcode::mask_value<0, 5>;
     }
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
@@ -821,7 +816,7 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, 0b0000>
     }
     void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
-        if (current->decode_i())
+        if (current->decode_i_u())
         {
             vm->debug();
         }
