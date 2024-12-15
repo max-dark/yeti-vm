@@ -104,7 +104,7 @@ data_t OpcodeBase::decode_b() const {
     auto a = shift_bits< 8,  1, 4>(code);
     auto c = shift_bits< 7, 11, 1>(code);
     auto b = shift_bits<25,  5, 6>(code);
-    return s | a | b | c | 0;
+    return extend_sign(s | a | b | c | 0, code);
 }
 
 data_t OpcodeBase::decode_u() const {
