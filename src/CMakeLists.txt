@@ -84,7 +84,7 @@ install(TARGETS
         yeti_vm_shared
         yeti_vm_runtime
         yeti_vm_basic
-        EXPORT YetiProjectTargets
+        EXPORT "${YetiVM_Package}Targets"
         LIBRARY COMPONENT Runtime
         RUNTIME COMPONENT Runtime
         ARCHIVE COMPONENT Development
@@ -93,9 +93,10 @@ install(TARGETS
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+set(_package_prefix "${YetiVM_Package}")
 set(_cmake_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/YetiVM")
 
-install(EXPORT YetiProjectTargets
+install(EXPORT "${YetiVM_Package}Targets"
 #        CONFIGURATIONS Debug Release
         DESTINATION ${_cmake_install_dir}
 )
@@ -103,25 +104,26 @@ install(EXPORT YetiProjectTargets
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-        "${CMAKE_CURRENT_LIST_DIR}/YetiProjectConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/YetiProjectConfig.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/PackageConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/${_package_prefix}Config.cmake"
         INSTALL_DESTINATION ${_cmake_install_dir}
         NO_SET_AND_CHECK_MACRO
         NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
 
 write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/YetiProjectConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${_package_prefix}ConfigVersion.cmake"
         VERSION "${YetiVersion}"
         COMPATIBILITY ExactVersion # TODO: do not forget change after API stabilisation
 )
 
 install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/YetiProjectConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/YetiProjectConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${_package_prefix}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${_package_prefix}ConfigVersion.cmake"
         COMPONENT Development
         DESTINATION ${_cmake_install_dir}
 )
 
 unset(_cmake_install_dir)
+unset(_package_prefix)
 

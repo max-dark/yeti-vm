@@ -9,3 +9,4 @@ set(YetiVersion "${YetiVersion_MAJOR}.${YetiVersion_MINOR}.${YetiVersion_PATCH}"
 
 # project description
 set(YetiProject "Yeti Project / RISC-V virtual machine")
+set(YetiVM_Package "YetiVM")
