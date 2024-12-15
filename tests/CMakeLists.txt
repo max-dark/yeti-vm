@@ -59,3 +59,10 @@ yeti_add_test(
         COMMAND mmu_tests
         SOURCES mmu_tests.cxx
 )
+
+add_gtest(
+        NAME "RV32I tests"
+        COMMAND rv32i_tests
+        SOURCES
+        rv32i_test.cxx
+)
