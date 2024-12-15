@@ -65,4 +65,5 @@ add_gtest(
         COMMAND rv32i_tests
         SOURCES
         rv32i_test.cxx
+        rv32i_immediate.cxx
 )
