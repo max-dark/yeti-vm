@@ -76,6 +76,8 @@ target_link_libraries(
 )
 add_library(YetiVM::basic_vm ALIAS ${LIB_BASIC_VM})
 
+if (YETI_ENABLE_INSTALL)
+
 # using *NIX-style dir structure
 include(GNUInstallDirs)
 
@@ -130,3 +132,4 @@ unset(_cmake_install_dir)
 unset(_project_data_dir)
 unset(_package_prefix)
 
+endif() # YETI_ENABLE_INSTALL
