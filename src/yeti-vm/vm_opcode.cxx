@@ -94,17 +94,26 @@ data_t OpcodeBase::decode_i_u() const {
 }
 
 data_t OpcodeBase::decode_s() const {
+    return extend_sign(decode_s_u(), code);
+}
+
+data_t OpcodeBase::decode_s_u() const
+{
     auto a = shift_bits< 7, 0, 5>(code);
     auto b = shift_bits<25, 5, 7>(code);
-    return extend_sign(a | b, code);
+    return (a | b);
 }
 
 data_t OpcodeBase::decode_b() const {
+    return extend_sign(decode_b_u(), code);
+}
+
+data_t OpcodeBase::decode_b_u() const {
     auto s = shift_bits<31, 12, 1>(code);
     auto a = shift_bits< 8,  1, 4>(code);
     auto c = shift_bits< 7, 11, 1>(code);
     auto b = shift_bits<25,  5, 6>(code);
-    return extend_sign(s | a | b | c | 0, code);
+    return (s | a | b | c | 0);
 }
 
 data_t OpcodeBase::decode_u() const {
@@ -112,10 +121,14 @@ data_t OpcodeBase::decode_u() const {
 }
 
 data_t OpcodeBase::decode_j() const {
+    return extend_sign(decode_j_u(), code);
+}
+
+data_t OpcodeBase::decode_j_u() const {
     auto s = shift_bits<31, 20, 1>(code); // [31]
     auto a = shift_bits<12, 12, 8>(code); // [19:12]
     auto b = shift_bits<20, 11, 1>(code); // [20]
     auto c = shift_bits<21,  1,10>(code); // [30:21]
-    return extend_sign(s | a | b | c | 0, code);
+    return (s | a | b | c | 0);
 }
 } //namespace vm::opcode

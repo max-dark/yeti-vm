@@ -162,25 +162,39 @@ struct OpcodeBase
     [[nodiscard]]
     data_t decode_i() const;
 
-    /// decode immediate / I-type / unsigned
+    /// decode immediate / I-type / zero extended
     [[nodiscard]]
     data_t decode_i_u() const;
 
-    /// decode immediate / S-type
+    /// decode immediate / S-type / sign extended
     [[nodiscard]]
     data_t decode_s() const;
 
-    /// decode immediate / B-type
+    /// decode immediate / S-type / zero extended
+    [[nodiscard]]
+    data_t decode_s_u() const;
+
+    /// decode immediate / B-type / sign extended
     [[nodiscard]]
     data_t decode_b() const;
+
+    /// decode immediate / B-type / zero extended
+    [[nodiscard]]
+    data_t decode_b_u() const;
 
     /// decode immediate / U-type
     [[nodiscard]]
     data_t decode_u() const;
+    [[nodiscard]]
+    data_t decode_u_u() const { return decode_u(); }
 
-    /// decode immediate / J-type
+    /// decode immediate / J-type / sign extended
     [[nodiscard]]
     data_t decode_j() const;
+
+    /// decode immediate / J-type / zero extended
+    [[nodiscard]]
+    data_t decode_j_u() const;
 };
 static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
 
