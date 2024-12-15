@@ -75,6 +75,12 @@ std::string_view get_op_id(OpcodeType code) {
             return "NMADD";
         case OP_FP:
             return "OP_FP";
+        case R_11_010:
+            return "R_11_010";
+        case R_10_101:
+            return "R_10_101";
+        case R_11_101:
+            return "R_11_101";
     }
     return "UNKNOWN";
 }

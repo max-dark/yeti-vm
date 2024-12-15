@@ -209,7 +209,7 @@ enum OpcodeType: opcode_t
     CUSTOM_0 = make_opcode(0b00, 0b010), // for extensions
     CUSTOM_1 = make_opcode(0b01, 0b010), // for extensions
     NMSUB    = make_opcode(0b10, 0b010), // "Multiple and Sub"(float/double)
-    // R_11_010 = make_opcode(0b11, 0b010), // reserved
+    R_11_010 = make_opcode(0b11, 0b010), // reserved
 
     MISC_MEM = make_opcode(0b00, 0b011), // sync, barriers, etc
     AMO      = make_opcode(0b01, 0b011), // atomic ops
@@ -223,8 +223,8 @@ enum OpcodeType: opcode_t
 
     AUIPC = make_opcode(0b00, 0b101), // "Add upper immediate to PC"
     LUI   = make_opcode(0b01, 0b101), // "Load upper immediate"
-    // R_10_101 = make_opcode(0b01, 0b101), // reserved
-    // R_11_101 = make_opcode(0b11, 0b101), // reserved
+    R_10_101 = make_opcode(0b10, 0b101), // reserved
+    R_11_101 = make_opcode(0b11, 0b101), // reserved
 
     OP_IMM_32 = make_opcode(0b00, 0b110), // only for 64bit
     OP_32     = make_opcode(0b01, 0b110), // only for 64bit
