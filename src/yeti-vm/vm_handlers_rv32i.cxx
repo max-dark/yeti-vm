@@ -33,8 +33,8 @@ void add_store(registry *r, bool& ok)
 void add_int_imm(registry *r, bool& ok)
 {
     ok = ok && r->register_handler<addi>();
-    ok = ok && r->register_handler<sli>();
-    ok = ok && r->register_handler<sliu>();
+    ok = ok && r->register_handler<slti>();
+    ok = ok && r->register_handler<sltiu>();
     ok = ok && r->register_handler<xori>();
     ok = ok && r->register_handler<ori>();
     ok = ok && r->register_handler<andi>();

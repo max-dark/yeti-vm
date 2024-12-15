@@ -448,12 +448,12 @@ struct addi : int_imm<0b0000> {
 };
 
 /// set if less than immediate
-/// asm: sli rd, rs, const
-struct sli : int_imm<0b0010> {
+/// asm: slti rd, rs, const
+struct slti : int_imm<0b0010> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
-        return "sli";
+        return "slti";
     }
     void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
@@ -473,8 +473,8 @@ struct sli : int_imm<0b0010> {
 };
 
 /// set if less than unsigned immediate
-/// asm: sli rd, rs, const
-struct sliu: int_imm<0b0011> {
+/// asm: sltiu rd, rs, const
+struct sltiu: int_imm<0b0011> {
     [[nodiscard]]
     std::string get_args(const opcode::OpcodeBase* code) const override
     {
@@ -485,7 +485,7 @@ struct sliu: int_imm<0b0011> {
     [[nodiscard]]
     std::string_view get_mnemonic() const final
     {
-        return "sliu";
+        return "sltiu";
     }
     void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
     {
