@@ -80,30 +80,30 @@ std::string_view get_op_id(OpcodeType code) {
     return "UNKNOWN";
 }
 
-data_t OpcodeBase::decode_i() const {
+data_t Decoder::decode_i() const {
     return extend_sign<11>(decode_i_u());
 }
 
-data_t OpcodeBase::decode_i_u() const {
+data_t Decoder::decode_i_u() const {
     return shift_bits<20, 0, 12>(code);
 }
 
-data_t OpcodeBase::decode_s() const {
+data_t Decoder::decode_s() const {
     return extend_sign<11>(decode_s_u());
 }
 
-data_t OpcodeBase::decode_s_u() const
+data_t Decoder::decode_s_u() const
 {
     auto a = shift_bits< 7, 0, 5>(code);
     auto b = shift_bits<25, 5, 7>(code);
     return (a | b);
 }
 
-data_t OpcodeBase::decode_b() const {
+data_t Decoder::decode_b() const {
     return extend_sign<12>(decode_b_u());
 }
 
-data_t OpcodeBase::decode_b_u() const {
+data_t Decoder::decode_b_u() const {
     auto s = shift_bits<31, 12, 1>(code);
     auto a = shift_bits< 8,  1, 4>(code);
     auto c = shift_bits< 7, 11, 1>(code);
@@ -111,15 +111,15 @@ data_t OpcodeBase::decode_b_u() const {
     return (s | a | b | c | 0);
 }
 
-data_t OpcodeBase::decode_u() const {
+data_t Decoder::decode_u() const {
     return code & make_mask<12, 30>();
 }
 
-data_t OpcodeBase::decode_j() const {
+data_t Decoder::decode_j() const {
     return extend_sign<20>(decode_j_u());
 }
 
-data_t OpcodeBase::decode_j_u() const {
+data_t Decoder::decode_j_u() const {
     auto s = shift_bits<31, 20, 1>(code); // [31]
     auto a = shift_bits<12, 12, 8>(code); // [19:12]
     auto b = shift_bits<20, 11, 1>(code); // [20]

@@ -328,10 +328,10 @@ bool basic_vm::is_initialized() const
     return initFlags == ALL_FLAGS_MASK;
 }
 
-const opcode::OpcodeBase *basic_vm::get_current() const
+const opcode::Decoder *basic_vm::get_current() const
 {
     const auto * ptr = get_ptr_ro(get_pc(), sizeof(opcode::opcode_t));
-    return ptr->get_ro_ptr<opcode::OpcodeBase>(get_pc());
+    return ptr->get_ro_ptr<opcode::Decoder>(get_pc());
 }
 
 bool basic_vm::set_ro_base(address_t base)

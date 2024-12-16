@@ -22,7 +22,7 @@ template<opcode::opcode_t Type>
 struct math: public instruction_base<opcode::OP, opcode::R_TYPE, Type, 0b000'0001> {
 
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string lhs{get_register_alias(code->get_rs1())};
@@ -31,7 +31,7 @@ struct math: public instruction_base<opcode::OP, opcode::R_TYPE, Type, 0b000'000
     }
     [[nodiscard]]
     virtual register_t calculate(register_t lhs, register_t rhs) const = 0;
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto lhs = vm->get_register(current->get_rs1());

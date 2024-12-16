@@ -19,7 +19,7 @@ bool registry::register_handler(interface::ptr handler)
     return ok;
 }
 
-registry::handler_ptr registry::find_handler(const opcode::OpcodeBase *code) const
+registry::handler_ptr registry::find_handler(const opcode::Decoder *code) const
 {
     auto op = code->get_code();
     auto funcA = func_a.contains(op) ? code->get_func3() : no_func_a;

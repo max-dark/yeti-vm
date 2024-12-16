@@ -12,7 +12,7 @@ namespace vm::rv32i
 /// asm: lui dest, const
 struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string args{get_register_alias(code->get_rd())};
         return args + ", " + opcode::to_hex(code->decode_u());
@@ -22,7 +22,7 @@ struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
     {
         return "lui";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto data = current->decode_u();
@@ -34,7 +34,7 @@ struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
 /// asm: auipc dest, const
 struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string args{get_register_alias(code->get_rd())};
         return args + ", " + opcode::to_hex(code->decode_u());
@@ -44,7 +44,7 @@ struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
     {
         return "auipc";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto data = current->decode_u();
@@ -59,12 +59,12 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
     [[nodiscard]]
     bool skip() const final { return true; }
 
-    static opcode::signed_t get_data(const opcode::OpcodeBase* code)
+    static opcode::signed_t get_data(const opcode::Decoder* code)
     {
         return std::bit_cast<opcode::signed_t>(code->decode_j());
     }
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string args{get_register_alias(code->get_rd())};
         return args + ", " + std::to_string(get_data(code));
@@ -74,7 +74,7 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
     {
         return "jal";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto offset = get_data(current);
@@ -90,12 +90,12 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
     [[nodiscard]]
     bool skip() const final { return true; }
 
-    static opcode::signed_t get_data(const opcode::OpcodeBase* code)
+    static opcode::signed_t get_data(const opcode::Decoder* code)
     {
         return std::bit_cast<opcode::signed_t>(code->decode_i());
     }
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
@@ -106,7 +106,7 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
     {
         return "jalr";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto src = current->get_rs1();
@@ -126,7 +126,7 @@ struct branch: public instruction_base<opcode::BRANCH, opcode::B_TYPE, Type> {
     bool skip() const final { return true; }
 
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string lhs{get_register_alias(code->get_rs1())};
         std::string rhs{get_register_alias(code->get_rs2())};
@@ -134,14 +134,14 @@ struct branch: public instruction_base<opcode::BRANCH, opcode::B_TYPE, Type> {
     }
 
     [[nodiscard]]
-    static opcode::signed_t get_data(const opcode::OpcodeBase* current)
+    static opcode::signed_t get_data(const opcode::Decoder* current)
     {
         return std::bit_cast<opcode::signed_t>(current->decode_b());
     }
 
     [[nodiscard]]
     virtual bool compare(register_t lhs, register_t rhs) const = 0;
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto lhs = vm->get_register(current->get_rs1());
         auto rhs = vm->get_register(current->get_rs2());
@@ -237,24 +237,24 @@ struct bgeu: branch<0b0111> {
 /// load(read) value from memory
 template<opcode::opcode_t Type>
 struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
-    static signed_t get_offset(const opcode::OpcodeBase* current)
+    static signed_t get_offset(const opcode::Decoder* current)
     {
         return to_signed(current->decode_i());
     }
-    static vm_interface::address_t get_address(vm_interface *vm, const opcode::OpcodeBase* current)
+    static vm_interface::address_t get_address(vm_interface *vm, const opcode::Decoder* current)
     {
         auto base = vm->get_register(current->get_rs1());
         return base + get_offset(current);
     }
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string base{get_register_alias(code->get_rs1())};
         return dest + ", " + base + ", " + std::to_string(get_offset(code));
     }
     virtual register_t read_memory(vm_interface* vm, vm_interface::address_t address) const = 0;
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto address = get_address(vm, current);
         auto value = read_memory(vm, address);
@@ -345,23 +345,23 @@ struct lhu: load<0b0101> {
 /// store(write) value into memory
 template<opcode::opcode_t Type>
 struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
-    static signed_t get_offset(const opcode::OpcodeBase* current)
+    static signed_t get_offset(const opcode::Decoder* current)
     {
         return to_signed(current->decode_s());
     }
-    static vm_interface::address_t get_address(vm_interface *vm, const opcode::OpcodeBase* current)
+    static vm_interface::address_t get_address(vm_interface *vm, const opcode::Decoder* current)
     {
         auto base = vm->get_register(current->get_rs1());
         return base + get_offset(current);
     }
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string base{get_register_alias(code->get_rs1())};
         std::string src{get_register_alias(code->get_rs2())};
         return src + ", " + base + ", " + std::to_string(get_offset(code));
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto value = vm->get_register(current->get_rs2());
         auto address = get_address(vm, current);
@@ -412,12 +412,12 @@ struct sw: store<0b0010> {
 /// integer-immediate
 template<opcode::opcode_t Type>
 struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {
-    static signed_t get_data(const opcode::OpcodeBase* current)
+    static signed_t get_data(const opcode::Decoder* current)
     {
         return to_signed(current->decode_i());
     }
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
@@ -433,7 +433,7 @@ struct addi : int_imm<0b0000> {
     {
         return "addi";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto src  = vm->get_register(current->get_rs1());
@@ -451,7 +451,7 @@ struct slti : int_imm<0b0010> {
     {
         return "slti";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = to_signed(vm->get_register(current->get_rs1()));
@@ -465,7 +465,7 @@ struct slti : int_imm<0b0010> {
 /// asm: sltiu rd, rs, const
 struct sltiu: int_imm<0b0011> {
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
@@ -476,7 +476,7 @@ struct sltiu: int_imm<0b0011> {
     {
         return "sltiu";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -493,7 +493,7 @@ struct xori: int_imm<0b0100> {
     {
         return "xori";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -509,7 +509,7 @@ struct ori : int_imm<0b0110> {
     {
         return "ori";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -525,7 +525,7 @@ struct andi: int_imm<0b0111> {
     {
         return "andi";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -537,12 +537,12 @@ struct andi: int_imm<0b0111> {
 /// shift by immediate
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {
-    static register_t get_data(const opcode::OpcodeBase* current)
+    static register_t get_data(const opcode::Decoder* current)
     {
         return current->decode_i_u() & opcode::mask_value<0, 5>;
     }
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
@@ -557,7 +557,7 @@ struct slli: shift_imm<0b0001, 0> {
     {
         return "slli";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -573,7 +573,7 @@ struct srli: shift_imm<0b0101, 0> {
     {
         return "srli";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -590,7 +590,7 @@ struct srai: shift_imm<0b0101, 1> {
     {
         return "srai";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -603,7 +603,7 @@ struct srai: shift_imm<0b0101, 1> {
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
 struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {
     [[nodiscard]]
-    std::string get_args(const opcode::OpcodeBase* code) const override
+    std::string get_args(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string lhs{get_register_alias(code->get_rs1())};
@@ -612,7 +612,7 @@ struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant
     }
     [[nodiscard]]
     virtual register_t calculate(register_t lhs, register_t rhs) const = 0;
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto lhs = vm->get_register(current->get_rs1());
@@ -776,7 +776,7 @@ struct fence  : misc_mem<0b0000> {
     {
         return "fence";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         vm->barrier();
     }
@@ -789,7 +789,7 @@ struct fence_i: misc_mem<0b0001> {
     {
         return "fence.i";
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         vm->barrier();
     }
@@ -814,7 +814,7 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, 0b0000>
         }
         return opcode::to_hex(args);
     }
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         if (current->decode_i_u())
         {
@@ -830,7 +830,7 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, 0b0000>
 /// CSR instructions
 template<opcode::opcode_t Type>
 struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {
-    void exec(vm_interface *vm, const opcode::OpcodeBase* current) const override
+    void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         vm->control();
     }

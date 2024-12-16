@@ -86,14 +86,14 @@ inline std::string to_hex(data_t num)
 data_t extend_sign(data_t value, opcode_t code);
 
 /// opcode decoding utility
-struct OpcodeBase
+struct Decoder
         : protected bit_tools::bits<opcode_t>
 {
     /// instruction code
     opcode_t code;
 
-    OpcodeBase() = default;
-    explicit OpcodeBase(opcode_t code): code{code} {}
+    Decoder() = default;
+    explicit Decoder(opcode_t code): code{code} {}
 
     /// opcode group ID
     [[nodiscard]]
@@ -175,7 +175,7 @@ struct OpcodeBase
     [[nodiscard]]
     data_t decode_j_u() const;
 };
-static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
+static_assert(sizeof(Decoder) == sizeof(opcode_t));
 
 /// opcode encoding utility
 struct Encoder

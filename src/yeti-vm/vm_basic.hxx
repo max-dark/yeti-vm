@@ -180,7 +180,7 @@ struct basic_vm: public vm_interface
 private:
     /// get pointer to current instruction
     [[nodiscard]]
-    const opcode::OpcodeBase* get_current() const;
+    const opcode::Decoder* get_current() const;
 
     using init_flags_t = std::uint8_t;
     enum InitFlag: init_flags_t
