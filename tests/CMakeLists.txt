@@ -18,7 +18,7 @@ function(add_gtest)
 
     list(APPEND _libs YetiVM::runtime)
     list(APPEND _libs GTest::gtest)
-    set(_main GTest::gtest)
+    set(_main GTest::gtest_main)
 
     if (var_MOCK)
         list(APPEND _libs GTest::gmock)
