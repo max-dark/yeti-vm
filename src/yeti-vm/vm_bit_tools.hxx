@@ -88,4 +88,16 @@ struct bits
     }
 };
 
+struct bits_u8 final: bits<std::uint8_t> {};
+struct bits_i8 final: bits<std::int8_t > {};
+
+struct bits_u16 final: bits<std::uint16_t> {};
+struct bits_i16 final: bits<std::int16_t > {};
+
+struct bits_u32 final: bits<std::uint32_t> {};
+struct bits_i32 final: bits<std::int32_t > {};
+
+struct bits_u64 final: bits<std::uint64_t> {};
+struct bits_i64 final: bits<std::int64_t > {};
+
 } // namespace vm::bit_tools
