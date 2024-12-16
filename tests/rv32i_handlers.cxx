@@ -83,9 +83,17 @@ struct RV32I_Handler_ISA
     static auto make_values()
     {
         return ::testing::Values(
-            impl<lui>("lui", Enum::LUI),
-            impl<auipc>("auipc", Enum::AUIPC),
-            impl<jalr>("jalr", Enum::JALR)
+              impl<lui>("lui", Enum::LUI)
+            , impl<auipc>("auipc", Enum::AUIPC)
+            , impl<jalr>("jalr", Enum::JALR)
+
+            , impl<beq>("beq", Enum::BRANCH)
+            , impl<bne>("bne", Enum::BRANCH)
+            , impl<blt>("blt", Enum::BRANCH)
+            , impl<bge>("bge", Enum::BRANCH)
+
+            , impl<bltu>("bltu", Enum::BRANCH)
+            , impl<bgeu>("bgeu", Enum::BRANCH)
         );
     }
 };
