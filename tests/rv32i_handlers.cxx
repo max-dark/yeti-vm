@@ -17,6 +17,7 @@ using vm::opcode::get_code_id;
 
 using Enum = vm::opcode::OpcodeType;
 using Type = vm::opcode::OpcodeBase;
+using Code = vm::opcode::opcode_t;
 
 template<class Handler>
 concept Implementation = std::is_base_of_v<vm::interface, Handler>;
@@ -47,6 +48,18 @@ protected:
     vm::interface *get() const
     {
         return ptr.get();
+    }
+
+    static vm::vm_interface& vm() {
+        static thread_local MockVM mockVm;
+        return mockVm;
+    }
+
+    static Type* code(Code code)
+    {
+        static thread_local Type current;
+        current.code = code;
+        return &current;
     }
 
 private:
