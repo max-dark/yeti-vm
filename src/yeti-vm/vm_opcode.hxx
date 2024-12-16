@@ -99,42 +99,42 @@ struct OpcodeBase
     [[nodiscard]]
     opcode_t get_code() const
     {
-        return get_bits(code, 0, 7);
+        return get_bits<0, 7>(code);
     }
 
     /// get rs2(rhs) register ID
     [[nodiscard]]
     register_no get_rs2() const
     {
-        return get_bits(code, 20, 5);
+        return get_bits<20, 5>(code);
     }
 
     /// get rs1(lhs) register ID
     [[nodiscard]]
     register_no get_rs1() const
     {
-        return get_bits(code, 15, 5);
+        return get_bits<15, 5>(code);
     }
 
     /// get rd(dest) register ID
     [[nodiscard]]
     register_no get_rd() const
     {
-        return get_bits(code, 7, 5);
+        return get_bits<7, 5>(code);
     }
 
     /// get "func A" ID
     [[nodiscard]]
     data_t get_func3() const
     {
-        return get_bits(code, 12, 3);
+        return get_bits<12, 3>(code);
     }
 
     /// get "func B" ID
     [[nodiscard]]
     data_t get_func7() const
     {
-        return get_bits(code, 25, 7);
+        return get_bits<25, 7>(code);
     }
 
     /// decode immediate / I-type / sign extended
