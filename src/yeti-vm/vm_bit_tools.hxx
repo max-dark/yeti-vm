@@ -7,6 +7,7 @@
 
 namespace vm::bit_tools
 {
+static_assert(std::endian::native == std::endian::little, "endianness restriction: only little-endian architectures are supported");
 
 template<std::integral Number>
 struct bits
