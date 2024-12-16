@@ -45,9 +45,9 @@ struct bits
     }
 
     /// get bit field
-    static constexpr value_type get_bits(value_type code, uint8_t start, uint8_t length)
+    static constexpr value_type get_bits(value_type code, offset_type start, offset_type length)
     {
-        uint8_t shift = (sizeof(code) * 8) - length;
+        offset_type shift = (sizeof(code) * 8) - length;
         value_type mask = all_bits >> shift;
 
         return (code >> start) & mask;
@@ -58,7 +58,7 @@ struct bits
     static constexpr inline value_type get_range(value_type code)
     {
         static_assert(MSB >= LSB, "invalid range");
-        constexpr unsigned shift = (sizeof(code) * 8) - (MSB - LSB + 1);
+        constexpr offset_type shift = (sizeof(code) * 8) - (MSB - LSB + 1);
         constexpr value_type mask = all_bits >> shift;
 
         return (code >> LSB) & mask;
@@ -72,15 +72,15 @@ struct bits
     }
 
     /// shift bit field
-    template<uint8_t start, uint8_t length>
-    static constexpr value_type shift_bits(value_type code, uint8_t to)
+    template<offset_type start, offset_type length>
+    static constexpr value_type shift_bits(value_type code, offset_type to)
     {
         constexpr value_type mask = make_mask<start, length>();
         return ((code & mask) >> start) << to;
     }
 
     /// shift bit field
-    template<uint8_t start, uint8_t to, uint8_t length>
+    template<offset_type start, offset_type to, offset_type length>
     static constexpr value_type shift_bits(value_type code)
     {
         constexpr value_type mask = make_mask<start, length>();
