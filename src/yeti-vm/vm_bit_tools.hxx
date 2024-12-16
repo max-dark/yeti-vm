@@ -22,6 +22,14 @@ struct bits
 
     /// type size in bits
     static constexpr offset_type bit_count = sizeof(value_type) * 8;
+    /// least significant bit position
+    static constexpr offset_type lsb_pos = 0;
+    /// most significant bit position
+    static constexpr offset_type msb_pos = bit_count - 1;
+    /// sign bit position
+    static constexpr offset_type sign_pos = msb_pos;
+    /// mask for sign bit
+    static constexpr value_type sign_mask = value_type{1} << sign_pos;
 
     /// value of make_mask
     template<offset_type start, offset_type length>
@@ -105,10 +113,45 @@ struct bits
         constexpr value_type mask = make_mask<start, length>();
         return ((code & mask) >> start) << to;
     }
+
+    /**
+     * fill bits from position to msb_pos with bit on code[position]
+     * @tparam position position of bit to copy
+     * @param code value to extend
+     * @return sign-extended value
+     */
     template<offset_type position>
     static constexpr value_type extend_sign(value_type code)
     {
+        signed_type sign = (code >> position) << sign_pos;
+        signed_type mask = sign >> (sign_pos - position);
+        return code | mask;
+    }
 
+    /**
+     * fill bits from position to msb_pos with bit on code[position]
+     * @param code value to extend
+     * @param position position of bit to copy
+     * @return sign-extended value
+     */
+    static constexpr value_type extend_sign(value_type code, offset_type position)
+    {
+        signed_type sign = (code >> position) << sign_pos;
+        signed_type mask = sign >> (sign_pos - position);
+        return code | mask;
+    }
+    /**
+     * find position first bit != 0 and bits from this position to msb_pos with ones
+     * @param code value to extend
+     * @return sign-extended value
+     */
+    static constexpr value_type extend_sign(value_type code)
+    {
+        offset_type position = bit_count - std::countl_zero(code) - 1;
+        if (position >= bit_count) return code;
+        signed_type sign = (code >> position) << sign_pos;
+        signed_type mask = sign >> (sign_pos - position);
+        return code | mask;
     }
 };
 
