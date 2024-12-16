@@ -100,6 +100,10 @@ struct RV32I_Handler_ISA
             , impl<lw>("lw", Enum::LOAD)
             , impl<lbu>("lbu", Enum::LOAD)
             , impl<lhu>("lhu", Enum::LOAD)
+
+            , impl<sb>("sb", Enum::STORE)
+            , impl<sh>("sh", Enum::STORE)
+            , impl<sw>("sw", Enum::STORE)
         );
     }
 };
