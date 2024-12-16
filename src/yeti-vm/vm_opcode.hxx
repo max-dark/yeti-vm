@@ -253,4 +253,9 @@ enum OpcodeType: opcode_t
 /// get mnemonic of opcode group ID
 std::string_view get_op_id(OpcodeType code);
 
+/// get mnemonic of opcode group ID
+inline std::string_view get_code_id(opcode_t code) {
+    return get_op_id(static_cast<OpcodeType>(code & mask_value<0, 7>));
+}
+
 } //namespace vm::opcode
