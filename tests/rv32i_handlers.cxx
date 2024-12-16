@@ -72,11 +72,15 @@ struct TestImpl
     static std::string to_string(const TestInfo& info)
     {
         auto& param = info.param;
-        return std::format("{}_impl_for_{}_{}"
+        std::string id = std::format("{}_impl_for_{}_{}"
                            , info.index
                            , param.mnemonic
                            , param.id  // TODO: demangle param.id
                            );
+        std::replace_if(id.begin(), id.end()
+                        , [](int c) { return ! std::isalnum(c); }
+                        , '_');
+        return id;
     }
 };
 
