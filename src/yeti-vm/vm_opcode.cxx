@@ -5,12 +5,7 @@ namespace vm::opcode
 
 data_t extend_sign(data_t value, opcode_t code) {
     data_t sign = code & (1u << 31);
-    while (sign != (value & sign))
-    {
-        value |= sign;
-        sign >>= 1;
-    }
-    return value;
+    return sign ? bit_tools::bits<data_t>::extend_sign(value) : value;
 }
 
 size_t op_size(opcode_t code) {
@@ -86,7 +81,7 @@ std::string_view get_op_id(OpcodeType code) {
 }
 
 data_t OpcodeBase::decode_i() const {
-    return extend_sign(decode_i_u(), code);
+    return extend_sign<11>(decode_i_u());
 }
 
 data_t OpcodeBase::decode_i_u() const {
@@ -94,7 +89,7 @@ data_t OpcodeBase::decode_i_u() const {
 }
 
 data_t OpcodeBase::decode_s() const {
-    return extend_sign(decode_s_u(), code);
+    return extend_sign<11>(decode_s_u());
 }
 
 data_t OpcodeBase::decode_s_u() const
@@ -105,7 +100,7 @@ data_t OpcodeBase::decode_s_u() const
 }
 
 data_t OpcodeBase::decode_b() const {
-    return extend_sign(decode_b_u(), code);
+    return extend_sign<12>(decode_b_u());
 }
 
 data_t OpcodeBase::decode_b_u() const {
@@ -117,11 +112,11 @@ data_t OpcodeBase::decode_b_u() const {
 }
 
 data_t OpcodeBase::decode_u() const {
-    return code & mask_value<12, 30>;
+    return code & make_mask<12, 30>();
 }
 
 data_t OpcodeBase::decode_j() const {
-    return extend_sign(decode_j_u(), code);
+    return extend_sign<20>(decode_j_u());
 }
 
 data_t OpcodeBase::decode_j_u() const {

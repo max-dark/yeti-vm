@@ -87,9 +87,13 @@ data_t extend_sign(data_t value, opcode_t code);
 
 /// opcode decoding utility
 struct OpcodeBase
+        : protected bit_tools::bits<opcode_t>
 {
     /// instruction code
     opcode_t code;
+
+    OpcodeBase() = default;
+    explicit OpcodeBase(opcode_t code): code{code} {}
 
     /// opcode group ID
     [[nodiscard]]

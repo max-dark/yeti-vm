@@ -35,7 +35,7 @@ TEST(ImmediateParser, DecodeTypeI)
 
     for (opcode_t i = 0; i <= range; ++i)
     {
-        const OpcodeBase parser{.code = i << start};
+        const OpcodeBase parser{ i << start };
 
         auto u_value = parser.decode_i_u();
         ASSERT_EQ(u_value, i) << std::hex << std::showbase << "wrong zero extend for i = " << i;
@@ -63,7 +63,7 @@ TEST(ImmediateParser, DecodeTypeS)
 
         auto encoded = (a | b | c | d);
         auto sign = encoded & sign_mask;
-        OpcodeBase parser{.code = encoded};
+        OpcodeBase parser{ encoded };
         auto value = parser.decode_s();
 
         ASSERT_EQ(value & range, i) << std::hex << std::showbase << "wrong value for i = " << i;
@@ -90,7 +90,7 @@ TEST(ImmediateParser, DecodeTypeB)
 
         auto encoded = (a | b | c | d | 0);
         auto sign = encoded & sign_mask;
-        OpcodeBase parser{.code = encoded};
+        OpcodeBase parser{ encoded };
         auto value = parser.decode_b();
 
         ASSERT_EQ(value & values, i) << std::hex << std::showbase << "wrong value for i = " << i;
@@ -111,7 +111,7 @@ TEST(ImmediateParser, DecodeTypeU)
     {
         auto encoded = i << 12;
         auto sign = encoded & sign_mask;
-        OpcodeBase parser{.code = encoded};
+        OpcodeBase parser{ encoded };
         auto value = parser.decode_u();
 
         ASSERT_EQ(value & values, encoded) << std::hex << std::showbase << "wrong value for i = " << i;
@@ -139,7 +139,7 @@ TEST(ImmediateParser, DecodeTypeJ)
 
         auto encoded = (a | b | c | d | e | 0);
         auto sign = encoded & sign_mask;
-        OpcodeBase parser{.code = encoded};
+        OpcodeBase parser{ encoded };
         auto value = parser.decode_j();
 
         ASSERT_EQ(value & values, i) << std::hex << std::showbase << "wrong value for i = " << i;
