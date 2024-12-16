@@ -21,6 +21,10 @@ struct bits
     static constexpr value_type all_bits = ~value_type{};
     static constexpr unsigned_type all_bits_mask = ~unsigned_type{};
 
+    static constexpr bool is_signed = std::is_signed_v<value_type>;
+    static constexpr bool is_unsigned = std::is_unsigned_v<value_type>;
+    static_assert(is_signed != is_unsigned);
+
     /// type size in bits
     static constexpr offset_type bit_count = sizeof(value_type) * 8;
     /// least significant bit position
