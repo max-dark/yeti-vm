@@ -94,6 +94,12 @@ struct RV32I_Handler_ISA
 
             , impl<bltu>("bltu", Enum::BRANCH)
             , impl<bgeu>("bgeu", Enum::BRANCH)
+
+            , impl<lb>("lb", Enum::LOAD)
+            , impl<lh>("lh", Enum::LOAD)
+            , impl<lw>("lw", Enum::LOAD)
+            , impl<lbu>("lbu", Enum::LOAD)
+            , impl<lhu>("lhu", Enum::LOAD)
         );
     }
 };
