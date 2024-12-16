@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <concepts>
+#include <type_traits>
 #include <bit>
 
 namespace vm::bit_tools
@@ -11,6 +12,8 @@ template<std::integral Number>
 struct bits
 {
     using value_type = Number;
+    using signed_type = std::make_signed_t<value_type>;
+    using unsigned_type = std::make_unsigned_t<value_type>;
     using offset_type = std::uint8_t;
 
     /// value with all bits
@@ -19,6 +22,18 @@ struct bits
     /// value of make_mask
     template<offset_type start, offset_type length>
     static constexpr value_type mask_value = make_mask<start, length>();
+
+    /// convert value to unsigned
+    static constexpr unsigned_type to_unsigned(value_type value)
+    {
+        return std::bit_cast<unsigned_type>(value);
+    }
+
+    /// convert value to signed
+    static constexpr signed_type to_signed(value_type value)
+    {
+        return std::bit_cast<signed_type>(value);
+    }
 
     /**
      * create bit mask
@@ -85,6 +100,11 @@ struct bits
     {
         constexpr value_type mask = make_mask<start, length>();
         return ((code & mask) >> start) << to;
+    }
+    template<offset_type position>
+    static constexpr value_type extend_sign(value_type code)
+    {
+
     }
 };
 

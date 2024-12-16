@@ -17,5 +17,7 @@ static_assert(bits_u32::get_bits<12, 3>(0x02c58533) == bits_u32::value_type{0b00
 static_assert(bits_u32::get_bits<12, 3>(0x02c5c533) == bits_u32::value_type{0b0000'0100}, "something wrong");
 static_assert(bits_u32::get_bits<12, 3>(0x02c5f533) == bits_u32::value_type{0b0000'0111}, "something wrong");
 
+static_assert(bits_u32::to_signed(bits_u32::all_bits) == bits_i32::all_bits);
+static_assert(bits_i32::to_unsigned(bits_i32::all_bits) == bits_u32::all_bits);
 
 } // namespace vm::bit_tools
