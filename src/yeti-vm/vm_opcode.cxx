@@ -126,4 +126,108 @@ data_t OpcodeBase::decode_j_u() const {
     auto c = shift_bits<21,  1,10>(code); // [30:21]
     return (s | a | b | c | 0);
 }
+
+Encoder::instruction_t Encoder::r_type(Encoder::base_t group,
+                                       Encoder::reg_id rd,
+                                       Encoder::reg_id rs1,
+                                       Encoder::reg_id rs2,
+                                       Encoder::func_id fa,
+                                       Encoder::func_id fb)
+{
+    instruction_t value = 0;
+    value |= group << group_offset;
+    value |= rd << rd_offset;
+    value |= fa << fa_offset;
+    value |= rs1 << rs1_offset;
+    value |= rs2 << rs2_offset;
+    value |= fb << fb_offset;
+
+    return value;
+}
+
+Encoder::instruction_t Encoder::i_type(Encoder::base_t group,
+                                       Encoder::reg_id rd,
+                                       Encoder::reg_id rs1,
+                                       Encoder::immediate_t immediate,
+                                       Encoder::func_id fa)
+{
+    instruction_t value = 0;
+    value |= group << group_offset;
+    value |= rd << rd_offset;
+    value |= fa << fa_offset;
+    value |= rs1 << rs1_offset;
+    value |= immediate << 20;
+
+    return value;
+}
+
+Encoder::instruction_t Encoder::s_type(Encoder::base_t group,
+                                       Encoder::reg_id rs1,
+                                       Encoder::reg_id rs2,
+                                       Encoder::immediate_t immediate,
+                                       Encoder::func_id fa)
+{
+    instruction_t value = 0;
+    value |= group << group_offset;
+    value |= group << group_offset;
+    value |= fa << fa_offset;
+    value |= rs1 << rs1_offset;
+    value |= rs2 << rs2_offset;
+
+    value |= get_range<0,  4>(immediate) << 7;
+    value |= get_range<5, 11>(immediate) << 25;
+
+    return value;
+}
+
+Encoder::instruction_t Encoder::b_type(Encoder::base_t group,
+                                       Encoder::reg_id rs1,
+                                       Encoder::reg_id rs2,
+                                       Encoder::immediate_t immediate,
+                                       Encoder::func_id fa)
+{
+    instruction_t value = 0;
+    value |= group << group_offset;
+    value |= group << group_offset;
+    value |= fa << fa_offset;
+    value |= rs1 << rs1_offset;
+    value |= rs2 << rs2_offset;
+
+    value |= get_range<11>(immediate) << 7;
+    value |= get_range<1, 4>(immediate) << 8;
+    value |= get_range<5, 10>(immediate) << 25;
+    value |= get_range<12>(immediate) << 31;
+
+    return value;
+}
+
+Encoder::instruction_t
+Encoder::u_type(Encoder::base_t group, Encoder::reg_id rd, Encoder::immediate_t immediate, Encoder::func_id a)
+{
+    instruction_t value = 0;
+    value |= group << group_offset;
+    value |= group << group_offset;
+    value |=  rd << rd_offset;
+
+    value |= immediate << 12;
+
+    return value;
+}
+
+Encoder::instruction_t
+Encoder::j_type(Encoder::base_t group, Encoder::reg_id rd, Encoder::immediate_t immediate, Encoder::func_id fa)
+{
+    instruction_t value = 0;
+    value |= group << group_offset;
+    value |= group << group_offset;
+    value |=  rd << rd_offset;
+    value |= fa << fa_offset;
+
+    value |= get_range<20>(immediate) << 31;
+    value |= get_range<1, 10>(immediate) << 21;
+    value |= get_range<11>(immediate) << 20;
+    value |= get_range<12, 19>(immediate) << 12;
+
+    return value;
+}
 } //namespace vm::opcode

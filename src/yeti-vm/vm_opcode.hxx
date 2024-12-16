@@ -177,6 +177,43 @@ struct OpcodeBase
 };
 static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
 
+/// opcode encoding utility
+struct Encoder
+        : protected vm::bit_tools::bits<vm::opcode::opcode_t>
+{
+    using base_t = vm::opcode::opcode_t;
+    using reg_id = base_t;
+    using func_id = base_t;
+    using instruction_t = base_t;
+    using immediate_t = base_t;
+
+    static constexpr base_t group_offset = 0;
+    static constexpr base_t rd_offset = 7;
+    static constexpr base_t fa_offset = 12;
+    static constexpr base_t rs1_offset = 15;
+    static constexpr base_t rs2_offset = 20;
+    static constexpr base_t fb_offset = 25;
+
+    /// encode R-type instruction
+    static instruction_t r_type(base_t group, reg_id rd, reg_id rs1, reg_id rs2, func_id fa, func_id fb);
+
+    /// encode I-type instruction
+    static instruction_t i_type(base_t group, reg_id rd, reg_id rs1, immediate_t immediate, func_id fa);
+
+    /// encode S-type instruction
+    static instruction_t s_type(base_t group, reg_id rs1, reg_id rs2, immediate_t immediate, func_id fa);
+
+    /// encode B-type instruction
+    static instruction_t b_type(base_t group, reg_id rs1, reg_id rs2, immediate_t immediate, func_id fa);
+
+    /// encode U-type instruction
+    static instruction_t u_type(base_t group, reg_id rd, immediate_t immediate, func_id a);
+
+    /// encode J-type instruction
+    static instruction_t j_type(base_t group, reg_id rd, immediate_t immediate, func_id fa);
+};
+
+
 /// @see Instruction Length Encoding
 size_t op_size(opcode_t code);
 
