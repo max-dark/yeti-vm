@@ -147,6 +147,16 @@ struct RV32I_Handler_ISA
 
             , impl<fence>("fence", Enum::MISC_MEM)
             , impl<fence_i>("fence.i", Enum::MISC_MEM)
+
+            , impl<env_call>("env", Enum::SYSTEM)
+
+            , impl<csrrw>("csrrw", Enum::SYSTEM)
+            , impl<csrrs>("csrrs", Enum::SYSTEM)
+            , impl<csrrc>("csrrc", Enum::SYSTEM)
+
+            , impl<csrrwi>("csrrwi", Enum::SYSTEM)
+            , impl<csrrsi>("csrrsi", Enum::SYSTEM)
+            , impl<csrrci>("csrrci", Enum::SYSTEM)
         );
     }
 };
