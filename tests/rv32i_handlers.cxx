@@ -7,6 +7,7 @@
 
 namespace tests::rv32i
 {
+using namespace std::literals;
 using namespace vm::rv32i;
 using vm::register_t;
 using vm::register_no;
@@ -62,15 +63,28 @@ TEST_F(RV32I_Handler, CreateAndGet)
 
 struct TestImpl
 {
+    using TestInfo = ::testing::TestParamInfo<TestImpl>;
+    std::string_view id;
     vm::interface::ptr instance;
     std::string_view mnemonic;
     Enum code;
+
+    static std::string to_string(const TestInfo& info)
+    {
+        auto& param = info.param;
+        return std::format("{}_impl_for_{}_{}"
+                           , info.index
+                           , param.mnemonic
+                           , param.id  // TODO: demangle param.id
+                           );
+    }
 };
 
 template<Implementation Impl>
 TestImpl impl(std::string_view id, Enum code)
 {
     return {
+        .id = typeid(Impl).name(),
         .instance = std::make_shared<Impl>(),
         .mnemonic = id,
         .code = code
@@ -130,7 +144,12 @@ struct RV32I_Handler_ISA
     }
 };
 
-INSTANTIATE_TEST_SUITE_P(HandlerISA, RV32I_Handler_ISA, RV32I_Handler_ISA::make_values());
+INSTANTIATE_TEST_SUITE_P(
+        HandlerISA
+        , RV32I_Handler_ISA
+        , RV32I_Handler_ISA::make_values()
+        , TestImpl::to_string
+);
 
 TEST_P(RV32I_Handler_ISA, Mnemonics)
 {
