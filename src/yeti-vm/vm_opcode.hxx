@@ -1,5 +1,6 @@
 #pragma once
 #include "vm_base_types.hxx"
+#include "vm_bit_tools.hxx"
 
 namespace vm::opcode
 {
@@ -32,27 +33,20 @@ enum BaseFormat: opcode_t
 template<uint8_t start, uint8_t length>
 consteval data_t make_mask()
 {
-    constexpr data_t all = ~data_t{0};
-    constexpr data_t from_start = all << start;
-    constexpr data_t from_end   = from_start << length;
-
-    return from_start & (~from_end);
+    return bit_tools::bits<data_t>::make_mask<start, length>();
 }
 static_assert(make_mask<0, 8>() == 0b0'1111'1111, "wrong mask");
 static_assert(make_mask<1, 8>() == 0b1'1111'1110, "wrong mask");
 
 /// value of make_mask
 template<uint8_t start, uint8_t length>
-constexpr data_t mask_value = make_mask<start, length>();
+constexpr data_t mask_value = bit_tools::bits<data_t>::make_mask<start, length>();
 
 /// get bit field
 template<uint8_t start, uint8_t length>
 consteval opcode::data_t get_bits(opcode::opcode_t code)
 {
-    constexpr uint8_t shift = (sizeof(code) * 8) - length;
-    constexpr opcode::opcode_t mask = (~static_cast<opcode::opcode_t>(0)) >> shift;
-
-    return (code >> start) & mask;
+    return bit_tools::bits<data_t>::get_bits<start, length>(code);
 }
 static_assert(get_bits<0, 1>(0b0000'0001) == opcode_t{0b0000'0001}, "something wrong");
 static_assert(get_bits<0, 2>(0b0000'0011) == opcode_t{0b0000'0011}, "something wrong");
@@ -66,26 +60,21 @@ static_assert(get_bits<12, 3>(0x02c5f533) == opcode_t{0b0000'0111}, "something w
 /// get bit field
 constexpr data_t get_bits(opcode_t code, uint8_t start, uint8_t length)
 {
-    uint8_t shift = (sizeof(code) * 8) - length;
-    opcode_t mask = static_cast<opcode_t>(-1) >> shift;
-
-    return (code >> start) & mask;
+    return bit_tools::bits<data_t>::get_bits(code, start, length);
 }
 
 /// shift bit field
 template<uint8_t start, uint8_t length>
 constexpr data_t shift_bits(opcode_t code, uint8_t to)
 {
-    constexpr auto mask = mask_value<start, length>;
-    return ((code & mask) >> start) << to;
+    return bit_tools::bits<data_t>::shift_bits<start, length>(code, to);
 }
 
 /// shift bit field
 template<uint8_t start, uint8_t to, uint8_t length>
 constexpr data_t shift_bits(opcode_t code)
 {
-    constexpr auto mask = mask_value<start, length>;
-    return ((code & mask) >> start) << to;
+    return bit_tools::bits<data_t>::shift_bits<start, to, length>(code);
 }
 static_assert(shift_bits<0, 1, 1>(0b0000'0001) == 0b0000'0010);
 static_assert(shift_bits<0, 1, 2>(0b0000'0011) == 0b0000'0110);
