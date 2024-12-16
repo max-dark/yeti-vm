@@ -19,6 +19,7 @@ struct bits
 
     /// value with all bits
     static constexpr value_type all_bits = ~value_type{};
+    static constexpr unsigned_type all_bits_mask = ~unsigned_type{};
 
     /// type size in bits
     static constexpr offset_type bit_count = sizeof(value_type) * 8;
@@ -29,11 +30,11 @@ struct bits
     /// sign bit position
     static constexpr offset_type sign_pos = msb_pos;
     /// mask for sign bit
-    static constexpr value_type sign_mask = value_type{1} << sign_pos;
+    static constexpr unsigned_type sign_mask = unsigned_type{1} << sign_pos;
 
     /// value of make_mask
     template<offset_type start, offset_type length>
-    static constexpr value_type mask_value = make_mask<start, length>();
+    static constexpr unsigned_type mask_value = make_mask<start, length>();
 
     /// convert value to unsigned
     static constexpr unsigned_type to_unsigned(value_type value)
@@ -56,17 +57,17 @@ struct bits
     template<offset_type start, offset_type length>
     static consteval value_type make_mask()
     {
-        constexpr value_type from_start = all_bits << start;
-        constexpr value_type from_end   = from_start << length;
+        constexpr unsigned_type from_start = (all_bits_mask << start) & all_bits_mask;
+        constexpr unsigned_type from_end   = (from_start << length) & all_bits_mask;
 
         return from_start & (~from_end);
     }
+
     /// get bit field
     template<offset_type start, offset_type length>
     static constexpr value_type get_bits(value_type code)
     {
-        constexpr offset_type shift = bit_count - length;
-        constexpr value_type mask = all_bits >> shift;
+        constexpr unsigned_type mask = make_mask<0, length>();
 
         return (code >> start) & mask;
     }
@@ -75,7 +76,7 @@ struct bits
     static constexpr value_type get_bits(value_type code, offset_type start, offset_type length)
     {
         offset_type shift = bit_count - length;
-        value_type mask = all_bits >> shift;
+        unsigned_type mask = all_bits_mask >> shift;
 
         return (code >> start) & mask;
     }
@@ -86,7 +87,7 @@ struct bits
     {
         static_assert(MSB >= LSB, "invalid range");
         constexpr offset_type shift = bit_count - (MSB - LSB + 1);
-        constexpr value_type mask = all_bits >> shift;
+        constexpr unsigned_type mask = all_bits_mask >> shift;
 
         return (code >> LSB) & mask;
     }
@@ -102,7 +103,7 @@ struct bits
     template<offset_type start, offset_type length>
     static constexpr value_type shift_bits(value_type code, offset_type to)
     {
-        constexpr value_type mask = make_mask<start, length>();
+        constexpr unsigned_type mask = make_mask<start, length>();
         return ((code & mask) >> start) << to;
     }
 
@@ -110,7 +111,7 @@ struct bits
     template<offset_type start, offset_type to, offset_type length>
     static constexpr value_type shift_bits(value_type code)
     {
-        constexpr value_type mask = make_mask<start, length>();
+        constexpr unsigned_type mask = make_mask<start, length>();
         return ((code & mask) >> start) << to;
     }
 

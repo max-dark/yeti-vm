@@ -8,6 +8,15 @@ static_assert(bits_u32::shift_bits<0, 1, 2>(0b0000'0011) == 0b0000'0110);
 static_assert(bits_u32::shift_bits<0, 2, 1>(0b0000'0001) == 0b0000'0100);
 static_assert(bits_u32::shift_bits<0, 2, 2>(0b0000'0011) == 0b0000'1100);
 
+namespace // test for signed version
+{
+    constexpr bits_i8::value_type value = -1;
+    template<bits_i8::offset_type pos>
+    constexpr bits_i8::value_type expected = 0b0000'0001 << pos;
+    static_assert(bits_i8::get_bits<0, 1>(value) == expected<0>);
+    static_assert(bits_i8::get_bits<1, 1>(value) == expected<0>);
+}
+
 static_assert(bits_u32::get_bits<0, 1>(0b0000'0001) == bits_u32::value_type{0b0000'0001}, "something wrong");
 static_assert(bits_u32::get_bits<0, 2>(0b0000'0011) == bits_u32::value_type{0b0000'0011}, "something wrong");
 static_assert(bits_u32::get_bits<1, 1>(0b0000'0010) == bits_u32::value_type{0b0000'0001}, "something wrong");
