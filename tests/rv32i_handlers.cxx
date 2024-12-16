@@ -140,6 +140,9 @@ struct RV32I_Handler_ISA
             , impl<sra_r>("sra", Enum::OP)
             , impl<or_r>("or", Enum::OP)
             , impl<and_r>("and", Enum::OP)
+
+            , impl<fence>("fence", Enum::MISC_MEM)
+            , impl<fence_i>("fence.i", Enum::MISC_MEM)
         );
     }
 };
