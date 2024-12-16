@@ -3,6 +3,11 @@
 namespace vm::bit_tools
 {
 
+static_assert(bits_u32::make_mask<0, 8>() == 0b0'1111'1111, "wrong mask");
+static_assert(bits_u32::make_mask<1, 8>() == 0b1'1111'1110, "wrong mask");
+static_assert(bits_i32::make_mask<0, 8>() == 0b0'1111'1111, "wrong mask");
+static_assert(bits_i32::make_mask<1, 8>() == 0b1'1111'1110, "wrong mask");
+
 static_assert(bits_u32::shift_bits<0, 1, 1>(0b0000'0001) == 0b0000'0010);
 static_assert(bits_u32::shift_bits<0, 1, 2>(0b0000'0011) == 0b0000'0110);
 static_assert(bits_u32::shift_bits<0, 2, 1>(0b0000'0001) == 0b0000'0100);
