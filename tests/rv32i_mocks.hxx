@@ -13,6 +13,7 @@ struct MockVM: public vm::vm_interface
     MOCK_METHOD(void, halt, (), (override));
 
     MOCK_METHOD(void, jump_to, (offset_t value), (override));
+    MOCK_METHOD(void, jump_abs, (address_t value), (override));
     MOCK_METHOD(void, jump_if, (bool condition, offset_t value), (override));
     MOCK_METHOD(void, jump_if_abs, (bool condition, address_t value), (override));
 
