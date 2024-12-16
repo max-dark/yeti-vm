@@ -20,6 +20,9 @@ struct bits
     /// value with all bits
     static constexpr value_type all_bits = ~value_type{};
 
+    /// type size in bits
+    static constexpr offset_type bit_count = sizeof(value_type) * 8;
+
     /// value of make_mask
     template<offset_type start, offset_type length>
     static constexpr value_type mask_value = make_mask<start, length>();
@@ -54,7 +57,7 @@ struct bits
     template<offset_type start, offset_type length>
     static constexpr value_type get_bits(value_type code)
     {
-        constexpr offset_type shift = (sizeof(code) * 8) - length;
+        constexpr offset_type shift = bit_count - length;
         constexpr value_type mask = all_bits >> shift;
 
         return (code >> start) & mask;
@@ -63,7 +66,7 @@ struct bits
     /// get bit field
     static constexpr value_type get_bits(value_type code, offset_type start, offset_type length)
     {
-        offset_type shift = (sizeof(code) * 8) - length;
+        offset_type shift = bit_count - length;
         value_type mask = all_bits >> shift;
 
         return (code >> start) & mask;
@@ -74,7 +77,7 @@ struct bits
     static constexpr inline value_type get_range(value_type code)
     {
         static_assert(MSB >= LSB, "invalid range");
-        constexpr offset_type shift = (sizeof(code) * 8) - (MSB - LSB + 1);
+        constexpr offset_type shift = bit_count - (MSB - LSB + 1);
         constexpr value_type mask = all_bits >> shift;
 
         return (code >> LSB) & mask;
