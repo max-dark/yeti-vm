@@ -36,7 +36,7 @@ struct bits
     }
     /// get bit field
     template<offset_type start, offset_type length>
-    static consteval value_type get_bits(value_type code)
+    static constexpr value_type get_bits(value_type code)
     {
         constexpr offset_type shift = (sizeof(code) * 8) - length;
         constexpr value_type mask = all_bits >> shift;
