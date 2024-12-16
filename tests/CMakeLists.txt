@@ -80,3 +80,13 @@ add_gtest(
         rv32i_code.cxx
         rv32i_immediate.cxx
 )
+
+add_gtest(
+        NAME "RV32I handlers"
+        COMMAND rv32i_handlers
+        MOCK MAIN # use GMock / own main function
+        SOURCES
+        rv32i_mocks.cxx rv32i_mocks.hxx
+        rv32i_handlers.cxx
+        rv32i_handlers_main.cxx
+)
