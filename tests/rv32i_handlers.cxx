@@ -104,6 +104,17 @@ struct RV32I_Handler_ISA
             , impl<sb>("sb", Enum::STORE)
             , impl<sh>("sh", Enum::STORE)
             , impl<sw>("sw", Enum::STORE)
+
+            , impl<addi>("addi", Enum::OP_IMM)
+            , impl<slti>("slti", Enum::OP_IMM)
+            , impl<sltiu>("sltiu", Enum::OP_IMM)
+
+            , impl<xori>("xori", Enum::OP_IMM)
+            , impl<ori> ("ori" , Enum::OP_IMM)
+            , impl<andi>("andi", Enum::OP_IMM)
+            , impl<slli>("slli", Enum::OP_IMM)
+            , impl<srli>("srli", Enum::OP_IMM)
+            , impl<srai>("srai", Enum::OP_IMM)
         );
     }
 };
