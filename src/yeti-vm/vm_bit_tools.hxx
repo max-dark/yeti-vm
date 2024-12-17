@@ -158,6 +158,22 @@ struct bits
         signed_type mask = sign >> (sign_pos - position);
         return code | mask;
     }
+
+    /**
+     * shift right arithmetic
+     *
+     * https://en.wikipedia.org/wiki/Arithmetic_shift
+     *
+     * @param code value
+     * @param shift
+     * @return result of operation
+     */
+    static constexpr value_type arithmetic_shift(value_type code, offset_type shift)
+    {
+        signed_type value = to_signed(code);
+        signed_type result = value >> shift;
+        return std::bit_cast<value_type>(result);
+    }
 };
 
 struct bits_u8 final: bits<std::uint8_t> {};

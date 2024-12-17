@@ -22,6 +22,30 @@ namespace // test for signed version
     static_assert(bits_i8::get_bits<1, 1>(value) == expected<0>);
 }
 
+namespace //arithmetic_shift
+{
+template<typename T>
+consteval bool test_sra(T arg, T expected, typename bits<T>::offset_type shift)
+{
+    return bits<T>::arithmetic_shift(arg, shift) == expected;
+}
+
+static_assert(test_sra<uint8_t>(0, 0, 5));
+static_assert(test_sra< int8_t>(0, 0, 5));
+
+static_assert(test_sra<uint8_t>(-1, -1, 5));
+static_assert(test_sra< int8_t>(-1, -1, 5));
+
+static_assert(test_sra<uint8_t>(0b0010'0000, 1, 5));
+static_assert(test_sra< int8_t>(0b0010'0000, 1, 5));
+
+static_assert(test_sra<uint8_t>(0b1010'0000, 0b11'1010'00, 2));
+
+// Note: `( ... | (-1 << 8))` is needed for warning suppression
+// "conversion of unsigned int to signed char is implementation defined"
+static_assert(test_sra< int8_t>((0b01011'0000 | (-1 << 8)), (0b0111'1011'0 | (-1 << 8)), 3));
+}
+
 static_assert(bits_u32::get_bits<0, 1>(0b0000'0001) == bits_u32::value_type{0b0000'0001}, "something wrong");
 static_assert(bits_u32::get_bits<0, 2>(0b0000'0011) == bits_u32::value_type{0b0000'0011}, "something wrong");
 static_assert(bits_u32::get_bits<1, 1>(0b0000'0010) == bits_u32::value_type{0b0000'0001}, "something wrong");
