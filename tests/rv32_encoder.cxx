@@ -96,7 +96,7 @@ class RV32_Encode_Immediate_12: public ::testing::TestWithParam<vm::opcode::data
 INSTANTIATE_TEST_SUITE_P(
         Immediate
         , RV32_Encode_Immediate_12
-        , ::testing::Range<vm::opcode::data_t>(0b0000'0000, 0b1'0000'0000)
+        , ::testing::Range<vm::opcode::data_t>(0b0000'0000, 0b1'0000'0000'0000)
 );
 
 TEST_P(RV32_Encode_Immediate_12, SetTypeI)
