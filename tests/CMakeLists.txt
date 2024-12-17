@@ -95,5 +95,6 @@ add_gtest(
         SOURCES
         rv32i_mocks.cxx rv32i_mocks.hxx
         rv32i_handlers.cxx
+        rv32i_handlers.hxx
         rv32i_handlers_main.cxx
 )
