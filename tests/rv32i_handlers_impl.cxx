@@ -15,10 +15,6 @@ using Format = vm::opcode::BaseFormat;
 
 class RV32I_Handler_Impl: public RV32I_Handler {};
 
-TEST_F(RV32I_Handler_Impl, none)
-{
-}
-
 TEST_F(RV32I_Handler_Impl, LoadUpperImmediate)
 {
     MockVM mock;
@@ -64,6 +60,16 @@ TEST_F(RV32I_Handler_Impl, AddUpperImmediateToPC)
         impl->exec(&mock, &parser);
     }
 
+}
+
+TEST_F(RV32I_Handler_Impl, JumpAndLink)
+{
+    MockVM mock;
+    auto impl = create<jal>();
+
+    ASSERT_EQ(impl->get_code_base(), Enum::JAL);
+    ASSERT_EQ(impl->get_type(), Format::J_TYPE);
+    ASSERT_FALSE(true) << "Test is incomplete";
 }
 
 } // namespace tests::rv32i
