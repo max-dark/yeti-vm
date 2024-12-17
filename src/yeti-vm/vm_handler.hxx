@@ -42,9 +42,20 @@ public:
         id = code | (funcA << 8) | (funcB << 16);
     }
     /// comparator for std::map
-    bool operator<(const InstructionId& rhs) const
+    friend auto operator<=>(const InstructionId& lhs, const InstructionId& rhs) noexcept
     {
-        return id < rhs.id;
+        return lhs.id <=> rhs.id;
+    }
+
+    // Strict EQ
+    [[nodiscard]]
+    bool equal(const InstructionId& rhs) const noexcept
+    {
+        return code == rhs.code
+            && format == rhs.format
+            && funcA == rhs.funcA
+            && funcB == rhs.funcB
+            ;
     }
 };
 
