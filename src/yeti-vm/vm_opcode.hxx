@@ -189,10 +189,35 @@ struct Encoder
 
     static constexpr base_t group_offset = 0;
     static constexpr base_t rd_offset = 7;
-    static constexpr base_t fa_offset = 12;
+    static constexpr base_t f3_offset = 12;
     static constexpr base_t rs1_offset = 15;
     static constexpr base_t rs2_offset = 20;
-    static constexpr base_t fb_offset = 25;
+    static constexpr base_t f7_offset = 25;
+
+    static instruction_t encode_group(base_t group)
+    {
+        return group << group_offset;
+    }
+    static instruction_t encode_rd(reg_id id)
+    {
+        return id << rd_offset;
+    }
+    static instruction_t encode_rs1(reg_id id)
+    {
+        return id << rs1_offset;
+    }
+    static instruction_t encode_rs2(reg_id id)
+    {
+        return id << rs2_offset;
+    }
+    static instruction_t encode_f3(func_id id)
+    {
+        return id << f3_offset;
+    }
+    static instruction_t encode_f7(func_id id)
+    {
+        return id << f7_offset;
+    }
 
     /// encode R-type instruction
     static instruction_t r_type(base_t group, reg_id rd, reg_id rs1, reg_id rs2, func_id fa, func_id fb);
@@ -207,10 +232,10 @@ struct Encoder
     static instruction_t b_type(base_t group, reg_id rs1, reg_id rs2, immediate_t immediate, func_id fa);
 
     /// encode U-type instruction
-    static instruction_t u_type(base_t group, reg_id rd, immediate_t immediate, func_id a);
+    static instruction_t u_type(base_t group, reg_id rd, immediate_t immediate);
 
     /// encode J-type instruction
-    static instruction_t j_type(base_t group, reg_id rd, immediate_t immediate, func_id fa);
+    static instruction_t j_type(base_t group, reg_id rd, immediate_t immediate);
 };
 
 
