@@ -104,4 +104,19 @@ TEST_F(RV32I_Handler_Branch, IfLessSigned)
     });
 }
 
+TEST_F(RV32I_Handler_Branch, IfGreatOrEqualSigned)
+{
+    constexpr Code funcA = 0b0101;
+    branch(create<bge>(), funcA,
+           [](MockVM& mock
+                   , vm::register_t rs1, vm::register_t rs2
+                   , Offset value)
+    {
+        using r_bits = bits<vm::register_t>;
+        EXPECT_CALL(mock, jump_if(
+                r_bits::to_signed(rs1) >= r_bits::to_signed(rs2)
+                , value));
+    });
+}
+
 } // namespace tests::rv32i
