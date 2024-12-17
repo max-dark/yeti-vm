@@ -73,7 +73,7 @@ struct interface
     virtual std::string_view get_mnemonic() const = 0;
     /// disasm arguments
     [[nodiscard]]
-    virtual std::string get_args(const opcode::OpcodeBase* code) const
+    virtual std::string get_args(const opcode::Decoder* code) const
     {
         return get_args(code->code);
     }
@@ -89,7 +89,7 @@ struct interface
      * @param vm pointer to VM implementation
      * @param current pointer to current instruction
      */
-    virtual void exec(vm_interface* vm, const opcode::OpcodeBase* current) const = 0;
+    virtual void exec(vm_interface* vm, const opcode::Decoder* current) const = 0;
 
     /**
      * skip PC increment
@@ -185,7 +185,7 @@ struct registry
     bool register_handler(interface::ptr handler);
 
     /// find handler by instruction code
-    handler_ptr find_handler(const opcode::OpcodeBase* code) const;
+    handler_ptr find_handler(const opcode::Decoder* code) const;
 
     /// handlers container
     handler_map handlers;

@@ -16,7 +16,7 @@ using vm::opcode::get_op_id;
 using vm::opcode::get_code_id;
 
 using Enum = vm::opcode::OpcodeType;
-using Type = vm::opcode::OpcodeBase;
+using Type = vm::opcode::Decoder;
 using Code = vm::opcode::opcode_t;
 
 template<class Handler>

@@ -14,7 +14,7 @@ TEST(InstructionParser, GetCode)
             opcode_t code = make_opcode(row, col);
             for (uint8_t i = 7; i < 32; ++i)
             {
-                OpcodeBase parser{ .code = (1 << i) | code };
+                Decoder parser{(1 << i) | code };
                 EXPECT_EQ(parser.get_code(), code) << "fail";
             }
             auto id = get_op_id(std::bit_cast<OpcodeType>(code));
@@ -37,7 +37,7 @@ TEST(InstructionParser, GetRD)
     opcode_t mask = make_mask<reg_start, reg_size>();
     opcode_t lo = make_mask<0, reg_start - 2>();
     opcode_t hi = make_mask<0, reg_last  + 2>();
-    OpcodeBase parser{};
+    Decoder parser{};
     auto& code = parser.code;
 
     for (opcode_t i = lo; i <= hi; ++i)
@@ -56,7 +56,7 @@ TEST(InstructionParser, GetRS1)
     constexpr opcode_t mask = make_mask<reg_start, reg_size>();
     constexpr opcode_t lo = make_mask<0, reg_size + 2>();
     constexpr opcode_t hi = lo << (reg_start - 1);
-    OpcodeBase parser{};
+    Decoder parser{};
     auto& code = parser.code;
 
     for (opcode_t i = 0; i <= lo; ++i)
@@ -75,7 +75,7 @@ TEST(InstructionParser, GetRS2)
     constexpr opcode_t mask = make_mask<reg_start, reg_size>();
     constexpr opcode_t lo = make_mask<0, reg_size + 2>();
     constexpr opcode_t hi = lo << (reg_start - 1);
-    OpcodeBase parser{};
+    Decoder parser{};
     auto& code = parser.code;
 
     for (opcode_t i = 0; i <= lo; ++i)
@@ -94,7 +94,7 @@ TEST(InstructionParser, GetA)
     constexpr opcode_t mask = make_mask<reg_start, reg_size>();
     constexpr opcode_t lo = make_mask<0, reg_start - 2>();
     constexpr opcode_t hi = make_mask<0, reg_last  + 2>();
-    OpcodeBase parser{};
+    Decoder parser{};
     auto& code = parser.code;
 
     for (opcode_t i = lo; i <= hi; ++i)
@@ -113,7 +113,7 @@ TEST(InstructionParser, GetB)
     constexpr opcode_t mask = make_mask<reg_start, reg_size>();
     constexpr opcode_t lo = make_mask<0, reg_size + 2>();
     //constexpr opcode_t hi = lo << (reg_start - 2);
-    OpcodeBase parser{};
+    Decoder parser{};
     auto& code = parser.code;
 
     for (opcode_t i = 0; i <= lo; ++i)

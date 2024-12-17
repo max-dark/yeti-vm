@@ -7,13 +7,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(YetiUtility)
 
-add_library(yeti_vm_shared INTERFACE)
-add_include_dir(yeti_vm_shared INTERFACE)
+add_library(yeti_vm_shared STATIC)
+add_include_dir(yeti_vm_shared PUBLIC)
+
+target_sources(yeti_vm_shared
+    PRIVATE
+        yeti-vm/vm_shared.cxx
+        yeti-vm/vm_bit_tools.cxx
+)
 
 add_header_files(
     yeti_vm_shared
-    INTERFACE HEADERS
+    PUBLIC HEADERS
         yeti-vm/vm_shared.hxx
+        yeti-vm/vm_bit_tools.hxx
 )
 add_library(YetiVM::shared ALIAS yeti_vm_shared)
 
