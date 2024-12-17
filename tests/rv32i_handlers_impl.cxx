@@ -5,6 +5,11 @@ namespace tests::rv32i
 {
 using namespace vm::rv32i;
 
+using RegId = vm::register_no;
+using RegAlias = vm::RegAlias;
+using Address = vm::vm_interface::address_t;
+using Offset = vm::vm_interface::offset_t;
+
 using ::testing::_;
 using ::testing::Args;
 using ::testing::Return;
@@ -63,11 +68,44 @@ TEST_F(RV32I_Handler_Impl, AddUpperImmediateToPC)
 TEST_F(RV32I_Handler_Impl, JumpAndLink)
 {
     MockVM mock;
+    // jal instruction ...
     auto impl = create<jal>();
 
-    ASSERT_EQ(impl->get_code_base(), Enum::JAL);
-    ASSERT_EQ(impl->get_type(), Format::J_TYPE);
-    ASSERT_FALSE(true) << "Test is incomplete";
+    auto& id = impl->get_id();
+    // group / encoding / no extensions
+    ASSERT_TRUE(id.equal(make_id(GroupId::JAL, Format::J_TYPE)));
+
+    // immediate encodes signed offset(x2, imm[0] ignored) relative to PC value
+    // addr = pc + imm
+    // generates exception if <addr> not aligned to four bytes
+    // ok = <addr> % 4 !=0
+    // saves next instruction address in dest
+    // rd = pc + 4
+
+    RegId regId[] = { RegAlias::zero, RegAlias::ra, RegAlias::t0 };
+    Offset offset[] = { -8, -4, 0, +4, +8 };
+    Address pc_min = 0;
+    Address pc_max = 32;
+
+    using bits = vm::bit_tools::bits<Offset>;
+    for (auto pc = pc_min; pc <= pc_max; ++pc)
+    {
+        Address ptr = pc * 4;
+        for(auto o: offset)
+        {
+            auto imm = bits::to_unsigned(o);
+            for (auto rd: regId)
+            {
+                Decoder parser{ Encoder::j_type(GroupId::JAL, rd, imm) };
+                EXPECT_CALL(mock, get_pc())
+                    .WillRepeatedly(Return(ptr));
+                EXPECT_CALL(mock, set_register(rd, ptr + 4));
+                EXPECT_CALL(mock, jump_to(o));
+
+                impl->exec(&mock, &parser);
+            }
+        }
+    }
 }
 
 } // namespace tests::rv32i
