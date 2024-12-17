@@ -119,4 +119,18 @@ TEST_F(RV32I_Handler_Branch, IfGreatOrEqualSigned)
     });
 }
 
+TEST_F(RV32I_Handler_Branch, IfLessUnsigned)
+{
+    constexpr Code funcA = 0b0110;
+    branch(create<bltu>(), funcA,
+           [](MockVM& mock
+                   , vm::register_t rs1, vm::register_t rs2
+                   , Offset value)
+           {
+               EXPECT_CALL(mock, jump_if(
+                       (rs1) < (rs2)
+                       , value));
+           });
+}
+
 } // namespace tests::rv32i
