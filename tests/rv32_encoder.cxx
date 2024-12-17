@@ -5,6 +5,23 @@
 using vm::opcode::Encoder;
 using vm::opcode::Decoder;
 
+class RV32_Encode_GroupId: public ::testing::TestWithParam<vm::opcode::opcode_t> {};
+
+INSTANTIATE_TEST_SUITE_P(
+        Registers
+        , RV32_Encode_GroupId
+        , ::testing::Range<vm::opcode::opcode_t>(0b0000'0000, 0b1000'0000)
+);
+
+TEST_P(RV32_Encode_GroupId, SetGroupId)
+{
+    auto id = GetParam();
+    auto value = Encoder::encode_group(id);
+    Decoder parser{value};
+
+    ASSERT_EQ(id, parser.get_code());
+}
+
 class RV32_Encode_Registers: public ::testing::TestWithParam<vm::register_no> {};
 
 INSTANTIATE_TEST_SUITE_P(
