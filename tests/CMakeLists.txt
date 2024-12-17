@@ -82,6 +82,13 @@ add_gtest(
 )
 
 add_gtest(
+        NAME "RV32 Encoder/Decoder tests"
+        COMMAND rv32_encode_decode
+        SOURCES
+        rv32_encoder.cxx
+)
+
+add_gtest(
         NAME "RV32I handlers"
         COMMAND rv32i_handlers
         MOCK MAIN # use GMock / own main function
