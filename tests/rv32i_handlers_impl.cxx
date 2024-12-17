@@ -20,13 +20,12 @@ TEST_F(RV32I_Handler_Impl, none)
 
 TEST_F(RV32I_Handler_Impl, LoadUpperImmediate)
 {
+    MockVM mock;
     auto impl = create<lui>();
 
     ASSERT_EQ(impl->get_code_base(), Enum::LUI);
     ASSERT_EQ(impl->get_type(), Format::U_TYPE);
 
-    EXPECT_CALL(mock(), set_register(_, _))
-        .Times(vm::register_count);
     for (uint8_t r_id = 0; r_id < vm::register_count; ++ r_id)
     {
         Code imm = r_id << 12u;
@@ -36,8 +35,8 @@ TEST_F(RV32I_Handler_Impl, LoadUpperImmediate)
         ASSERT_EQ(parser.decode_u_u(), imm);
         ASSERT_EQ(parser.get_code(), impl->get_code_base());
 
-        EXPECT_CALL(mock(), set_register(r_id, imm));
-        impl->exec(vm(), &parser);
+        EXPECT_CALL(mock, set_register(r_id, imm));
+        impl->exec(&mock, &parser);
     }
 }
 

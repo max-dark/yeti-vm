@@ -44,21 +44,6 @@ protected:
         return ptr.get();
     }
 
-    static vm::vm_interface* vm() {
-        return &mock();
-    }
-    static MockVM& mock() {
-        static thread_local MockVM mockVm;
-        return mockVm;
-    }
-
-    static Type* code(Code code)
-    {
-        static thread_local Type current;
-        current.code = code;
-        return &current;
-    }
-
 private:
     HandlerPtr ptr;
 };
