@@ -90,3 +90,20 @@ TEST_P(RV32_Encode_FuncB, SetFuncB)
 
     ASSERT_EQ(id, parser.get_func7());
 }
+
+class RV32_Encode_Immediate_12: public ::testing::TestWithParam<vm::opcode::data_t> {};
+
+INSTANTIATE_TEST_SUITE_P(
+        Immediate
+        , RV32_Encode_Immediate_12
+        , ::testing::Range<vm::opcode::data_t>(0b0000'0000, 0b1'0000'0000)
+);
+
+TEST_P(RV32_Encode_Immediate_12, SetTypeI)
+{
+    auto id = GetParam();
+    auto value = Encoder::encode_i(id);
+    Decoder parser{value};
+
+    ASSERT_EQ(id, parser.decode_i_u());
+}
