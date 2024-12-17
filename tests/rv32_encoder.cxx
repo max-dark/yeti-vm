@@ -116,3 +116,12 @@ TEST_P(RV32_Encode_Immediate_12, SetTypeS)
 
     ASSERT_EQ(id, parser.decode_s_u());
 }
+
+TEST_P(RV32_Encode_Immediate_12, SetTypeB)
+{
+    auto id = GetParam() << 1; // set id[0] == 0
+    auto value = Encoder::encode_b(id);
+    Decoder parser{value};
+
+    ASSERT_EQ(id, parser.decode_b_u());
+}
