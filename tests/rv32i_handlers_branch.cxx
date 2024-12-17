@@ -50,8 +50,8 @@ protected:
             {
                 for (RegId rs2 = 0; rs2 < vm::register_count; ++rs2)
                 {
-                    vm::register_t rs1_value = rs1;
-                    vm::register_t rs2_value = rs2;
+                    vm::register_t rs1_value = rs1 * offset;
+                    vm::register_t rs2_value = rs2 * offset;
                     auto code = encode(rs1, rs2, offset, funcA);
                     EXPECT_CALL(mock, get_register(rs1))
                             .WillRepeatedly(Return(rs1_value));
@@ -87,6 +87,21 @@ TEST_F(RV32I_Handler_Branch, IfNotEqual)
    {
        EXPECT_CALL(mock, jump_if(rs1 != rs2, value));
    });
+}
+
+TEST_F(RV32I_Handler_Branch, IfLessSigned)
+{
+    constexpr Code funcA = 0b0100;
+    branch(create<blt>(), funcA,
+           [](MockVM& mock
+                   , vm::register_t rs1, vm::register_t rs2
+                   , Offset value)
+    {
+        using r_bits = bits<vm::register_t>;
+        EXPECT_CALL(mock, jump_if(
+                r_bits::to_signed(rs1) < r_bits::to_signed(rs2)
+                , value));
+    });
 }
 
 } // namespace tests::rv32i
