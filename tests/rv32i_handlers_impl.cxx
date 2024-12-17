@@ -115,8 +115,8 @@ TEST_F(RV32I_Handler_Impl, JumpAndLinkRegister)
     auto impl = create<jalr>();
 
     auto &id = impl->get_id();
-    // group / encoding / FIXME: have a-ext[0], but ignored
-    ASSERT_TRUE(id.equal(make_id(GroupId::JALR, Format::I_TYPE)));
+    // group / encoding / have a-ext[0]
+    ASSERT_TRUE(id.equal(make_id(GroupId::JALR, Format::I_TYPE, 0)));
 
     // immediate encodes signed offset relative to RS1 value
     // addr = rs1 + imm

@@ -86,7 +86,7 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
 
 /// jump and link by register
 /// asm: jalr dest, src, const
-struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE> {
+struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE, 0b0000> {
     [[nodiscard]]
     bool skip() const final { return true; }
 
