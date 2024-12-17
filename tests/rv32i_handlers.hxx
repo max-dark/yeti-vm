@@ -44,7 +44,10 @@ protected:
         return ptr.get();
     }
 
-    static vm::vm_interface& vm() {
+    static vm::vm_interface* vm() {
+        return &mock();
+    }
+    static MockVM& mock() {
         static thread_local MockVM mockVm;
         return mockVm;
     }
