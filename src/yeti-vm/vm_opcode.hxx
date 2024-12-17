@@ -237,6 +237,12 @@ struct Encoder
 
     /// encode J-type instruction
     static instruction_t j_type(base_t group, reg_id rd, immediate_t immediate);
+
+    static instruction_t encode_i(immediate_t immediate);
+    static instruction_t encode_s(immediate_t immediate);
+    static instruction_t encode_b(immediate_t immediate);
+    static instruction_t encode_u(immediate_t immediate);
+    static instruction_t encode_j(immediate_t immediate);
 };
 
 
