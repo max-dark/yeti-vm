@@ -97,5 +97,6 @@ add_gtest(
         rv32i_handlers.cxx
         rv32i_handlers.hxx
         rv32i_handlers_impl.cxx
+        rv32i_handlers_branch.cxx
         rv32i_handlers_main.cxx
 )
