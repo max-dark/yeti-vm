@@ -178,6 +178,7 @@ struct Decoder
 static_assert(sizeof(Decoder) == sizeof(opcode_t));
 
 /// opcode encoding utility
+// TODO: Validation of value ranges
 struct Encoder
         : protected vm::bit_tools::bits<vm::opcode::opcode_t>
 {
