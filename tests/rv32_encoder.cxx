@@ -125,3 +125,32 @@ TEST_P(RV32_Encode_Immediate_12, SetTypeB)
 
     ASSERT_EQ(id, parser.decode_b_u());
 }
+
+TEST_P(RV32_Encode_Immediate_12, SetTypeU)
+{
+    auto id = GetParam() << 12; // set id[11:0] == 0
+    auto value = Encoder::encode_u(id);
+    Decoder parser{value};
+
+    ASSERT_EQ(id, parser.decode_u_u());
+}
+
+class RV32_Encode_Immediate_20: public ::testing::TestWithParam<vm::opcode::data_t> {};
+
+INSTANTIATE_TEST_SUITE_P(
+        ImmediateHight
+        , RV32_Encode_Immediate_20
+        , ::testing::Range<vm::opcode::data_t>(0b0, 0b1 << 10)
+);
+
+TEST_P(RV32_Encode_Immediate_20, SetTypeU)
+{
+    auto id_param = (GetParam() << 12); // set id[11:0] == 0
+
+    {
+        auto id = (id_param << 10) | id_param;
+        auto value = Encoder::encode_u(id);
+        Decoder parser{value};
+        ASSERT_EQ(id, parser.decode_u_u());
+    }
+}

@@ -238,7 +238,7 @@ Encoder::instruction_t Encoder::encode_b(Encoder::immediate_t immediate)
 Encoder::instruction_t Encoder::encode_u(Encoder::immediate_t immediate)
 {
     instruction_t value = 0;
-    value |= immediate << 12;
+    value |= immediate;
 
     return value;
 }

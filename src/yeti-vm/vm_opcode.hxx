@@ -177,8 +177,12 @@ struct Decoder
 };
 static_assert(sizeof(Decoder) == sizeof(opcode_t));
 
-/// opcode encoding utility
-// TODO: Validation of value ranges
+/**
+ * opcode encoding utility
+ *
+ * TODO: Validation of value ranges
+ * TODO: U-Type - encode with/without shift (?)
+ */
 struct Encoder
         : protected vm::bit_tools::bits<vm::opcode::opcode_t>
 {
