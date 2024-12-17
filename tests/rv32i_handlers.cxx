@@ -30,7 +30,7 @@ struct TestImpl
     std::string_view id;
     vm::interface::ptr instance;
     std::string_view mnemonic;
-    Enum code;
+    GroupId code;
 
     static std::string to_string(const TestInfo& info)
     {
@@ -48,7 +48,7 @@ struct TestImpl
 };
 
 template<Implementation Impl>
-TestImpl impl(std::string_view id, Enum code)
+TestImpl impl(std::string_view id, GroupId code)
 {
     return {
         .id = typeid(Impl).name(),
@@ -64,62 +64,62 @@ struct RV32I_Handler_ISA
     static auto make_values()
     {
         return ::testing::Values(
-              impl<lui>("lui", Enum::LUI)
-            , impl<auipc>("auipc", Enum::AUIPC)
-            , impl<jalr>("jalr", Enum::JALR)
+              impl<lui>("lui", GroupId::LUI)
+            , impl<auipc>("auipc", GroupId::AUIPC)
+            , impl<jalr>("jalr", GroupId::JALR)
 
-            , impl<beq>("beq", Enum::BRANCH)
-            , impl<bne>("bne", Enum::BRANCH)
-            , impl<blt>("blt", Enum::BRANCH)
-            , impl<bge>("bge", Enum::BRANCH)
+            , impl<beq>("beq", GroupId::BRANCH)
+            , impl<bne>("bne", GroupId::BRANCH)
+            , impl<blt>("blt", GroupId::BRANCH)
+            , impl<bge>("bge", GroupId::BRANCH)
 
-            , impl<bltu>("bltu", Enum::BRANCH)
-            , impl<bgeu>("bgeu", Enum::BRANCH)
+            , impl<bltu>("bltu", GroupId::BRANCH)
+            , impl<bgeu>("bgeu", GroupId::BRANCH)
 
-            , impl<lb>("lb", Enum::LOAD)
-            , impl<lh>("lh", Enum::LOAD)
-            , impl<lw>("lw", Enum::LOAD)
-            , impl<lbu>("lbu", Enum::LOAD)
-            , impl<lhu>("lhu", Enum::LOAD)
+            , impl<lb>("lb", GroupId::LOAD)
+            , impl<lh>("lh", GroupId::LOAD)
+            , impl<lw>("lw", GroupId::LOAD)
+            , impl<lbu>("lbu", GroupId::LOAD)
+            , impl<lhu>("lhu", GroupId::LOAD)
 
-            , impl<sb>("sb", Enum::STORE)
-            , impl<sh>("sh", Enum::STORE)
-            , impl<sw>("sw", Enum::STORE)
+            , impl<sb>("sb", GroupId::STORE)
+            , impl<sh>("sh", GroupId::STORE)
+            , impl<sw>("sw", GroupId::STORE)
 
-            , impl<addi>("addi", Enum::OP_IMM)
-            , impl<slti>("slti", Enum::OP_IMM)
-            , impl<sltiu>("sltiu", Enum::OP_IMM)
+            , impl<addi>("addi", GroupId::OP_IMM)
+            , impl<slti>("slti", GroupId::OP_IMM)
+            , impl<sltiu>("sltiu", GroupId::OP_IMM)
 
-            , impl<xori>("xori", Enum::OP_IMM)
-            , impl<ori> ("ori" , Enum::OP_IMM)
-            , impl<andi>("andi", Enum::OP_IMM)
-            , impl<slli>("slli", Enum::OP_IMM)
-            , impl<srli>("srli", Enum::OP_IMM)
-            , impl<srai>("srai", Enum::OP_IMM)
+            , impl<xori>("xori", GroupId::OP_IMM)
+            , impl<ori> ("ori" , GroupId::OP_IMM)
+            , impl<andi>("andi", GroupId::OP_IMM)
+            , impl<slli>("slli", GroupId::OP_IMM)
+            , impl<srli>("srli", GroupId::OP_IMM)
+            , impl<srai>("srai", GroupId::OP_IMM)
 
-            , impl<add_r>("add", Enum::OP)
-            , impl<sub_r>("sub", Enum::OP)
-            , impl<sll_r>("sll", Enum::OP)
-            , impl<slt_r>("slt", Enum::OP)
-            , impl<sltu_r>("sltu", Enum::OP)
-            , impl<xor_r>("xor", Enum::OP)
-            , impl<srl_r>("srl", Enum::OP)
-            , impl<sra_r>("sra", Enum::OP)
-            , impl<or_r>("or", Enum::OP)
-            , impl<and_r>("and", Enum::OP)
+            , impl<add_r>("add", GroupId::OP)
+            , impl<sub_r>("sub", GroupId::OP)
+            , impl<sll_r>("sll", GroupId::OP)
+            , impl<slt_r>("slt", GroupId::OP)
+            , impl<sltu_r>("sltu", GroupId::OP)
+            , impl<xor_r>("xor", GroupId::OP)
+            , impl<srl_r>("srl", GroupId::OP)
+            , impl<sra_r>("sra", GroupId::OP)
+            , impl<or_r>("or", GroupId::OP)
+            , impl<and_r>("and", GroupId::OP)
 
-            , impl<fence>("fence", Enum::MISC_MEM)
-            , impl<fence_i>("fence.i", Enum::MISC_MEM)
+            , impl<fence>("fence", GroupId::MISC_MEM)
+            , impl<fence_i>("fence.i", GroupId::MISC_MEM)
 
-            , impl<env_call>("env", Enum::SYSTEM)
+            , impl<env_call>("env", GroupId::SYSTEM)
 
-            , impl<csrrw>("csrrw", Enum::SYSTEM)
-            , impl<csrrs>("csrrs", Enum::SYSTEM)
-            , impl<csrrc>("csrrc", Enum::SYSTEM)
+            , impl<csrrw>("csrrw", GroupId::SYSTEM)
+            , impl<csrrs>("csrrs", GroupId::SYSTEM)
+            , impl<csrrc>("csrrc", GroupId::SYSTEM)
 
-            , impl<csrrwi>("csrrwi", Enum::SYSTEM)
-            , impl<csrrsi>("csrrsi", Enum::SYSTEM)
-            , impl<csrrci>("csrrci", Enum::SYSTEM)
+            , impl<csrrwi>("csrrwi", GroupId::SYSTEM)
+            , impl<csrrsi>("csrrsi", GroupId::SYSTEM)
+            , impl<csrrci>("csrrci", GroupId::SYSTEM)
         );
     }
 };

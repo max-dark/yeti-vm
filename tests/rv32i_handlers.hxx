@@ -9,9 +9,12 @@ namespace tests::rv32i
 using vm::register_t;
 using vm::register_no;
 
-using Enum = vm::opcode::OpcodeType;
-using Type = vm::opcode::Decoder;
+using GroupId = vm::opcode::OpcodeType;
+using Format = vm::opcode::BaseFormat;
+using vm::opcode::Decoder;
+using vm::opcode::Encoder;
 using Code = vm::opcode::opcode_t;
+using ExtId = Code;
 
 
 template<class Handler>
@@ -30,6 +33,10 @@ protected:
         ptr.reset();
     }
 
+protected:
+    static constexpr ExtId NoFuncA = vm::no_func_a;
+    static constexpr ExtId NoFuncB = vm::no_func_b;
+
     template<Implementation Type>
     [[nodiscard]]
     vm::interface *create()
@@ -42,6 +49,15 @@ protected:
     vm::interface *get() const
     {
         return ptr.get();
+    }
+    static vm::InstructionId make_id(GroupId groupId, Format format,
+                                     ExtId extA = NoFuncA,
+                                     ExtId extB = NoFuncB)
+    {
+        return {
+            groupId, format,
+            extA, extB
+        };
     }
 
 private:
