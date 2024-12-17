@@ -16,6 +16,11 @@ using vm::opcode::Encoder;
 using Code = vm::opcode::opcode_t;
 using ExtId = Code;
 
+using RegId = vm::register_no;
+using RegAlias = vm::RegAlias;
+using Address = vm::vm_interface::address_t;
+using Offset = vm::vm_interface::offset_t;
+
 
 template<class Handler>
 concept Implementation = std::is_base_of_v<vm::interface, Handler>;

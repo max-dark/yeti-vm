@@ -5,11 +5,6 @@ namespace tests::rv32i
 {
 using namespace vm::rv32i;
 
-using RegId = vm::register_no;
-using RegAlias = vm::RegAlias;
-using Address = vm::vm_interface::address_t;
-using Offset = vm::vm_interface::offset_t;
-
 using ::testing::_;
 using ::testing::Args;
 using ::testing::Return;
