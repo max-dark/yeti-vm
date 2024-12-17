@@ -3,15 +3,11 @@
 
 namespace tests::rv32i
 {
-using vm::opcode::Encoder;
-using vm::opcode::Decoder;
 using namespace vm::rv32i;
 
 using ::testing::_;
 using ::testing::Args;
 using ::testing::Return;
-
-using Format = vm::opcode::BaseFormat;
 
 class RV32I_Handler_Impl: public RV32I_Handler {};
 
@@ -20,13 +16,14 @@ TEST_F(RV32I_Handler_Impl, LoadUpperImmediate)
     MockVM mock;
     auto impl = create<lui>();
 
-    ASSERT_EQ(impl->get_code_base(), Enum::LUI);
-    ASSERT_EQ(impl->get_type(), Format::U_TYPE);
+    auto& id = impl->get_id();
+    // group / encoding / no extensions
+    ASSERT_TRUE(id.equal(make_id(GroupId::LUI, Format::U_TYPE)));
 
     for (uint8_t r_id = 0; r_id < vm::register_count; ++ r_id)
     {
         Code imm = r_id << 12u;
-        Code code = Encoder::u_type(Enum::LUI, r_id, imm);
+        Code code = Encoder::u_type(GroupId::LUI, r_id, imm);
         Decoder parser{code};
         ASSERT_EQ(parser.get_rd(), r_id);
         ASSERT_EQ(parser.decode_u_u(), imm);
@@ -42,8 +39,9 @@ TEST_F(RV32I_Handler_Impl, AddUpperImmediateToPC)
     MockVM mock;
     auto impl = create<auipc>();
 
-    ASSERT_EQ(impl->get_code_base(), Enum::AUIPC);
-    ASSERT_EQ(impl->get_type(), Format::U_TYPE);
+    auto& id = impl->get_id();
+    // group / encoding / no extensions
+    ASSERT_TRUE(id.equal(make_id(GroupId::AUIPC, Format::U_TYPE)));
 
     for (uint8_t r_id = 0; r_id < vm::register_count; ++ r_id)
     {
