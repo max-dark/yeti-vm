@@ -39,3 +39,37 @@ TEST_P(RV32_Encode_Registers, EncodeRS2)
 
     ASSERT_EQ(id, parser.get_rs2());
 }
+
+class RV32_Encode_FuncA: public ::testing::TestWithParam<vm::register_no> {};
+
+INSTANTIATE_TEST_SUITE_P(
+        FuncA
+        , RV32_Encode_FuncA
+        , ::testing::Range<vm::register_no>(0b0000, 0b1000)
+);
+
+TEST_P(RV32_Encode_FuncA, SetFuncA)
+{
+    vm::register_no id = GetParam();
+    auto value = Encoder::encode_f3(id);
+    Decoder parser{value};
+
+    ASSERT_EQ(id, parser.get_func3());
+}
+
+class RV32_Encode_FuncB: public ::testing::TestWithParam<vm::register_no> {};
+
+INSTANTIATE_TEST_SUITE_P(
+        FuncB
+        , RV32_Encode_FuncB
+        , ::testing::Range<vm::register_no>(0b0000'0000, 0b1000'0000)
+);
+
+TEST_P(RV32_Encode_FuncB, SetFuncB)
+{
+    vm::register_no id = GetParam();
+    auto value = Encoder::encode_f7(id);
+    Decoder parser{value};
+
+    ASSERT_EQ(id, parser.get_func7());
+}
