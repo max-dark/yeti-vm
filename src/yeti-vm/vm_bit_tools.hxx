@@ -36,10 +36,6 @@ struct bits
     /// mask for sign bit
     static constexpr unsigned_type sign_mask = unsigned_type{1} << sign_pos;
 
-    /// value of make_mask
-    template<offset_type start, offset_type length>
-    static constexpr unsigned_type mask_value = make_mask<start, length>();
-
     /// convert value to unsigned
     static constexpr unsigned_type to_unsigned(value_type value)
     {
@@ -66,6 +62,10 @@ struct bits
 
         return from_start & (~from_end);
     }
+
+    /// value of make_mask
+    template<offset_type start, offset_type length>
+    static constexpr unsigned_type mask_value = make_mask<start, length>();
 
     /// get bit field
     template<offset_type start, offset_type length>
