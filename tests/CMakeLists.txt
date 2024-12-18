@@ -11,15 +11,28 @@ find_package(GTest REQUIRED)
 include(GoogleTest)
 
 function(add_gtest)
-    set(_options)
+    set(_options MOCK MAIN)
     set(_keys NAME COMMAND)
     set(_lists SOURCES LIBRARIES)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
 
+    list(APPEND _libs YetiVM::runtime)
+    list(APPEND _libs GTest::gtest)
+    set(_main GTest::gtest_main)
+
+    if (var_MOCK)
+        list(APPEND _libs GTest::gmock)
+        set(_main GTest::gmock_main)
+    endif ()
+
+    if (NOT var_MAIN)
+        list(APPEND _libs "${_main}")
+    endif ()
+
     add_executable(${var_COMMAND})
     target_sources(${var_COMMAND} PRIVATE ${var_SOURCES})
 
-    target_link_libraries(${var_COMMAND} PRIVATE YetiVM::runtime GTest::gtest_main ${var_LIBRARIES})
+    target_link_libraries(${var_COMMAND} PRIVATE ${_libs} ${var_LIBRARIES})
     gtest_discover_tests(${var_COMMAND})
 endfunction()
 
@@ -64,6 +77,28 @@ add_gtest(
         NAME "RV32I tests"
         COMMAND rv32i_tests
         SOURCES
-        rv32i_test.cxx
+        rv32i_code.cxx
         rv32i_immediate.cxx
+)
+
+add_gtest(
+        NAME "RV32 Encoder/Decoder tests"
+        COMMAND rv32_encode_decode
+        SOURCES
+        rv32_encoder.cxx
+)
+
+add_gtest(
+        NAME "RV32I handlers"
+        COMMAND rv32i_handlers
+        MOCK MAIN # use GMock / own main function
+        SOURCES
+        rv32i_mocks.cxx rv32i_mocks.hxx
+        rv32i_handlers.cxx
+        rv32i_handlers.hxx
+        rv32i_handlers_impl.cxx
+        rv32i_handlers_branch.cxx
+        rv32i_handlers_load.cxx
+        rv32i_handlers_store.cxx
+        rv32i_handlers_main.cxx
 )

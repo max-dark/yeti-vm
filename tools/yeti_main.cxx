@@ -235,7 +235,7 @@ void init_syscalls(vm::syscall_registry &sys)
 void disasm(const vm::program_code_t &code)
 {
     using namespace std::literals;
-    using op_type = vm::opcode::OpcodeBase;
+    using vm::opcode::Decoder;
     vm::registry registry;
     bool rv32i_ok = vm::rv32i::register_rv32i_set(&registry);
     bool rv32m_ok = vm::rv32m::register_rv32m_set(&registry);
@@ -250,9 +250,9 @@ void disasm(const vm::program_code_t &code)
         << std::setw(10) << std::left << "instr"
         << std::setw(10) << std::left << "args"
         << std::endl;
-    for (size_t i = 0; i < code.size(); i+= sizeof(op_type)) {
+    for (size_t i = 0; i < code.size(); i+= sizeof(Decoder)) {
         const auto *p = code.data() + i;
-        auto *op = reinterpret_cast<const op_type*>(p);
+        auto *op = reinterpret_cast<const Decoder*>(p);
         auto handler = registry.find_handler(op);
         auto mnemonic = handler ? handler->get_mnemonic() : "UNKNOWN"sv;
         auto args = handler ? handler->get_args(op) : "UNKNOWN"s;

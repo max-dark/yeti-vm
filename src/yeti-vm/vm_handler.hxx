@@ -42,9 +42,20 @@ public:
         id = code | (funcA << 8) | (funcB << 16);
     }
     /// comparator for std::map
-    bool operator<(const InstructionId& rhs) const
+    friend auto operator<=>(const InstructionId& lhs, const InstructionId& rhs) noexcept
     {
-        return id < rhs.id;
+        return lhs.id <=> rhs.id;
+    }
+
+    // Strict EQ
+    [[nodiscard]]
+    bool equal(const InstructionId& rhs) const noexcept
+    {
+        return code == rhs.code
+            && format == rhs.format
+            && funcA == rhs.funcA
+            && funcB == rhs.funcB
+            ;
     }
 };
 
@@ -73,7 +84,7 @@ struct interface
     virtual std::string_view get_mnemonic() const = 0;
     /// disasm arguments
     [[nodiscard]]
-    virtual std::string get_args(const opcode::OpcodeBase* code) const
+    virtual std::string get_args(const opcode::Decoder* code) const
     {
         return get_args(code->code);
     }
@@ -89,7 +100,7 @@ struct interface
      * @param vm pointer to VM implementation
      * @param current pointer to current instruction
      */
-    virtual void exec(vm_interface* vm, const opcode::OpcodeBase* current) const = 0;
+    virtual void exec(vm_interface* vm, const opcode::Decoder* current) const = 0;
 
     /**
      * skip PC increment
@@ -185,7 +196,7 @@ struct registry
     bool register_handler(interface::ptr handler);
 
     /// find handler by instruction code
-    handler_ptr find_handler(const opcode::OpcodeBase* code) const;
+    handler_ptr find_handler(const opcode::Decoder* code) const;
 
     /// handlers container
     handler_map handlers;

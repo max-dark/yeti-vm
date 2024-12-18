@@ -1,5 +1,6 @@
 #pragma once
 #include "vm_base_types.hxx"
+#include "vm_bit_tools.hxx"
 
 namespace vm::opcode
 {
@@ -32,66 +33,40 @@ enum BaseFormat: opcode_t
 template<uint8_t start, uint8_t length>
 consteval data_t make_mask()
 {
-    constexpr data_t all = ~data_t{0};
-    constexpr data_t from_start = all << start;
-    constexpr data_t from_end   = from_start << length;
-
-    return from_start & (~from_end);
+    return bit_tools::bits<data_t>::make_mask<start, length>();
 }
 static_assert(make_mask<0, 8>() == 0b0'1111'1111, "wrong mask");
 static_assert(make_mask<1, 8>() == 0b1'1111'1110, "wrong mask");
 
 /// value of make_mask
 template<uint8_t start, uint8_t length>
-constexpr data_t mask_value = make_mask<start, length>();
+constexpr data_t mask_value = bit_tools::bits<data_t>::make_mask<start, length>();
 
 /// get bit field
 template<uint8_t start, uint8_t length>
 consteval opcode::data_t get_bits(opcode::opcode_t code)
 {
-    constexpr uint8_t shift = (sizeof(code) * 8) - length;
-    constexpr opcode::opcode_t mask = (~static_cast<opcode::opcode_t>(0)) >> shift;
-
-    return (code >> start) & mask;
+    return bit_tools::bits<data_t>::get_bits<start, length>(code);
 }
-static_assert(get_bits<0, 1>(0b0000'0001) == opcode_t{0b0000'0001}, "something wrong");
-static_assert(get_bits<0, 2>(0b0000'0011) == opcode_t{0b0000'0011}, "something wrong");
-static_assert(get_bits<1, 1>(0b0000'0010) == opcode_t{0b0000'0001}, "something wrong");
-
-static_assert(get_bits< 0, 7>(0x02c58533) == opcode_t{0b0011'0011}, "something wrong");
-static_assert(get_bits<12, 3>(0x02c58533) == opcode_t{0b0000'0000}, "something wrong");
-static_assert(get_bits<12, 3>(0x02c5c533) == opcode_t{0b0000'0100}, "something wrong");
-static_assert(get_bits<12, 3>(0x02c5f533) == opcode_t{0b0000'0111}, "something wrong");
-
 /// get bit field
 constexpr data_t get_bits(opcode_t code, uint8_t start, uint8_t length)
 {
-    uint8_t shift = (sizeof(code) * 8) - length;
-    opcode_t mask = static_cast<opcode_t>(-1) >> shift;
-
-    return (code >> start) & mask;
+    return bit_tools::bits<data_t>::get_bits(code, start, length);
 }
 
 /// shift bit field
 template<uint8_t start, uint8_t length>
 constexpr data_t shift_bits(opcode_t code, uint8_t to)
 {
-    constexpr auto mask = mask_value<start, length>;
-    return ((code & mask) >> start) << to;
+    return bit_tools::bits<data_t>::shift_bits<start, length>(code, to);
 }
 
 /// shift bit field
 template<uint8_t start, uint8_t to, uint8_t length>
 constexpr data_t shift_bits(opcode_t code)
 {
-    constexpr auto mask = mask_value<start, length>;
-    return ((code & mask) >> start) << to;
+    return bit_tools::bits<data_t>::shift_bits<start, to, length>(code);
 }
-static_assert(shift_bits<0, 1, 1>(0b0000'0001) == 0b0000'0010);
-static_assert(shift_bits<0, 1, 2>(0b0000'0011) == 0b0000'0110);
-static_assert(shift_bits<0, 2, 1>(0b0000'0001) == 0b0000'0100);
-static_assert(shift_bits<0, 2, 2>(0b0000'0011) == 0b0000'1100);
-
 /**
  * convert num to hex string
  * @param num
@@ -111,51 +86,55 @@ inline std::string to_hex(data_t num)
 data_t extend_sign(data_t value, opcode_t code);
 
 /// opcode decoding utility
-struct OpcodeBase
+struct Decoder
+        : protected bit_tools::bits<opcode_t>
 {
     /// instruction code
     opcode_t code;
+
+    Decoder() = default;
+    explicit Decoder(opcode_t code): code{code} {}
 
     /// opcode group ID
     [[nodiscard]]
     opcode_t get_code() const
     {
-        return get_bits(code, 0, 7);
+        return get_bits<0, 7>(code);
     }
 
     /// get rs2(rhs) register ID
     [[nodiscard]]
     register_no get_rs2() const
     {
-        return get_bits(code, 20, 5);
+        return get_bits<20, 5>(code);
     }
 
     /// get rs1(lhs) register ID
     [[nodiscard]]
     register_no get_rs1() const
     {
-        return get_bits(code, 15, 5);
+        return get_bits<15, 5>(code);
     }
 
     /// get rd(dest) register ID
     [[nodiscard]]
     register_no get_rd() const
     {
-        return get_bits(code, 7, 5);
+        return get_bits<7, 5>(code);
     }
 
     /// get "func A" ID
     [[nodiscard]]
     data_t get_func3() const
     {
-        return get_bits(code, 12, 3);
+        return get_bits<12, 3>(code);
     }
 
     /// get "func B" ID
     [[nodiscard]]
     data_t get_func7() const
     {
-        return get_bits(code, 25, 7);
+        return get_bits<25, 7>(code);
     }
 
     /// decode immediate / I-type / sign extended
@@ -196,7 +175,80 @@ struct OpcodeBase
     [[nodiscard]]
     data_t decode_j_u() const;
 };
-static_assert(sizeof(OpcodeBase) == sizeof(opcode_t));
+static_assert(sizeof(Decoder) == sizeof(opcode_t));
+
+/**
+ * opcode encoding utility
+ *
+ * TODO: Validation of value ranges
+ * TODO: U-Type - encode with/without shift (?)
+ */
+struct Encoder
+        : protected vm::bit_tools::bits<vm::opcode::opcode_t>
+{
+    using base_t = vm::opcode::opcode_t;
+    using reg_id = base_t;
+    using func_id = base_t;
+    using instruction_t = base_t;
+    using immediate_t = base_t;
+
+    static constexpr base_t group_offset = 0;
+    static constexpr base_t rd_offset = 7;
+    static constexpr base_t f3_offset = 12;
+    static constexpr base_t rs1_offset = 15;
+    static constexpr base_t rs2_offset = 20;
+    static constexpr base_t f7_offset = 25;
+
+    static instruction_t encode_group(base_t group)
+    {
+        return group << group_offset;
+    }
+    static instruction_t encode_rd(reg_id id)
+    {
+        return id << rd_offset;
+    }
+    static instruction_t encode_rs1(reg_id id)
+    {
+        return id << rs1_offset;
+    }
+    static instruction_t encode_rs2(reg_id id)
+    {
+        return id << rs2_offset;
+    }
+    static instruction_t encode_f3(func_id id)
+    {
+        return id << f3_offset;
+    }
+    static instruction_t encode_f7(func_id id)
+    {
+        return id << f7_offset;
+    }
+
+    /// encode R-type instruction
+    static instruction_t r_type(base_t group, reg_id rd, reg_id rs1, reg_id rs2, func_id fa, func_id fb);
+
+    /// encode I-type instruction
+    static instruction_t i_type(base_t group, reg_id rd, reg_id rs1, immediate_t immediate, func_id fa);
+
+    /// encode S-type instruction
+    static instruction_t s_type(base_t group, reg_id rs1, reg_id rs2, immediate_t immediate, func_id fa);
+
+    /// encode B-type instruction
+    static instruction_t b_type(base_t group, reg_id rs1, reg_id rs2, immediate_t immediate, func_id fa);
+
+    /// encode U-type instruction
+    static instruction_t u_type(base_t group, reg_id rd, immediate_t immediate);
+
+    /// encode J-type instruction
+    static instruction_t j_type(base_t group, reg_id rd, immediate_t immediate);
+
+    static instruction_t encode_i(immediate_t immediate);
+    static instruction_t encode_s(immediate_t immediate);
+    static instruction_t encode_b(immediate_t immediate);
+    static instruction_t encode_u(immediate_t immediate);
+    static instruction_t encode_j(immediate_t immediate);
+};
+
 
 /// @see Instruction Length Encoding
 size_t op_size(opcode_t code);
@@ -252,5 +304,10 @@ enum OpcodeType: opcode_t
 
 /// get mnemonic of opcode group ID
 std::string_view get_op_id(OpcodeType code);
+
+/// get mnemonic of opcode group ID
+inline std::string_view get_code_id(opcode_t code) {
+    return get_op_id(static_cast<OpcodeType>(code & mask_value<0, 7>));
+}
 
 } //namespace vm::opcode
