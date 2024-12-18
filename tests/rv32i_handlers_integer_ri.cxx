@@ -129,7 +129,19 @@ TEST_F(RV32I_Handler_RI, AddImmediate)
 
 TEST_F(RV32I_Handler_RI, SetLessThanImmediate)
 {
-    NotImplemented();
+    static constexpr Code funcA = 0b0010;
+    auto impl = create<slti>();
+    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    {
+        TestValues r{};
+        r.code = encode(p->dest, p->src, p->data, funcA);
+        DecoderShouldReturnSameValue(r, p, funcA);
+        r.src = p->src * (p->dest ^ p->data);
+        r.dest = r_bits::to_signed(r.src) < r_bits::to_signed(r.code.decode_i());
+
+        return r;
+    };
+    return commonTest(impl, funcA, step);
 }
 
 TEST_F(RV32I_Handler_RI, SetLessThanImmediateUnsigned)
