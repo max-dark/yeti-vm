@@ -77,7 +77,17 @@ protected:
 
 TEST_F(RV32I_Handler_Load, ByteSigned)
 {
-    ASSERT_TRUE(false) << "Implement this";
+    Code funcA = 0b0000;
+    testLoad(create<lb>(), funcA
+             ,[](MockVM& vm, Sequence& s
+             , vm::register_t value, Address address)
+    {
+        EXPECT_CALL(vm, read_memory(address, 1, _))
+            .InSequence(s)
+            .WillRepeatedly(SetArgReferee<2>(value & 0x00ff))
+        ;
+        return r_bits::extend_sign<7>(value & 0x00ff);
+    });
 }
 
 TEST_F(RV32I_Handler_Load, HalfWordSigned)
@@ -92,7 +102,17 @@ TEST_F(RV32I_Handler_Load, Word)
 
 TEST_F(RV32I_Handler_Load, ByteUnsigned)
 {
-    ASSERT_TRUE(false) << "Implement this";
+    Code funcA = 0b0100;
+    testLoad(create<lbu>(), funcA
+            ,[](MockVM& vm, Sequence& s
+            , vm::register_t value, Address address)
+    {
+         EXPECT_CALL(vm, read_memory(address, 1, _))
+                 .InSequence(s)
+                 .WillRepeatedly(SetArgReferee<2>(value & 0x00ff))
+                 ;
+         return (value & 0x00ff);
+    });
 }
 
 TEST_F(RV32I_Handler_Load, HalfWordUnsigned)
