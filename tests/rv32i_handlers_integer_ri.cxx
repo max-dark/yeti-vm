@@ -70,10 +70,10 @@ protected:
     {
         AssertId(impl, expectedId(funcA));
 
-        for (Offset offset: { -8, -4, 0, +4, +8 })
         for (RegId dest = 0; dest < vm::register_count; ++dest)
         {
             for (RegId src = 0; src < vm::register_count; ++src)
+            for (Offset offset: { -8, -4, 0, +4, +8 })
             {
                 MockVM mockVm;
                 TestParams thisTest{};
@@ -82,8 +82,8 @@ protected:
                 thisTest.data = offset;
 
                 const TestValues r = step(impl, &thisTest);
-                ShouldGetRegister(mockVm, dest, r.dest);
-                ShouldSetRegister(mockVm, src, r.src);
+                ShouldGetRegister(mockVm, src, r.src);
+                ShouldSetRegister(mockVm, dest, r.dest);
 
                 impl->exec(&mockVm, &r.code);
             }
@@ -100,22 +100,25 @@ protected:
     {
         EXPECT_CALL(mockVm, set_register(id, value));
     }
+
+    static void DecoderShouldReturnSameValue(const TestValues& r, const TestParams* p, Code funcA)
+    {
+        ASSERT_EQ(r.code.decode_i(), p->data);
+        ASSERT_EQ(r.code.get_rd(), p->dest);
+        ASSERT_EQ(r.code.get_rs1(), p->src);
+        ASSERT_EQ(r.code.get_func3(), funcA);
+    };
 };
 
 TEST_F(RV32I_Handler_RI, AddImmediate)
 {
-    constexpr Code funcA = 0b0000;
+    static constexpr Code funcA = 0b0000;
     auto impl = create<addi>();
-    TestStep step = [funcA](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encode(p->dest, p->src, p->data, funcA);
-        ([&]() {
-            ASSERT_EQ(r.code.decode_i(), p->data);
-            ASSERT_EQ(r.code.get_rd(), p->dest);
-            ASSERT_EQ(r.code.get_rs1(), p->src);
-            ASSERT_EQ(r.code.get_func3(), funcA);
-        })();
+        DecoderShouldReturnSameValue(r, p, funcA);
         r.src = p->src * (p->dest ^ p->data);
         r.dest = r.src + r_bits::to_signed(r.code.decode_i());
 
