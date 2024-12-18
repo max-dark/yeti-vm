@@ -37,6 +37,7 @@ protected:
 
     static Decoder encode(RegId dest, RegId src, Code value, Code funcA)
     {
+        value &= r_bits::mask_value<0, 12>;
         Code code = Encoder::i_type(GroupId::OP_IMM, dest, src, value, funcA);
         return Decoder(code);
     }
@@ -54,6 +55,7 @@ protected:
     {
         RegId dest;
         RegId src;
+        Code data;
     };
 
     struct TestValues
@@ -64,10 +66,11 @@ protected:
     };
 
     using TestStep = std::function<TestValues(const vm::interface* impl, const TestParams* thisTest)>;
-    static void CommonTest(const vm::interface* impl, Code funcA, const TestStep& step)
+    static void commonTest(const vm::interface* impl, Code funcA, const TestStep& step)
     {
         AssertId(impl, expectedId(funcA));
 
+        for (Offset offset: { -8, -4, 0, +4, +8 })
         for (RegId dest = 0; dest < vm::register_count; ++dest)
         {
             for (RegId src = 0; src < vm::register_count; ++src)
@@ -76,6 +79,7 @@ protected:
                 TestParams thisTest{};
                 thisTest.dest = dest;
                 thisTest.src = src;
+                thisTest.data = offset;
 
                 const TestValues r = step(impl, &thisTest);
                 ShouldGetRegister(mockVm, dest, r.dest);
@@ -100,7 +104,24 @@ protected:
 
 TEST_F(RV32I_Handler_RI, AddImmediate)
 {
-    NotImplemented();
+    constexpr Code funcA = 0b0000;
+    auto impl = create<addi>();
+    TestStep step = [funcA](const vm::interface* impl, const TestParams* p) -> TestValues
+    {
+        TestValues r{};
+        r.code = encode(p->dest, p->src, p->data, funcA);
+        ([&]() {
+            ASSERT_EQ(r.code.decode_i(), p->data);
+            ASSERT_EQ(r.code.get_rd(), p->dest);
+            ASSERT_EQ(r.code.get_rs1(), p->src);
+            ASSERT_EQ(r.code.get_func3(), funcA);
+        })();
+        r.src = p->src * (p->dest ^ p->data);
+        r.dest = r.src + r_bits::to_signed(r.code.decode_i());
+
+        return r;
+    };
+    return commonTest(impl, funcA, step);
 }
 
 TEST_F(RV32I_Handler_RI, SetLessThanImmediate)
