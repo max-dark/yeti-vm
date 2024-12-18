@@ -92,12 +92,32 @@ TEST_F(RV32I_Handler_Load, ByteSigned)
 
 TEST_F(RV32I_Handler_Load, HalfWordSigned)
 {
-    ASSERT_TRUE(false) << "Implement this";
+    Code funcA = 0b0001;
+    testLoad(create<lh>(), funcA
+            ,[](MockVM& vm, Sequence& s
+                    , vm::register_t value, Address address)
+             {
+                 EXPECT_CALL(vm, read_memory(address, 2, _))
+                         .InSequence(s)
+                         .WillRepeatedly(SetArgReferee<2>(value & 0x00ffff))
+                         ;
+                 return r_bits::extend_sign<15>(value & 0x00ffff);
+             });
 }
 
 TEST_F(RV32I_Handler_Load, Word)
 {
-    ASSERT_TRUE(false) << "Implement this";
+    Code funcA = 0b0010;
+    testLoad(create<lw>(), funcA
+            ,[](MockVM& vm, Sequence& s
+                    , vm::register_t value, Address address)
+             {
+                 EXPECT_CALL(vm, read_memory(address, 4, _))
+                         .InSequence(s)
+                         .WillRepeatedly(SetArgReferee<2>(value))
+                         ;
+                 return value;
+             });
 }
 
 TEST_F(RV32I_Handler_Load, ByteUnsigned)
@@ -117,7 +137,17 @@ TEST_F(RV32I_Handler_Load, ByteUnsigned)
 
 TEST_F(RV32I_Handler_Load, HalfWordUnsigned)
 {
-    ASSERT_TRUE(false) << "Implement this";
+    Code funcA = 0b0101;
+    testLoad(create<lhu>(), funcA
+            ,[](MockVM& vm, Sequence& s
+            , vm::register_t value, Address address)
+    {
+     EXPECT_CALL(vm, read_memory(address, 2, _))
+             .InSequence(s)
+             .WillRepeatedly(SetArgReferee<2>(value & 0x00ffff))
+             ;
+     return (value & 0x00ffff);
+    });
 }
 
 } // namespace tests::rv32i
