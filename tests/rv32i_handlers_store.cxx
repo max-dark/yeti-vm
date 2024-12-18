@@ -72,17 +72,35 @@ protected:
 
 TEST_F(RV32I_Handler_Store, StoreByte)
 {
-    ASSERT_TRUE(false) << "TODO: implementation";
+    auto do_write =
+    ([](MockVM &vm, vm::register_t value, Address address) -> void
+    {
+        EXPECT_CALL(vm, write_memory(address, 1, value));
+    });
+    Code funcA = 0b0000;
+    testStore(create<sb>(), funcA, do_write);
 }
 
 TEST_F(RV32I_Handler_Store, StoreHalfWord)
 {
-    ASSERT_TRUE(false) << "TODO: implementation";
+    auto do_write =
+    ([](MockVM &vm, vm::register_t value, Address address) -> void
+    {
+        EXPECT_CALL(vm, write_memory(address, 2, value));
+    });
+    Code funcA = 0b0001;
+    testStore(create<sh>(), funcA, do_write);
 }
 
 TEST_F(RV32I_Handler_Store, StoreWord)
 {
-    ASSERT_TRUE(false) << "TODO: implementation";
+    auto do_write =
+    ([](MockVM &vm, vm::register_t value, Address address) -> void
+    {
+        EXPECT_CALL(vm, write_memory(address, 4, value));
+    });
+    Code funcA = 0b0010;
+    testStore(create<sw>(), funcA, do_write);
 }
 
 } //
