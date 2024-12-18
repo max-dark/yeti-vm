@@ -41,8 +41,7 @@ protected:
     using CompareTest = void(MockVM&, vm::register_t, vm::register_t, Offset);
     static void branch(vm::interface* impl, Code funcA, CompareTest compareTest)
     {
-        MockVM mock;
-        EXPECT_TRUE(impl->get_id().equal(expectedId(funcA)));
+        ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
 
         for (Offset offset: { -8, -4, 0, +4, +8 })
         {
@@ -50,6 +49,7 @@ protected:
             {
                 for (RegId rs2 = 0; rs2 < vm::register_count; ++rs2)
                 {
+                    MockVM mock;
                     vm::register_t rs1_value = rs1 * offset;
                     vm::register_t rs2_value = rs2 * offset;
                     auto code = encode(rs1, rs2, offset, funcA);
@@ -67,84 +67,68 @@ protected:
 
 TEST_F(RV32I_Handler_Branch, IfEqual)
 {
-    constexpr Code funcA = 0b0000;
-    branch(create<beq>(), funcA,
-           [](MockVM& mock
-                   , vm::register_t rs1, vm::register_t rs2
-                   , Offset value)
+    auto test =
+    ([](MockVM &mock, vm::register_t rs1, vm::register_t rs2, Offset value)
     {
         EXPECT_CALL(mock, jump_if(rs1 == rs2, value));
     });
+    constexpr Code funcA = 0b0000;
+    branch(create<beq>(), funcA, test);
 }
 
 TEST_F(RV32I_Handler_Branch, IfNotEqual)
 {
+    auto test =
+    ([](MockVM &mock, vm::register_t rs1, vm::register_t rs2, Offset value)
+    {
+        EXPECT_CALL(mock, jump_if(rs1 != rs2, value));
+    });
     constexpr Code funcA = 0b0001;
-    branch(create<bne>(), funcA,
-           [](MockVM& mock
-                   , vm::register_t rs1, vm::register_t rs2
-                   , Offset value)
-   {
-       EXPECT_CALL(mock, jump_if(rs1 != rs2, value));
-   });
+    branch(create<bne>(), funcA, test);
 }
 
 TEST_F(RV32I_Handler_Branch, IfLessSigned)
 {
-    constexpr Code funcA = 0b0100;
-    branch(create<blt>(), funcA,
-           [](MockVM& mock
-                   , vm::register_t rs1, vm::register_t rs2
-                   , Offset value)
+    auto test = 
+    ([](MockVM &mock, vm::register_t rs1, vm::register_t rs2, Offset value)
     {
-        using r_bits = bits<vm::register_t>;
-        EXPECT_CALL(mock, jump_if(
-                r_bits::to_signed(rs1) < r_bits::to_signed(rs2)
-                , value));
+        EXPECT_CALL(mock, jump_if(r_bits::to_signed(rs1) < r_bits::to_signed(rs2), value));
     });
+    constexpr Code funcA = 0b0100;
+    branch(create<blt>(), funcA, test);
 }
 
 TEST_F(RV32I_Handler_Branch, IfGreatOrEqualSigned)
 {
-    constexpr Code funcA = 0b0101;
-    branch(create<bge>(), funcA,
-           [](MockVM& mock
-                   , vm::register_t rs1, vm::register_t rs2
-                   , Offset value)
+    auto test =
+    ([](MockVM &mock, vm::register_t rs1, vm::register_t rs2, Offset value)
     {
-        using r_bits = bits<vm::register_t>;
-        EXPECT_CALL(mock, jump_if(
-                r_bits::to_signed(rs1) >= r_bits::to_signed(rs2)
-                , value));
+        EXPECT_CALL(mock, jump_if(r_bits::to_signed(rs1) >= r_bits::to_signed(rs2), value));
     });
+    constexpr Code funcA = 0b0101;
+    branch(create<bge>(), funcA,test);
 }
 
 TEST_F(RV32I_Handler_Branch, IfLessUnsigned)
 {
+    auto test =
+    ([](MockVM &mock, vm::register_t rs1, vm::register_t rs2, Offset value)
+    {
+        EXPECT_CALL(mock, jump_if((rs1) < (rs2), value));
+    });
     constexpr Code funcA = 0b0110;
-    branch(create<bltu>(), funcA,
-           [](MockVM& mock
-                   , vm::register_t rs1, vm::register_t rs2
-                   , Offset value)
-           {
-               EXPECT_CALL(mock, jump_if(
-                       (rs1) < (rs2)
-                       , value));
-           });
+    branch(create<bltu>(), funcA,test);
 }
 
 TEST_F(RV32I_Handler_Branch, IfGreatOrEqualUnsigned)
 {
+    auto test = 
+    ([](MockVM &mock, vm::register_t rs1, vm::register_t rs2, Offset value)
+    {
+        EXPECT_CALL(mock, jump_if((rs1) >= (rs2), value));
+    });
     constexpr Code funcA = 0b0111;
-    branch(create<bgeu>(), funcA,
-           [](MockVM& mock
-                   , vm::register_t rs1, vm::register_t rs2
-                   , Offset value)
-           {
-               EXPECT_CALL(mock, jump_if(
-                       (rs1) >= (rs2)
-                       , value));
-           });
+    branch(create<bgeu>(), funcA, test);
 }
 
 } // namespace tests::rv32i

@@ -27,7 +27,6 @@ class RV32I_Handler_Store
         : public RV32I_Handler
 {
 protected:
-    using r_bits = bits<vm::register_t>;
 
     static Decoder encode(RegId base, RegId src, Offset offset, Code funcA)
     {
@@ -46,7 +45,7 @@ protected:
     using StoreTest = void(MockVM &, vm::register_t, Address);
     static void testStore(vm::interface *impl, Code funcA, StoreTest storeTest)
     {
-        EXPECT_TRUE(impl->get_id().equal(expectedId(funcA)));
+        ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
 
         for (Offset offset: {-8, -4, 0, +4, +8})
         {

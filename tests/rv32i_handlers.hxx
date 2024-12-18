@@ -29,6 +29,7 @@ using HandlerPtr = std::unique_ptr<vm::interface>;
 class RV32I_Handler : public ::testing::Test
 {
 protected:
+    using r_bits = vm::bit_tools::bits<vm::register_t>;
     void SetUp() override
     {
     }
