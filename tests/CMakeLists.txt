@@ -11,7 +11,7 @@ find_package(GTest REQUIRED)
 include(GoogleTest)
 
 function(add_gtest)
-    set(_options MOCK MAIN)
+    set(_options MOCK MAIN NO_DISCOVER)
     set(_keys NAME COMMAND)
     set(_lists SOURCES LIBRARIES)
     cmake_parse_arguments(var "${_options}" "${_keys}" "${_lists}" ${ARGN})
@@ -33,7 +33,12 @@ function(add_gtest)
     target_sources(${var_COMMAND} PRIVATE ${var_SOURCES})
 
     target_link_libraries(${var_COMMAND} PRIVATE ${_libs} ${var_LIBRARIES})
-    gtest_discover_tests(${var_COMMAND})
+
+    if (var_NO_DISCOVER)
+        add_test(NAME "${var_NAME}" COMMAND ${var_COMMAND} "--gtest_filter=*" "--gtest_color=no")
+    else ()
+        gtest_discover_tests(${var_COMMAND})
+    endif ()
 endfunction()
 
 # yeti_add_test(NAME <"title"> COMMAND <exe_name> SOURCES <sources> [LIBRARIES <libs>])
@@ -81,7 +86,12 @@ add_gtest(
         rv32i_immediate.cxx
 )
 
+# This test is parametrised with big ranges of values
+# with default `gtest_discover_tests` produces `add_test` for each variant(about 20k tests oO)
+# It is too slow because CTest spawn new process for each test
+# So. disable `gtest_discover_tests`
 add_gtest(
+        NO_DISCOVER
         NAME "RV32 Encoder/Decoder tests"
         COMMAND rv32_encode_decode
         SOURCES
