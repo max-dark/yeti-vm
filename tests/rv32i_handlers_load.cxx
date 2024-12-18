@@ -52,14 +52,14 @@ protected:
         {
             for (RegId dest = 0; dest < vm::register_count; ++dest)
             {
-                for (RegId rs2 = 0; rs2 < vm::register_count; ++rs2)
+                for (RegId base = 0; base < vm::register_count; ++base)
                 {
                     Sequence get_block;
                     MockType mock;
                     vm::register_t rs1_value = dest * offset;
-                    vm::register_t rs2_value = rs2 * offset;
-                    auto code = encode(dest, rs2, offset, funcA);
-                    EXPECT_CALL(mock, get_register(rs2))
+                    vm::register_t rs2_value = base * offset;
+                    auto code = encode(dest, base, offset, funcA);
+                    EXPECT_CALL(mock, get_register(base))
                             .InSequence(get_block)
                             .WillRepeatedly(Return(rs2_value));
 
@@ -95,14 +95,14 @@ TEST_F(RV32I_Handler_Load, HalfWordSigned)
     Code funcA = 0b0001;
     testLoad(create<lh>(), funcA
             ,[](MockVM& vm, Sequence& s
-                    , vm::register_t value, Address address)
-             {
-                 EXPECT_CALL(vm, read_memory(address, 2, _))
-                         .InSequence(s)
-                         .WillRepeatedly(SetArgReferee<2>(value & 0x00ffff))
-                         ;
-                 return r_bits::extend_sign<15>(value & 0x00ffff);
-             });
+            , vm::register_t value, Address address)
+    {
+     EXPECT_CALL(vm, read_memory(address, 2, _))
+             .InSequence(s)
+             .WillRepeatedly(SetArgReferee<2>(value & 0x00ffff))
+             ;
+     return r_bits::extend_sign<15>(value & 0x00ffff);
+    });
 }
 
 TEST_F(RV32I_Handler_Load, Word)
@@ -110,14 +110,14 @@ TEST_F(RV32I_Handler_Load, Word)
     Code funcA = 0b0010;
     testLoad(create<lw>(), funcA
             ,[](MockVM& vm, Sequence& s
-                    , vm::register_t value, Address address)
-             {
-                 EXPECT_CALL(vm, read_memory(address, 4, _))
-                         .InSequence(s)
-                         .WillRepeatedly(SetArgReferee<2>(value))
-                         ;
-                 return value;
-             });
+            , vm::register_t value, Address address)
+    {
+     EXPECT_CALL(vm, read_memory(address, 4, _))
+             .InSequence(s)
+             .WillRepeatedly(SetArgReferee<2>(value))
+             ;
+     return value;
+    });
 }
 
 TEST_F(RV32I_Handler_Load, ByteUnsigned)
