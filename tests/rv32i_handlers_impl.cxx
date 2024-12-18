@@ -1,6 +1,8 @@
 #include "rv32i_handlers.hxx"
 #include <yeti-vm/vm_handlers_rv32i.hxx>
 
+#include <ranges>
+
 namespace tests::rv32i
 {
 using namespace vm::rv32i;
@@ -43,21 +45,23 @@ TEST_F(RV32I_Handler_Impl, AddUpperImmediateToPC)
     // group / encoding / no extensions
     ASSERT_TRUE(id.equal(make_id(GroupId::AUIPC, Format::U_TYPE)));
 
-    for (uint8_t r_id = 0; r_id < vm::register_count; ++ r_id)
+    for (Code upperBits: std::views::iota(0x00u, 0xffu))
     {
-        Code imm = r_id << 12u; // TODO: test with MSB = 1
-        Code code = Encoder::u_type(impl->get_code_base(), r_id, imm);
-        Decoder parser{code};
-        ASSERT_EQ(parser.get_rd(), r_id);
-        ASSERT_EQ(parser.decode_u_u(), imm);
-        ASSERT_EQ(parser.get_code(), impl->get_code_base());
+        for (uint8_t r_id = 0; r_id < vm::register_count; ++r_id)
+        {
+            Code imm = ((upperBits << 12u) | r_id) << 12u;
+            Code code = Encoder::u_type(impl->get_code_base(), r_id, imm);
+            Decoder parser{code};
+            ASSERT_EQ(parser.get_rd(), r_id);
+            ASSERT_EQ(parser.decode_u_u(), imm);
+            ASSERT_EQ(parser.get_code(), impl->get_code_base());
 
-        EXPECT_CALL(mock, get_pc())
-            .WillRepeatedly(Return(r_id * r_id));
-        EXPECT_CALL(mock, set_register(r_id, imm + r_id * r_id));
-        impl->exec(&mock, &parser);
+            EXPECT_CALL(mock, get_pc())
+                    .WillRepeatedly(Return(r_id * r_id));
+            EXPECT_CALL(mock, set_register(r_id, imm + r_id * r_id));
+            impl->exec(&mock, &parser);
+        }
     }
-
 }
 
 TEST_F(RV32I_Handler_Impl, JumpAndLink)
