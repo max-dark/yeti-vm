@@ -11,6 +11,9 @@ using ::testing::Sequence;
 
 /**
  * @brief Integer Register-Register instructions(OP / R-type)
+ *
+ * SLL, SRL, and SRA perform logical left, logical right, and arithmetic right shifts
+ * on the value in register rs1 by the shift amount held in the lower 5 bits of register rs2.
  */
 class RV32I_Handler_RR
         : public RV32I_Handler
@@ -84,7 +87,7 @@ TEST_F(RV32I_Handler_RR, Add)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return lhs + rhs;
     };
 
     return commonTest(create<add_r>(), 0b0'000, 0b0'0'00000, step);
@@ -94,7 +97,7 @@ TEST_F(RV32I_Handler_RR, Sub)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return lhs - rhs;
     };
 
     return commonTest(create<sub_r>(), 0b0'000, 0b0'1'00000, step);
@@ -104,7 +107,7 @@ TEST_F(RV32I_Handler_RR, Sll)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return lhs << r_bits::get_bits<0, 5>(rhs);
     };
 
     return commonTest(create<sll_r>(), 0b0'001, 0b0'0'00000, step);
@@ -114,7 +117,7 @@ TEST_F(RV32I_Handler_RR, Slt)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return (r_bits::to_signed(lhs) < r_bits::to_signed(rhs)) ? 1 : 0;
     };
 
     return commonTest(create<slt_r>(), 0b0'010, 0b0'0'00000, step);
@@ -124,7 +127,7 @@ TEST_F(RV32I_Handler_RR, SltU)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return (r_bits::to_unsigned(lhs) < r_bits::to_unsigned(rhs)) ? 1 : 0;
     };
 
     return commonTest(create<sltu_r>(), 0b0'011, 0b0'0'00000, step);
@@ -134,17 +137,17 @@ TEST_F(RV32I_Handler_RR, Xor)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return lhs ^ rhs;
     };
 
-    return commonTest(create<sll_r>(), 0b0'100, 0b0'0'00000, step);
+    return commonTest(create<xor_r>(), 0b0'100, 0b0'0'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, Srl)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return lhs >> r_bits::get_bits<0, 5>(rhs);
     };
 
     return commonTest(create<srl_r>(), 0b0'101, 0b0'0'00000, step);
@@ -154,7 +157,7 @@ TEST_F(RV32I_Handler_RR, Sra)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return r_bits::to_signed(lhs) >> r_bits::get_bits<0, 5>(rhs);
     };
 
     return commonTest(create<sra_r>(), 0b0'101, 0b0'1'00000, step);
@@ -164,7 +167,7 @@ TEST_F(RV32I_Handler_RR, Or)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return lhs | rhs;
     };
 
     return commonTest(create<or_r>(), 0b0'110, 0b0'0'00000, step);
@@ -174,7 +177,7 @@ TEST_F(RV32I_Handler_RR, And)
 {
     TestStep step = [](Code lhs, Code rhs) -> Code
     {
-        return -1;
+        return lhs & rhs;
     };
 
     return commonTest(create<and_r>(), 0b0'111, 0b0'0'00000, step);
