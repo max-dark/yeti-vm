@@ -55,5 +55,83 @@ TEST_F(RV32I_Handler_System, EnvBreak)
     impl->exec(&mockVm, &code);
 }
 
+TEST_F(RV32I_Handler_System, CSR_RW)
+{
+    auto impl = create<csrrw>();
+    constexpr Code funcA = 0b0001;
+
+    ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+    auto code = encode(funcA, 0, 0, 0);
+    MockVM mockVm;
+
+    EXPECT_CALL(mockVm, control());
+    impl->exec(&mockVm, &code);
+}
+
+TEST_F(RV32I_Handler_System, CSR_RS)
+{
+    auto impl = create<csrrs>();
+    constexpr Code funcA = 0b0010;
+
+    ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+    auto code = encode(funcA, 0, 0, 0);
+    MockVM mockVm;
+
+    EXPECT_CALL(mockVm, control());
+    impl->exec(&mockVm, &code);
+}
+
+TEST_F(RV32I_Handler_System, CSR_RC)
+{
+    auto impl = create<csrrc>();
+    constexpr Code funcA = 0b0011;
+
+    ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+    auto code = encode(funcA, 0, 0, 0);
+    MockVM mockVm;
+
+    EXPECT_CALL(mockVm, control());
+    impl->exec(&mockVm, &code);
+}
+
+TEST_F(RV32I_Handler_System, CSR_RW_I)
+{
+    auto impl = create<csrrwi>();
+    constexpr Code funcA = 0b0101;
+
+    ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+    auto code = encode(funcA, 0, 0, 0);
+    MockVM mockVm;
+
+    EXPECT_CALL(mockVm, control());
+    impl->exec(&mockVm, &code);
+}
+
+TEST_F(RV32I_Handler_System, CSR_RS_I)
+{
+    auto impl = create<csrrsi>();
+    constexpr Code funcA = 0b0110;
+
+    ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+    auto code = encode(funcA, 0, 0, 0);
+    MockVM mockVm;
+
+    EXPECT_CALL(mockVm, control());
+    impl->exec(&mockVm, &code);
+}
+
+TEST_F(RV32I_Handler_System, CSR_RC_I)
+{
+    auto impl = create<csrrci>();
+    constexpr Code funcA = 0b0111;
+
+    ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+    auto code = encode(funcA, 0, 0, 0);
+    MockVM mockVm;
+
+    EXPECT_CALL(mockVm, control());
+    impl->exec(&mockVm, &code);
+}
+
 
 } // namespace tests::rv32i
