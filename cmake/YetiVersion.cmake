@@ -2,7 +2,7 @@
 
 set(YetiVersion_MAJOR 0)
 set(YetiVersion_MINOR 0)
-set(YetiVersion_PATCH 2)
+set(YetiVersion_PATCH 3)
 
 # Current version
 set(YetiVersion "${YetiVersion_MAJOR}.${YetiVersion_MINOR}.${YetiVersion_PATCH}")

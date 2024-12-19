@@ -4,6 +4,15 @@
 
 RISC V 32bit virtual machine
 
+### release/v0.0.3
+
+#### Changes
+
+ * implement tests for RV32I
+ * add vm::bit_utils
+ * add instruction encoder
+ * CMake: add install targets for libraries
+
 ### release/v0.0.2
 
 #### Changes
