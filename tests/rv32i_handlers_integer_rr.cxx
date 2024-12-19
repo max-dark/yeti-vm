@@ -65,52 +65,102 @@ protected:
 
 TEST_F(RV32I_Handler_RR, Add)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<add_r>(), 0b0'000, 0b0'0'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, Sub)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<sub_r>(), 0b0'000, 0b0'1'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, Sll)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<sll_r>(), 0b0'001, 0b0'0'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, Slt)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<slt_r>(), 0b0'010, 0b0'0'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, SltU)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<sltu_r>(), 0b0'011, 0b0'0'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, Xor)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<sll_r>(), 0b0'100, 0b0'0'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, Srl)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<srl_r>(), 0b0'101, 0b0'0'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, Sra)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<sra_r>(), 0b0'101, 0b0'1'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, Or)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<or_r>(), 0b0'110, 0b0'0'00000, step);
 }
 
 TEST_F(RV32I_Handler_RR, And)
 {
-    FAIL() << "Not implemented";
+    TestStep step = [](Code lhs, Code rhs) -> Code
+    {
+        return -1;
+    };
+
+    return commonTest(create<and_r>(), 0b0'111, 0b0'0'00000, step);
 }
 
 } // namespace tests::rv32i
