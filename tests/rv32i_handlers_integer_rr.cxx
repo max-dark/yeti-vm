@@ -37,16 +37,16 @@ protected:
 
         for (RegId dest = 0; dest < vm::register_count; ++dest)
         {
-            for (Offset values: {-8, -4, 0, +4, +8})
+            for (Offset value: {-8, -4, 0, +4, +8})
             {
                 MockVM mockVm;
 
-                RegId id_dst = 0;
-                RegId id_lhs = 0;
-                RegId id_rhs = 0;
+                RegId id_dst = dest;
+                RegId id_lhs = 0b01'1111 & ((value * - dest) % vm::register_count);
+                RegId id_rhs = 0b01'1111 & ((value * + dest) % vm::register_count);
 
-                Code lhs = 0;
-                Code rhs = 0;
+                Code lhs = value + dest;
+                Code rhs = value - dest;
                 Code res = step(lhs, rhs);
 
                 Decoder code = encode(id_dst, id_lhs, id_rhs, funcA, funcB);
