@@ -7,6 +7,7 @@ using namespace vm::rv32i;
 
 using ::testing::_;
 using ::testing::Return;
+using ::testing::Sequence;
 
 /**
  * @brief Integer Register-Register instructions(OP / R-type)
@@ -41,19 +42,37 @@ protected:
         {
             for (Offset value: {-8, -4, 0, +4, +8})
             {
+                Sequence calculate;
                 MockVM mockVm;
 
+                // TODO: values for (id_lhs == id_rhs) should be same (?)
                 Code lhs = value * id_dst + (id_lhs * id_rhs);
                 Code rhs = value * id_dst - (id_lhs * id_rhs);
                 Code res = step(lhs, rhs);
 
                 Decoder code = encode(id_dst, id_lhs, id_rhs, funcA, funcB);
 
+                ASSERT_EQ(code.get_code(), GroupId::OP);
+                ASSERT_EQ(code.get_rd (), id_dst);
+                ASSERT_EQ(code.get_rs1(), id_lhs);
+                ASSERT_EQ(code.get_rs2(), id_rhs);
+                ASSERT_EQ(code.get_func3(), funcA);
+                ASSERT_EQ(code.get_func7(), funcB);
+
                 EXPECT_CALL(mockVm, get_register(id_lhs))
-                    .WillRepeatedly(Return(lhs));
+                    .InSequence(calculate)
+                    .WillOnce(Return(lhs))
+                ;
+
                 EXPECT_CALL(mockVm, get_register(id_rhs))
-                        .WillRepeatedly(Return(rhs));
-                EXPECT_CALL(mockVm, set_register(id_dst, res));
+                    .InSequence(calculate)
+                    .WillOnce(Return(rhs))
+                ;
+
+                EXPECT_CALL(mockVm, set_register(id_dst, res))
+                    .InSequence(calculate)
+                    .WillOnce(Return())
+                ;
 
                 impl->exec(&mockVm, &code);
             }
