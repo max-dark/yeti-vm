@@ -113,4 +113,5 @@ add_gtest(
         rv32i_handlers_store.cxx
         rv32i_handlers_integer_ri.cxx
         rv32i_handlers_integer_rr.cxx
+        rv32i_handlers_misc_mem.cxx
 )
