@@ -243,7 +243,19 @@ TEST_F(RV32I_Handler_RI, AndImmediate)
 
 TEST_F(RV32I_Handler_RI, ShiftLeftLogicalImmediate)
 {
-    NotImplemented();
+    constexpr Code funcA = 0b0001;
+    constexpr bool haveB = false;
+    auto impl = create<slli>();
+    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    {
+        TestValues r{};
+        r.code = encodeShift(p->dest, p->src, p->data, funcA, haveB);
+        r.src = p->src * (p->dest ^ p->data);
+        r.dest = r.src << r.code.get_rs2(); // note:
+
+        return r;
+    };
+    return shiftTest(impl, funcA, step, haveB);
 }
 
 TEST_F(RV32I_Handler_RI, ShiftRightLogicalImmediate)
