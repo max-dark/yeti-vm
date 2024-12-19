@@ -102,9 +102,9 @@ add_library(yeti_vm_mocks STATIC)
 target_sources(
         yeti_vm_mocks
         PRIVATE
-        rv32i_mocks.cxx
+        rv32_vm_mocks.cxx
         PUBLIC
-        rv32i_mocks.hxx
+        rv32_vm_mocks.hxx
 )
 target_link_libraries(
         yeti_vm_mocks

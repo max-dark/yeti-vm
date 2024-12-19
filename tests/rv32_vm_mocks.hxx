@@ -5,7 +5,7 @@
 
 #include <yeti-vm/vm_interface.hxx>
 
-namespace tests::rv32i
+namespace tests::rv32_vm
 {
 
 struct MockVM: public vm::vm_interface
@@ -30,4 +30,4 @@ struct MockVM: public vm::vm_interface
     MOCK_METHOD(vm::register_t, get_pc, (), (const, override));
 };
 
-} // namespace tests::rv32i
+} // namespace tests::rv32_vm

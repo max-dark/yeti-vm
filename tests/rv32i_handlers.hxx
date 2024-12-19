@@ -1,4 +1,4 @@
-#include "rv32i_mocks.hxx"
+#include "rv32_vm_mocks.hxx"
 
 #include <yeti-vm/vm_opcode.hxx>
 #include <yeti-vm/vm_handler.hxx>
@@ -7,6 +7,7 @@
 
 namespace tests::rv32i
 {
+using tests::rv32_vm::MockVM;
 using vm::register_t;
 using vm::register_no;
 

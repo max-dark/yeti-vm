@@ -1,4 +1,4 @@
-#include "rv32i_mocks.hxx"
+#include "rv32_vm_mocks.hxx"
 #include "rv32i_handlers.hxx"
 
 #include <yeti-vm/vm_opcode.hxx>
