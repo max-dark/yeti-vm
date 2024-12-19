@@ -103,6 +103,7 @@ add_gtest(
         COMMAND rv32i_handlers
         MOCK MAIN # use GMock / own main function
         SOURCES
+        rv32i_handlers_main.cxx
         rv32i_mocks.cxx rv32i_mocks.hxx
         rv32i_handlers.cxx
         rv32i_handlers.hxx
@@ -110,5 +111,8 @@ add_gtest(
         rv32i_handlers_branch.cxx
         rv32i_handlers_load.cxx
         rv32i_handlers_store.cxx
-        rv32i_handlers_main.cxx
+        rv32i_handlers_integer_ri.cxx
+        rv32i_handlers_integer_rr.cxx
+        rv32i_handlers_misc_mem.cxx
+        rv32i_handlers_system.cxx
 )

@@ -3,6 +3,7 @@
 #include <yeti-vm/vm_opcode.hxx>
 #include <yeti-vm/vm_handler.hxx>
 #include <concepts>
+#include <ranges>
 
 namespace tests::rv32i
 {
