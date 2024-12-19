@@ -131,6 +131,11 @@ TEST_F(RV32Ext_IntMath, IntDiv)
 {
     auto impl = create<vm::rv32m::div>();
     EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
+
+    {
+        EXPECT_EQ(impl->calculate(0x8000'0000u, 0xffff'ffffu), 0x8000'0000u);
+    }
+
     return integrationTest(impl.get(), 0b0100);
 }
 

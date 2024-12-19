@@ -99,7 +99,7 @@ struct div: math<0b0100> {
         auto l = to_signed(lhs);
         auto r = to_signed(rhs);
         // (lhs == int_min && rhs == -1) -> lhs
-        if (l == signed_limits::min() && r == -1) return rhs;
+        if (l == signed_limits::min() && r == -1) return lhs;
         // rhs == 0 -> -1
         if (rhs == 0) return unsigned_limits::max();
         result_signed_t result = l / r;
