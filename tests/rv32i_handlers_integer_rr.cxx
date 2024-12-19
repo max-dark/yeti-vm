@@ -27,13 +27,13 @@ protected:
 
     static vm::InstructionId expectedId(Code funcA, Code funcB)
     {
-        return make_id(GroupId::OP_IMM, Format::R_TYPE, funcA, funcB);
+        return make_id(GroupId::OP, Format::R_TYPE, funcA, funcB);
     }
 
     using TestStep = std::function<Code(Code lhs, Code rhs)>;
     static void commonTest(const vm::interface* impl, Code funcA, Code funcB, const TestStep& step)
     {
-        ASSERT_TRUE(impl->get_id().equal(expectedId(funcA, funcA)));
+        ASSERT_TRUE(impl->get_id().equal(expectedId(funcA, funcB)));
 
         for (RegId dest = 0; dest < vm::register_count; ++dest)
         {
