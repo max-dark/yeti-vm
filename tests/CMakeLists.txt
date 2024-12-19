@@ -98,13 +98,29 @@ add_gtest(
         rv32_encoder.cxx
 )
 
+add_library(yeti_vm_mocks STATIC)
+target_sources(
+        yeti_vm_mocks
+        PRIVATE
+        rv32i_mocks.cxx
+        PUBLIC
+        rv32i_mocks.hxx
+)
+target_link_libraries(
+        yeti_vm_mocks
+        PUBLIC
+        YetiVM::runtime
+        GTest::gmock GTest::gtest
+)
+
 add_gtest(
         NAME "RV32I handlers"
         COMMAND rv32i_handlers
         MOCK MAIN # use GMock / own main function
+        LIBRARIES
+        yeti_vm_mocks
         SOURCES
         rv32i_handlers_main.cxx
-        rv32i_mocks.cxx rv32i_mocks.hxx
         rv32i_handlers.cxx
         rv32i_handlers.hxx
         rv32i_handlers_impl.cxx
