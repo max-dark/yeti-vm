@@ -35,6 +35,7 @@ protected:
     }
 
     using TestStep = std::function<Code(Code lhs, Code rhs)>;
+    /// TODO: use threads(?)
     static void commonTest(const vm::interface* impl, Code funcA, Code funcB, const TestStep& step)
     {
         ASSERT_TRUE(impl->get_id().equal(expectedId(funcA, funcB)));
@@ -43,7 +44,7 @@ protected:
         for (RegId id_lhs = 0; id_lhs < vm::register_count; ++id_lhs)
         for (RegId id_rhs = 0; id_rhs < vm::register_count; ++id_rhs)
         {
-            for (Offset value: {-8, -4, 0, +4, +8})
+            for (Offset value: std::views::iota(-7) | std::views::take(15))
             {
                 Sequence calculate;
                 MockVM mockVm;
