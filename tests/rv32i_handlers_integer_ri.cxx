@@ -17,6 +17,7 @@ using ::testing::Return;
  * @code rd = rs1 OP const @endcode
  *
  * Shift operations uses specialisation of I-type format
+ * Note: Implementation mark it as R-type
  * const[4:0] - shift amount
  * const[11:5] - subtype:
  *      const[30] == 0 - logical
@@ -38,6 +39,19 @@ protected:
     static Decoder encode(RegId dest, RegId src, Code value, Code funcA)
     {
         value &= r_bits::mask_value<0, 12>;
+        Code code = Encoder::i_type(GroupId::OP_IMM, dest, src, value, funcA);
+        return Decoder(code);
+    }
+
+    static Code arithmeticMark(bool isArithmetic)
+    {
+        return (isArithmetic ? 0b0'010'0000 : 0b0'000'0000);
+    }
+
+    static Decoder encodeShift(RegId dest, RegId src, Code value, Code funcA, bool isArithmetic)
+    {
+        value &= r_bits::mask_value<0, 5>;
+        value |= arithmeticMark(isArithmetic);
         Code code = Encoder::i_type(GroupId::OP_IMM, dest, src, value, funcA);
         return Decoder(code);
     }
@@ -68,7 +82,22 @@ protected:
     using TestStep = std::function<TestValues(const vm::interface* impl, const TestParams* thisTest)>;
     static void commonTest(const vm::interface* impl, Code funcA, const TestStep& step)
     {
-        AssertId(impl, expectedId(funcA));
+        return commonTest(impl, expectedId(funcA), step);
+    }
+    
+    static void shiftTest(const vm::interface* impl, Code funcA, const TestStep& step, bool isArithmetic)
+    {
+        // EXPECT_EQ(impl->get_type(), Format::I_TYPE); // TODO: Shifts should be I-type
+        auto expected_id = expectedId
+                ( funcA
+                , Format::R_TYPE
+                , arithmeticMark(isArithmetic)
+                );
+        return commonTest(impl, expected_id, step);
+    }
+    static void commonTest(const vm::interface* impl, vm::InstructionId expected, const TestStep& step)
+    {
+        ASSERT_TRUE(impl->get_id().equal(expected));
 
         for (RegId dest = 0; dest < vm::register_count; ++dest)
         {
