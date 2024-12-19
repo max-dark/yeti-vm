@@ -132,3 +132,13 @@ add_gtest(
         rv32i_handlers_misc_mem.cxx
         rv32i_handlers_system.cxx
 )
+
+add_gtest(
+        NAME "RV32 'M' extension"
+        COMMAND rv32ext_int_math
+        MOCK # use GMock
+        LIBRARIES
+        yeti_vm_mocks
+        SOURCES
+        rv32ext_m_handlers.cxx
+)
