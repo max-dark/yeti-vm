@@ -134,7 +134,7 @@ struct rem: math<0b0110> {
         if (l == signed_limits::min() && r == -1) return 0;
         // rhs == 0 -> lhs
         if (rhs == 0) return lhs;
-        result_signed_t result = l / r;
+        result_signed_t result = l % r;
         return result & result_mask;
     }
 };
