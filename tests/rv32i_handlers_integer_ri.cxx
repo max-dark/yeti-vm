@@ -183,7 +183,9 @@ TEST_F(RV32I_Handler_RI, SetLessThanImmediateUnsigned)
         r.code = encode(p->dest, p->src, p->data, funcA);
         DecoderShouldReturnSameValue(r, p, funcA);
         r.src = p->src * (p->dest ^ p->data);
-        r.dest = r.src < r.code.decode_i_u();
+        // the immediate is first sign-extended to XLEN bits
+        // then treated as an unsigned number
+        r.dest = r.src < r.code.decode_i();
 
         return r;
     };
