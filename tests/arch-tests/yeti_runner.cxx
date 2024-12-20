@@ -51,7 +51,7 @@ struct Runner: protected vm::basic_vm
             dump_state(std::cerr);
             return false;
         }
-        return true;
+        return !set_dev; // no failures
     }
 protected:
     void debug() override
@@ -72,11 +72,11 @@ protected:
     }
     void assert_set(uint32_t idx, uint32_t v)
     {
-        dev_mem[idx % dev_mem.size()] = v;
+        dev_mem[idx] = v;
         set_dev = true;
     }
     bool set_dev = false;
-    std::array<uint32_t, 4> dev_mem;
+    std::array<uint32_t, 4> dev_mem{};
 protected:
     struct DeviceMemory final: public vm::memory_block
     {
@@ -94,8 +94,11 @@ protected:
         [[nodiscard]]
         bool store(memory_block::address_type address, const void *source, memory_block::size_type size) final
         {
+            runner->set_dev = true;
             if (size != 4) return false;
-            runner->assert_set(*reinterpret_cast<const uint32_t*>(source), address);
+            auto offset = (address - get_start_address()) / 4;
+            if (offset >= runner->dev_mem.size()) return false;
+            runner->assert_set(offset, *reinterpret_cast<const uint32_t*>(source));
             return true;
         }
 
