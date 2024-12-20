@@ -73,6 +73,11 @@ block()
                     DEPENDS "${_elf_file}"
                     BYPRODUCTS "${_hex_file}"
             )
+
+            add_test(NAME "RV32_${_test_id}"
+                    COMMAND yeti-runner "${_hex_file}"
+            )
+
             unset(_input_file)
             unset(_elf_file)
             unset(_hex_file)
