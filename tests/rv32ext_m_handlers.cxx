@@ -29,7 +29,6 @@ using ExtId = Code;
 
 template<class Handler>
 concept Implementation = std::is_base_of_v<vm::interface, Handler>;
-using HandlerPtr = std::unique_ptr<vm::interface>;
 
 /**
  * "M" Extension for Integer Multiplication and Division
@@ -90,68 +89,53 @@ protected:
 
         impl->exec(&mockVm, &code);
     }
-
-    void SetUp() override
-    {
-        //disableUnitTestWarning = true;
-    }
-protected:
-    bool disableUnitTestWarning = false;
 };
 
 TEST_F(RV32Ext_IntMath, IntMul)
 {
     auto impl = create<mul>();
-    EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
     return integrationTest(impl.get(), 0b0000);
 }
 
 TEST_F(RV32Ext_IntMath, IntMulH)
 {
     auto impl = create<mulh>();
-    EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
     return integrationTest(impl.get(), 0b0001);
 }
 
 TEST_F(RV32Ext_IntMath, IntMulHSU)
 {
     auto impl = create<mulhsu>();
-    EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
     return integrationTest(impl.get(), 0b0010);
 }
 
 TEST_F(RV32Ext_IntMath, IntMulHU)
 {
     auto impl = create<mulhu>();
-    EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
     return integrationTest(impl.get(), 0b0011);
 }
 
 TEST_F(RV32Ext_IntMath, IntDiv)
 {
     auto impl = create<vm::rv32m::div>();
-    EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
     return integrationTest(impl.get(), 0b0100);
 }
 
 TEST_F(RV32Ext_IntMath, IntDivU)
 {
     auto impl = create<divu>();
-    EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
     return integrationTest(impl.get(), 0b0101);
 }
 
 TEST_F(RV32Ext_IntMath, IntRem)
 {
     auto impl = create<rem>();
-    EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
     return integrationTest(impl.get(), 0b0110);
 }
 
 TEST_F(RV32Ext_IntMath, IntRemU)
 {
     auto impl = create<remu>();
-    EXPECT_TRUE(disableUnitTestWarning) << impl->get_mnemonic() << " Unit test is not implemented";
     return integrationTest(impl.get(), 0b0111);
 }
 
