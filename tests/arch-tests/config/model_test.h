@@ -16,10 +16,12 @@
 
 // stop code
 #define RVMODEL_HALT \
+.do_exit:            \
     li a7, 10;       \
     ecall;           \
     .global _assert_failed; \
     _assert_failed: ebreak; \
+    j _assert_failed;\
 
 #define RVMODEL_DATA_BEGIN \
     .align 4;              \
@@ -36,10 +38,23 @@
 #define RVMODEL_IO_CHECK()
 
 // asserts: testreg, destreg, correctval
+// store values in "DEV" memory
 // generic purpose registers:
-#define RVMODEL_IO_ASSERT_GPR_EQ(_S, _R, _I) \
+#define LBL_OK(_S, _R, _I, _L) .assert_ok ## _L
+
+#define RVMODEL_IO_ASSERT_GPR_EQ_IMPL(_S, _R, _I, _L) \
     LI(_S, _I);                               \
-    bne _S, _R, _assert_failed;              \
+    beq _S, _R, LBL_OK(_S, _R, _I, _L);          \
+    LA(_S, __dev_start);                     \
+    sw zero, 0(_S);                          \
+    sw _R, 4(_S);                            \
+    LI(_R, _I);                              \
+    sw _R, 8(_S);                            \
+    j  _assert_failed;                       \
+    LBL_OK(_S, _R, _I, _L):                      \
+
+#define RVMODEL_IO_ASSERT_GPR_EQ(_S, _R, _I) \
+    RVMODEL_IO_ASSERT_GPR_EQ_IMPL(_S, _R, _I, __LINE__); \
 
 // float32 registers
 #define RVMODEL_IO_ASSERT_SFPR_EQ(_F, _R, _I)
