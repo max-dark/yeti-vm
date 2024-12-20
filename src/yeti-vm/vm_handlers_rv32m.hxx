@@ -20,7 +20,7 @@ static constexpr result_unsigned_t result_size = sizeof(register_t) * 8;
 
 template<opcode::opcode_t Type>
 struct math: public instruction_base<opcode::OP, opcode::R_TYPE, Type, 0b000'0001> {
-
+    using b64 = vm::bit_tools::bits_u64;
     [[nodiscard]]
     std::string get_args(const opcode::Decoder* code) const override
     {
@@ -60,7 +60,8 @@ struct mulh: math<0b0001> {
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
-        result_signed_t result = to_signed(lhs) * to_signed(rhs);
+        result_signed_t result = to_signed(lhs);
+        result *= to_signed(rhs);
         return (result >> result_size) & result_mask;
     }
 };
@@ -84,7 +85,8 @@ struct mulhu: math<0b0011> {
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
-        result_unsigned_t result = lhs * rhs;
+        result_unsigned_t result = lhs;
+        result *= rhs;
         return (result >> result_size) & result_mask;
     }
 };
