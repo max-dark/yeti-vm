@@ -8,6 +8,7 @@ project(Yeti LANGUAGES CXX
 )
 
 option(YETI_ENABLE_TESTS "Build tests" ON)
+option(YETI_ENABLE_ARCH_TESTS "Build riscv-arch-tests tests" ON)
 option(YETI_ENABLE_TOOLS "Build tools" ON)
 option(YETI_ENABLE_EXAMPLES "Build examples" ON)
 option(YETI_ENABLE_INSTALL "Add install targets for libraries" ON)
@@ -31,3 +32,8 @@ if(YETI_ENABLE_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif() # YETI_ENABLE_TESTS
+
+if (YETI_ENABLE_ARCH_TESTS)
+    enable_testing()
+    add_subdirectory(tests/arch-tests)
+endif ()

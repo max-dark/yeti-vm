@@ -1,0 +1,42 @@
+#
+# download url for tests:
+# https://github.com/riscv-non-isa/riscv-arch-test/
+#
+
+BUILD_FLAGS=-march=rv32im -mabi=ilp32 -mcmodel=medany -nostdlib -nostartfiles
+BUILD_CMD=riscv64-unknown-elf-gcc
+
+CC=riscv64-unknown-elf-gcc
+CXX=riscv64-unknown-elf-g++
+OBJCOPY=riscv64-unknown-elf-objcopy
+OBJDUMP=riscv64-unknown-elf-objdump
+
+LINK_SCRIPT=-T ./test_vm.ld
+
+all: rv32i rv32m
+
+rv32m: rv32m-mul rv32m-div
+rv32m-mul: rv32m_mul.test rv32m_mulh.test rv32m_mulhsu.test rv32m_mulhu.test
+rv32m-div: rv32m_div.test rv32m_divu.test rv32m_rem.test rv32m_remu.test
+
+%.test: model_test.h
+	$(MAKE) $*.elf $*.hex $*.bin
+
+disasm-%: %.elf
+	$(OBJDUMP) -S $<
+
+rv32m_%.elf: ./rv32i_m/M/src/%-01.S
+	$(CC) $(BUILD_FLAGS) $(LINK_SCRIPT) -I ./env/ -I ./ $< -o $@
+
+%.hex: %.elf
+	$(OBJCOPY) -O ihex $< $*.hex
+
+%.bin: %.elf
+	$(OBJCOPY) -O binary $< $*.bin
+
+rv32i:
+	echo "TODO"
+	/bin/false
+
+clean:
+	rm -f *.o *.bin *.elf *.hex
