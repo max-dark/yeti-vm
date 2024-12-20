@@ -7,9 +7,8 @@ namespace vm::yeti_runner
 {
 struct Runner: protected vm::basic_vm
 {
-    bool initProgram(int argc, char ** argv)
+    bool initProgram(int testIdx, char ** argv)
     {
-        if (argc != 2) return false;
         bool isa_ok = init_isa();
         bool mem_ok = init_memory();
         mem_ok = mem_ok && add_memory(std::make_shared<DeviceMemory>(this));
@@ -17,7 +16,7 @@ struct Runner: protected vm::basic_vm
         bool init_ok = isa_ok && mem_ok;
         init_ok = init_ok && initSysCalls();
 
-        auto code = vm::parse_hex(argv[1]);
+        auto code = vm::parse_hex(argv[testIdx]);
         init_ok = init_ok && code.has_value();
         init_ok = init_ok && set_program(code.value());
 
@@ -39,7 +38,7 @@ struct Runner: protected vm::basic_vm
         basic_vm::halt();
     }
 
-    int exec()
+    bool exec()
     {
         start();
         try
@@ -48,19 +47,36 @@ struct Runner: protected vm::basic_vm
         }
         catch (std::exception& e)
         {
-            std::cerr << std::endl << "Exception" << e.what() << std::endl;
+            std::cerr << std::endl << "Exception: " << e.what() << std::endl;
             dump_state(std::cerr);
-            return EXIT_FAILURE;
+            return false;
         }
-        return EXIT_SUCCESS;
+        return true;
     }
 protected:
     void debug() override
     {
-        dump_state(std::cerr);
-        halt();
+        if (set_dev)
+        {
+            dump_state(std::cerr);
+            std::cerr << "set_dev == true " << std::endl;
+            std::cerr << "DEV MEM: " << std::endl;
+            for(auto v: dev_mem)
+            {
+                std::cerr << "\t" << std::hex << std::setfill('0') << std::setw(8) << v << std::endl;
+            }
+            std::cerr << "\t:DEV MEM" << std::dec << std::endl;
+            halt();
+        }
         return basic_vm::debug();
     }
+    void assert_set(uint32_t idx, uint32_t v)
+    {
+        dev_mem[idx % dev_mem.size()] = v;
+        set_dev = true;
+    }
+    bool set_dev = false;
+    std::array<uint32_t, 4> dev_mem;
 protected:
     struct DeviceMemory final: public vm::memory_block
     {
@@ -78,6 +94,8 @@ protected:
         [[nodiscard]]
         bool store(memory_block::address_type address, const void *source, memory_block::size_type size) final
         {
+            if (size != 4) return false;
+            runner->assert_set(*reinterpret_cast<const uint32_t*>(source), address);
             return true;
         }
 
@@ -101,7 +119,20 @@ protected:
 
 int main(int argc, char ** argv)
 {
-    vm::yeti_runner::Runner yetiVM;
-    if (!yetiVM.initProgram(argc, argv)) return EXIT_FAILURE;
-    return yetiVM.exec();
+    int numFails = 0;
+    for (int testIdx = 1; testIdx < argc; ++testIdx)
+    {
+        vm::yeti_runner::Runner yetiVM;
+        if (!yetiVM.initProgram(testIdx, argv))
+        {
+            std::cerr << "Unable init: " << testIdx << " " << argv[testIdx] << std::endl;
+            return EXIT_FAILURE;
+        }
+        if (!yetiVM.exec())
+        {
+            std::cerr << "Fail: " << testIdx << " " << argv[testIdx] << std::endl;
+            ++numFails;
+        }
+    }
+    return numFails;
 }

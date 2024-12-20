@@ -42,6 +42,8 @@ block()
         file(GLOB _subset_tests RELATIVE "${_subset_dir}" "${_subset_dir}/*.S")
         message(DEBUG "Dir: ${_subset_dir} ... tests: ${_subset_tests}")
 
+        set(_tests_to_run)
+
         foreach (_test_asm IN LISTS _subset_tests)
             get_filename_component(_test_name "${_test_asm}" NAME_WLE)
             set(_test_id "${_subset}/${_test_name}")
@@ -74,16 +76,20 @@ block()
                     BYPRODUCTS "${_hex_file}"
             )
 
-            add_test(NAME "RV32_${_test_id}"
-                    COMMAND yeti-runner "${_hex_file}"
-            )
+            list(APPEND _tests_to_run "${_hex_file}")
 
             unset(_input_file)
             unset(_elf_file)
             unset(_hex_file)
             unset(_build_args)
         endforeach ()
+
+        add_test(NAME "RV32_ISA_${_subset}"
+                COMMAND yeti-runner "${_tests_to_run}"
+                COMMAND_EXPAND_LISTS
+                )
         unset(_subset_dir)
+        unset(_tests_to_run)
     endforeach ()
     unset(_subset)
     unset(_out_dir)
