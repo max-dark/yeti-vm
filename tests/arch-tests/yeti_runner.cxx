@@ -38,8 +38,9 @@ struct Runner: protected vm::basic_vm
         basic_vm::halt();
     }
 
-    bool exec()
+    bool exec(bool debug = false)
     {
+        enable_debugging(debug);
         start();
         try
         {
@@ -131,7 +132,7 @@ int main(int argc, char ** argv)
             std::cerr << "Unable init: " << testIdx << " " << argv[testIdx] << std::endl;
             return EXIT_FAILURE;
         }
-        if (!yetiVM.exec())
+        if (!yetiVM.exec(argc == 2)) // single file - enable debug output
         {
             std::cerr << "Fail: " << testIdx << " " << argv[testIdx] << std::endl;
             ++numFails;
