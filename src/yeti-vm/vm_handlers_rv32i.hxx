@@ -469,7 +469,7 @@ struct sltiu: int_imm<0b0011> {
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
-        return dest + ", " + src + ", " + std::to_string(code->decode_i());
+        return dest + ", " + src + ", " + opcode::to_hex(code->decode_i());
     }
     [[nodiscard]]
     std::string_view get_mnemonic() const final
@@ -480,7 +480,7 @@ struct sltiu: int_imm<0b0011> {
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
-        auto data = current->decode_i_u();
+        auto data = current->decode_i();
         vm->set_register(dest, value < data);
     }
 };
