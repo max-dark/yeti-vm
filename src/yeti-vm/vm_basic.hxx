@@ -173,6 +173,7 @@ struct basic_vm: public vm_interface
     bool is_debugging_enabled() const;
 
     void enable_debugging(bool enable);
+    void syscall_should_throw(bool enable);
 
     syscall_registry& get_syscalls();
 
@@ -232,6 +233,8 @@ private:
 
     /// debug
     bool debugging = false;
+
+    bool syscall_throw_on_error = true;
 };
 
 } // namespace vm
