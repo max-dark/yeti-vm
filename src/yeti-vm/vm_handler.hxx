@@ -54,7 +54,7 @@ public:
     }
 
     /// Hash function for std::unordered_map / std::unordered_set
-    friend constexpr std::size_t hash_id(const InstructionId& key)
+    friend constexpr std::size_t hash_id(const InstructionId& key) noexcept
     {
         return key.id;
     }
@@ -69,6 +69,27 @@ public:
             && funcB == rhs.funcB
             ;
     }
+
+    /// Hash functor for std::unordered_map / std::unordered_set
+    struct Hash
+    {
+        constexpr std::size_t operator()(const InstructionId& value) const noexcept
+        {
+            return hash_id(value);
+        }
+    };
+
+    /// eq functor for std::unordered_map / std::unordered_set
+    struct Compare
+    {
+        constexpr bool operator()(const InstructionId& lhs, const InstructionId& rhs) const noexcept
+        {
+            return lhs.id == rhs.id;
+        }
+    };
+
+    template<class Value>
+    using Map = std::unordered_map<InstructionId, Value, Hash, Compare>;
 };
 
 /// function ID for "no function"
@@ -201,11 +222,12 @@ concept HandlerImplementation = std::is_base_of_v<vm::HandlerInterface, Handler>
 struct registry
 {
     using handler_ptr = const HandlerInterface*;
-    using handler_map = std::map<InstructionId, HandlerInterface::ptr>;
+    using handler_map = InstructionId::Map<HandlerInterface::ptr>;
 
     /**
      * register handler by type
      * @tparam Handler
+     * @return true on success
      */
     template<HandlerImplementation Handler>
     inline bool register_handler()
@@ -214,17 +236,19 @@ struct registry
         return register_handler(std::make_shared<Handler>());
     }
     /// register handler by pointer
+    /// @return false if same ID already registered
     bool register_handler(HandlerInterface::ptr handler);
 
     /// find handler by instruction code
+    /// @return nullptr if not found
     handler_ptr find_handler(const opcode::Decoder* code) const;
 
     /// handlers container
     handler_map handlers;
     /// mark that instruction have "func A"
-    std::set<opcode::opcode_t> func_b;
+    std::unordered_set<opcode::opcode_t> func_b;
     /// mark that instruction have "func B"
-    std::set<opcode::opcode_t> func_a;
+    std::unordered_set<opcode::opcode_t> func_a;
 };
 
 

@@ -9,7 +9,8 @@ bool registry::register_handler(HandlerInterface::ptr handler)
     auto& id = handler->getId();
     auto [it, ok] = handlers.try_emplace(id, handler);
 
-    ensure(ok, it->second->mnemonic());
+    if (!ok)
+        return false;
 
     if (handler->getFuncA() != NoFuncA)
         func_a.insert(handler->getGroupId());
