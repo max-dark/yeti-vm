@@ -62,7 +62,7 @@ protected:
     }
     static void AssertId(const vm::HandlerInterface* impl, const vm::InstructionId& expected)
     {
-        ASSERT_TRUE(impl->get_id().equal(expected));
+        ASSERT_TRUE(impl->getId().equal(expected));
     }
 
     struct TestParams
@@ -97,7 +97,7 @@ protected:
     }
     static void commonTest(const vm::HandlerInterface* impl, vm::InstructionId expected, const TestStep& step)
     {
-        ASSERT_TRUE(impl->get_id().equal(expected));
+        ASSERT_TRUE(impl->getId().equal(expected));
 
         for (RegId dest = 0; dest < vm::register_count; ++dest)
         {

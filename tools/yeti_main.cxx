@@ -254,8 +254,8 @@ void disasm(const vm::program_code_t &code)
         const auto *p = code.data() + i;
         auto *op = reinterpret_cast<const Decoder*>(p);
         auto handler = registry.find_handler(op);
-        auto mnemonic = handler ? handler->get_mnemonic() : "UNKNOWN"sv;
-        auto args = handler ? handler->get_args(op) : "UNKNOWN"s;
+        auto mnemonic = handler ? handler->mnemonic() : "UNKNOWN"sv;
+        auto args = handler ? handler->disassemblyArgs(op) : "UNKNOWN"s;
         std::cout << std::hex
                   << std::setw(8) << std::setfill('0') << std::right << i
                   << "  "

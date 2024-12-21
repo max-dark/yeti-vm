@@ -10,15 +10,15 @@ namespace vm::rv32i
 
 /// load upper immediate
 /// asm: lui dest, const
-struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
+struct lui: public GenericHandler<opcode::LUI, opcode::U_TYPE> {
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string args{get_register_alias(code->get_rd())};
         return args + ", " + opcode::to_hex(code->decode_u());
     }
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "lui";
     }
@@ -32,15 +32,15 @@ struct lui: public instruction_base<opcode::LUI, opcode::U_TYPE> {
 };
 /// add upper immediate to PC
 /// asm: auipc dest, const
-struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
+struct auipc: public GenericHandler<opcode::AUIPC, opcode::U_TYPE> {
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string args{get_register_alias(code->get_rd())};
         return args + ", " + opcode::to_hex(code->decode_u());
     }
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "auipc";
     }
@@ -55,7 +55,7 @@ struct auipc: public instruction_base<opcode::AUIPC, opcode::U_TYPE> {
 
 /// jump and link, stores return address in dest
 /// asm: jal dest, const
-struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
+struct jal: public GenericHandler<opcode::JAL, opcode::J_TYPE> {
     [[nodiscard]]
     bool skip() const final { return true; }
 
@@ -64,13 +64,13 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
         return std::bit_cast<opcode::signed_t>(code->decode_j());
     }
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string args{get_register_alias(code->get_rd())};
         return args + ", " + std::to_string(get_data(code));
     }
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "jal";
     }
@@ -86,7 +86,7 @@ struct jal: public instruction_base<opcode::JAL, opcode::J_TYPE> {
 
 /// jump and link by register
 /// asm: jalr dest, src, const
-struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE, 0b0000> {
+struct jalr: public GenericHandler<opcode::JALR, opcode::I_TYPE, 0b0000> {
     [[nodiscard]]
     bool skip() const final { return true; }
 
@@ -95,14 +95,14 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE, 0b0000> {
         return std::bit_cast<opcode::signed_t>(code->decode_i());
     }
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
         return dest + ", " + src + ", " + std::to_string(get_data(code));
     }
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "jalr";
     }
@@ -121,12 +121,12 @@ struct jalr: public instruction_base<opcode::JALR, opcode::I_TYPE, 0b0000> {
 
 /// branch (conditional jump)
 template<opcode::opcode_t Type>
-struct branch: public instruction_base<opcode::BRANCH, opcode::B_TYPE, Type> {
+struct branch: public GenericHandler<opcode::BRANCH, opcode::B_TYPE, Type> {
     [[nodiscard]]
     bool skip() const final { return true; }
 
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string lhs{get_register_alias(code->get_rs1())};
         std::string rhs{get_register_alias(code->get_rs2())};
@@ -154,7 +154,7 @@ struct branch: public instruction_base<opcode::BRANCH, opcode::B_TYPE, Type> {
 /// jump if eq
 struct beq : branch<0b0000> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "beq";
     }
@@ -167,7 +167,7 @@ struct beq : branch<0b0000> {
 /// jump if not eq
 struct bne : branch<0b0001> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "bne";
     }
@@ -181,7 +181,7 @@ struct bne : branch<0b0001> {
 /// jump if less
 struct blt : branch<0b0100> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "blt";
     }
@@ -195,7 +195,7 @@ struct blt : branch<0b0100> {
 /// jump if greater or equal
 struct bge : branch<0b0101> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "bge";
     }
@@ -209,7 +209,7 @@ struct bge : branch<0b0101> {
 /// jump if less (unsigned)
 struct bltu: branch<0b0110> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "bltu";
     }
@@ -223,7 +223,7 @@ struct bltu: branch<0b0110> {
 /// jump if greater of equal
 struct bgeu: branch<0b0111> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "bgeu";
     }
@@ -236,7 +236,7 @@ struct bgeu: branch<0b0111> {
 
 /// load(read) value from memory
 template<opcode::opcode_t Type>
-struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
+struct load: public GenericHandler<opcode::LOAD, opcode::I_TYPE, Type> {
     static signed_t get_offset(const opcode::Decoder* current)
     {
         return to_signed(current->decode_i());
@@ -247,7 +247,7 @@ struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
         return base + get_offset(current);
     }
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string base{get_register_alias(code->get_rs1())};
@@ -266,7 +266,7 @@ struct load: public instruction_base<opcode::LOAD, opcode::I_TYPE, Type> {
 /// load byte (sign extended)
 struct lb : load<0b0000> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "lb";
     }
@@ -283,7 +283,7 @@ struct lb : load<0b0000> {
 /// load halfword (sign extended)
 struct lh : load<0b0001> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "lh";
     }
@@ -300,7 +300,7 @@ struct lh : load<0b0001> {
 /// load word (sign extended)
 struct lw : load<0b0010> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "lw";
     }
@@ -315,7 +315,7 @@ struct lw : load<0b0010> {
 /// load byte (unsigned)
 struct lbu: load<0b0100> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "lbu";
     }
@@ -330,7 +330,7 @@ struct lbu: load<0b0100> {
 /// load halfword (unsigned)
 struct lhu: load<0b0101> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "lhu";
     }
@@ -344,7 +344,7 @@ struct lhu: load<0b0101> {
 
 /// store(write) value into memory
 template<opcode::opcode_t Type>
-struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
+struct store: public GenericHandler<opcode::STORE, opcode::S_TYPE, Type> {
     static signed_t get_offset(const opcode::Decoder* current)
     {
         return to_signed(current->decode_s());
@@ -355,7 +355,7 @@ struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
         return base + get_offset(current);
     }
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string base{get_register_alias(code->get_rs1())};
         std::string src{get_register_alias(code->get_rs2())};
@@ -373,7 +373,7 @@ struct store: public instruction_base<opcode::STORE, opcode::S_TYPE, Type> {
 /// store byte
 struct sb: store<0b0000> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "sb";
     }
@@ -386,7 +386,7 @@ struct sb: store<0b0000> {
 /// store halfword
 struct sh: store<0b0001> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "sh";
     }
@@ -399,7 +399,7 @@ struct sh: store<0b0001> {
 /// store word
 struct sw: store<0b0010> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "sw";
     }
@@ -411,13 +411,13 @@ struct sw: store<0b0010> {
 
 /// integer-immediate
 template<opcode::opcode_t Type>
-struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {
+struct int_imm: public GenericHandler<opcode::OP_IMM, opcode::I_TYPE, Type> {
     static signed_t get_data(const opcode::Decoder* current)
     {
         return to_signed(current->decode_i());
     }
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
@@ -429,7 +429,7 @@ struct int_imm: public instruction_base<opcode::OP_IMM, opcode::I_TYPE, Type> {
 /// asm: addi rd, rs, const
 struct addi : int_imm<0b0000> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "addi";
     }
@@ -447,7 +447,7 @@ struct addi : int_imm<0b0000> {
 /// asm: slti rd, rs, const
 struct slti : int_imm<0b0010> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "slti";
     }
@@ -465,14 +465,14 @@ struct slti : int_imm<0b0010> {
 /// asm: sltiu rd, rs, const
 struct sltiu: int_imm<0b0011> {
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
         return dest + ", " + src + ", " + opcode::to_hex(code->decode_i());
     }
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "sltiu";
     }
@@ -489,7 +489,7 @@ struct sltiu: int_imm<0b0011> {
 /// asm: xor rd, rs, const
 struct xori: int_imm<0b0100> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "xori";
     }
@@ -505,7 +505,7 @@ struct xori: int_imm<0b0100> {
 /// asm: or rd, rs, const
 struct ori : int_imm<0b0110> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "ori";
     }
@@ -521,7 +521,7 @@ struct ori : int_imm<0b0110> {
 /// asm: and rd, rs, const
 struct andi: int_imm<0b0111> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "andi";
     }
@@ -536,13 +536,13 @@ struct andi: int_imm<0b0111> {
 
 /// shift by immediate
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
-struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {
+struct shift_imm: public GenericHandler<opcode::OP_IMM, opcode::R_TYPE, Type, (Variant << 5)> {
     static register_t get_data(const opcode::Decoder* current)
     {
         return current->decode_i_u() & opcode::mask_value<0, 5>;
     }
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string src{get_register_alias(code->get_rs1())};
@@ -553,7 +553,7 @@ struct shift_imm: public instruction_base<opcode::OP_IMM, opcode::R_TYPE, Type, 
 /// asm: sll rd, rs, const
 struct slli: shift_imm<0b0001, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "slli";
     }
@@ -569,7 +569,7 @@ struct slli: shift_imm<0b0001, 0> {
 /// asm: srl rd, rs, const
 struct srli: shift_imm<0b0101, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "srli";
     }
@@ -586,7 +586,7 @@ struct srli: shift_imm<0b0101, 0> {
 /// asm: sra rd, rs, const
 struct srai: shift_imm<0b0101, 1> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "srai";
     }
@@ -601,9 +601,9 @@ struct srai: shift_imm<0b0101, 1> {
 
 /// integer-register
 template<opcode::opcode_t Type, opcode::opcode_t Variant>
-struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {
+struct int_r: public GenericHandler<opcode::OP, opcode::R_TYPE, Type, (Variant << 5)> {
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string lhs{get_register_alias(code->get_rs1())};
@@ -625,7 +625,7 @@ struct int_r: public instruction_base<opcode::OP, opcode::R_TYPE, Type, (Variant
 /// asm: add rd, rs1, rs2
 struct add_r : int_r<0b0000, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "add";
     }
@@ -639,7 +639,7 @@ struct add_r : int_r<0b0000, 0> {
 /// asm: sub rd, rs1, rs2
 struct sub_r : int_r<0b0000, 1> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "sub";
     }
@@ -653,7 +653,7 @@ struct sub_r : int_r<0b0000, 1> {
 /// asm: sll rd, rs1, rs2
 struct sll_r : int_r<0b0001, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "sll";
     }
@@ -668,7 +668,7 @@ struct sll_r : int_r<0b0001, 0> {
 /// asm: slt rd, rs1, rs2
 struct slt_r : int_r<0b0010, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "slt";
     }
@@ -683,7 +683,7 @@ struct slt_r : int_r<0b0010, 0> {
 /// asm: sltu rd, rs1, rs2
 struct sltu_r: int_r<0b0011, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "sltu";
     }
@@ -697,7 +697,7 @@ struct sltu_r: int_r<0b0011, 0> {
 /// asm: xor rd, rs1, rs2
 struct xor_r : int_r<0b0100, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "xor";
     }
@@ -711,7 +711,7 @@ struct xor_r : int_r<0b0100, 0> {
 /// asm: srl rd, rs1, rs2
 struct srl_r : int_r<0b0101, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "srl";
     }
@@ -726,7 +726,7 @@ struct srl_r : int_r<0b0101, 0> {
 /// asm: sra rd, rs1, rs2
 struct sra_r : int_r<0b0101, 1> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "sra";
     }
@@ -740,7 +740,7 @@ struct sra_r : int_r<0b0101, 1> {
 /// asm: or rd, rs1, rs2
 struct or_r  : int_r<0b0110, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "or";
     }
@@ -754,7 +754,7 @@ struct or_r  : int_r<0b0110, 0> {
 /// asm: and rd, rs1, rs2
 struct and_r : int_r<0b0111, 0> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "and";
     }
@@ -767,12 +767,12 @@ struct and_r : int_r<0b0111, 0> {
 
 /// MISC-MEM group
 template<opcode::opcode_t Type>
-struct misc_mem: public instruction_base<opcode::MISC_MEM, opcode::I_TYPE, Type> {};
+struct misc_mem: public GenericHandler<opcode::MISC_MEM, opcode::I_TYPE, Type> {};
 
 /// sync data memory
 struct fence  : misc_mem<0b0000> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "fence";
     }
@@ -785,7 +785,7 @@ struct fence  : misc_mem<0b0000> {
 /// sync instruction memory
 struct fence_i: misc_mem<0b0001> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "fence.i";
     }
@@ -796,14 +796,14 @@ struct fence_i: misc_mem<0b0001> {
 };
 
 // ECALL / EBREAK
-struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, 0b0000> {
+struct env_call: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, 0b0000> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "env";
     }
     [[nodiscard]]
-    std::string get_args(opcode::opcode_t code) const override
+    std::string disassemblyArgs(opcode::opcode_t code) const override
     {
         auto args = opcode::get_bits(code, 20, 12);
         switch (args)
@@ -829,7 +829,7 @@ struct env_call: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, 0b0000>
 
 /// CSR instructions
 template<opcode::opcode_t Type>
-struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {
+struct csr: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, Type> {
     void exec(vm_interface *vm, const opcode::Decoder* current) const override
     {
         vm->control();
@@ -839,7 +839,7 @@ struct csr: public instruction_base<opcode::SYSTEM, opcode::I_TYPE, Type> {
 /// atomic read and write
 struct csrrw : csr<0b0001> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "csrrw";
     }
@@ -848,7 +848,7 @@ struct csrrw : csr<0b0001> {
 /// atomic read and set
 struct csrrs : csr<0b0010> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "csrrs";
     }
@@ -857,7 +857,7 @@ struct csrrs : csr<0b0010> {
 /// atomic read and clear
 struct csrrc : csr<0b0011> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "csrrc";
     }
@@ -866,7 +866,7 @@ struct csrrc : csr<0b0011> {
 /// unsigned(?) atomic read and write
 struct csrrwi: csr<0b0101> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "csrrwi";
     }
@@ -875,7 +875,7 @@ struct csrrwi: csr<0b0101> {
 /// unsigned(?) atomic read and set
 struct csrrsi: csr<0b0110> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "csrrsi";
     }
@@ -884,7 +884,7 @@ struct csrrsi: csr<0b0110> {
 /// unsigned(?) atomic read and clear
 struct csrrci: csr<0b0111> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final
+    std::string_view mnemonic() const final
     {
         return "csrrci";
     }

@@ -34,7 +34,7 @@ TEST_F(RV32I_Handler_MiscMem, Fence)
     auto impl = create<fence>();
     constexpr Code funcA = 0b0000;
 
-    ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+    ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
     auto code = encode(funcA);
     MockVM mockVm;
 
@@ -47,7 +47,7 @@ TEST_F(RV32I_Handler_MiscMem, FenceI)
     auto impl = create<fence_i>();
     constexpr Code funcA = 0b0001;
 
-    ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+    ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
     auto code = encode(funcA);
     MockVM mockVm;
 

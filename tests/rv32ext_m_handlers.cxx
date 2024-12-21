@@ -64,7 +64,7 @@ protected:
 
     static void integrationTest(vm::HandlerInterface* impl, ExtId extId)
     {
-        ASSERT_TRUE(impl->get_id().equal(expectedId(extId)));
+        ASSERT_TRUE(impl->getId().equal(expectedId(extId)));
 
         MockVM mockVm;
 

@@ -18,7 +18,7 @@ TEST_F(RV32I_Handler_Impl, LoadUpperImmediate)
     MockVM mock;
     auto impl = create<lui>();
 
-    auto& id = impl->get_id();
+    auto& id = impl->getId();
     // group / encoding / no extensions
     ASSERT_TRUE(id.equal(make_id(GroupId::LUI, Format::U_TYPE)));
 
@@ -29,7 +29,7 @@ TEST_F(RV32I_Handler_Impl, LoadUpperImmediate)
         Decoder parser{code};
         ASSERT_EQ(parser.get_rd(), r_id);
         ASSERT_EQ(parser.decode_u_u(), imm);
-        ASSERT_EQ(parser.get_code(), impl->get_code_base());
+        ASSERT_EQ(parser.get_code(), impl->getGroupId());
 
         EXPECT_CALL(mock, set_register(r_id, imm));
         impl->exec(&mock, &parser);
@@ -41,7 +41,7 @@ TEST_F(RV32I_Handler_Impl, AddUpperImmediateToPC)
     MockVM mock;
     auto impl = create<auipc>();
 
-    auto& id = impl->get_id();
+    auto& id = impl->getId();
     // group / encoding / no extensions
     ASSERT_TRUE(id.equal(make_id(GroupId::AUIPC, Format::U_TYPE)));
 
@@ -50,11 +50,11 @@ TEST_F(RV32I_Handler_Impl, AddUpperImmediateToPC)
         for (uint8_t r_id = 0; r_id < vm::register_count; ++r_id)
         {
             Code imm = ((upperBits << 12u) | r_id) << 12u;
-            Code code = Encoder::u_type(impl->get_code_base(), r_id, imm);
+            Code code = Encoder::u_type(impl->getGroupId(), r_id, imm);
             Decoder parser{code};
             ASSERT_EQ(parser.get_rd(), r_id);
             ASSERT_EQ(parser.decode_u_u(), imm);
-            ASSERT_EQ(parser.get_code(), impl->get_code_base());
+            ASSERT_EQ(parser.get_code(), impl->getGroupId());
 
             EXPECT_CALL(mock, get_pc())
                     .WillRepeatedly(Return(r_id * r_id));
@@ -70,7 +70,7 @@ TEST_F(RV32I_Handler_Impl, JumpAndLink)
     // jal instruction ...
     auto impl = create<jal>();
 
-    auto& id = impl->get_id();
+    auto& id = impl->getId();
     // group / encoding / no extensions
     ASSERT_TRUE(id.equal(make_id(GroupId::JAL, Format::J_TYPE)));
 
@@ -113,7 +113,7 @@ TEST_F(RV32I_Handler_Impl, JumpAndLinkRegister)
     // jalr instruction ...
     auto impl = create<jalr>();
 
-    auto &id = impl->get_id();
+    auto &id = impl->getId();
     // group / encoding / have a-ext[0]
     ASSERT_TRUE(id.equal(make_id(GroupId::JALR, Format::I_TYPE, 0)));
 

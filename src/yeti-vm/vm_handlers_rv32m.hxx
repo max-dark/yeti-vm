@@ -19,11 +19,11 @@ static constexpr result_unsigned_t result_mask = register_t{~0u};
 static constexpr result_unsigned_t result_size = sizeof(register_t) * 8;
 
 template<opcode::opcode_t Type>
-struct math: public instruction_base<opcode::OP, opcode::R_TYPE, Type, 0b000'0001> {
+struct math: public GenericHandler<opcode::OP, opcode::R_TYPE, Type, 0b000'0001> {
     using b32 = vm::bit_tools::bits_u32;
     using b64 = vm::bit_tools::bits_u64;
     [[nodiscard]]
-    std::string get_args(const opcode::Decoder* code) const override
+    std::string disassemblyArgs(const opcode::Decoder* code) const override
     {
         std::string dest{get_register_alias(code->get_rd())};
         std::string lhs{get_register_alias(code->get_rs1())};
@@ -45,7 +45,7 @@ struct math: public instruction_base<opcode::OP, opcode::R_TYPE, Type, 0b000'000
 /// lower bits of (signed * signed)
 struct mul: math<0b0000> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final { return "mul"; }
+    std::string_view mnemonic() const final { return "mul"; }
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
@@ -57,7 +57,7 @@ struct mul: math<0b0000> {
 /// upper bits of (signed * signed)
 struct mulh: math<0b0001> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final { return "mulh"; }
+    std::string_view mnemonic() const final { return "mulh"; }
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
@@ -70,7 +70,7 @@ struct mulh: math<0b0001> {
 /// upper bits of (signed * unsigned)
 struct mulhsu: math<0b0010> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final { return "mulhsu"; }
+    std::string_view mnemonic() const final { return "mulhsu"; }
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
@@ -82,7 +82,7 @@ struct mulhsu: math<0b0010> {
 /// upper bits of (unsigned * unsigned)
 struct mulhu: math<0b0011> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final { return "mulhu"; }
+    std::string_view mnemonic() const final { return "mulhu"; }
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
@@ -95,7 +95,7 @@ struct mulhu: math<0b0011> {
 /// (signed / signed)
 struct div: math<0b0100> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final { return "div"; }
+    std::string_view mnemonic() const final { return "div"; }
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
@@ -113,7 +113,7 @@ struct div: math<0b0100> {
 /// (unsigned / unsigned)
 struct divu: math<0b0101> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final { return "divu"; }
+    std::string_view mnemonic() const final { return "divu"; }
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
@@ -127,7 +127,7 @@ struct divu: math<0b0101> {
 /// (signed % signed)
 struct rem: math<0b0110> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final { return "rem"; }
+    std::string_view mnemonic() const final { return "rem"; }
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {
@@ -145,7 +145,7 @@ struct rem: math<0b0110> {
 /// (unsigned % unsigned)
 struct remu: math<0b0111> {
     [[nodiscard]]
-    std::string_view get_mnemonic() const final { return "remu"; }
+    std::string_view mnemonic() const final { return "remu"; }
     [[nodiscard]]
     register_t calculate(register_t lhs, register_t rhs) const final
     {

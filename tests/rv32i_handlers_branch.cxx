@@ -41,7 +41,7 @@ protected:
     using CompareTest = void(MockVM&, vm::register_t, vm::register_t, Offset);
     static void branch(vm::HandlerInterface* impl, Code funcA, CompareTest compareTest)
     {
-        ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+        ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
 
         for (Offset offset: { -8, -4, 0, +4, +8 })
         {

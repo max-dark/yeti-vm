@@ -135,16 +135,16 @@ TEST_P(RV32I_Handler_ISA, Mnemonics)
 {
     auto& p = GetParam();
     auto& impl = p.instance;
-    ASSERT_EQ(impl->get_mnemonic(), p.mnemonic);
+    ASSERT_EQ(impl->mnemonic(), p.mnemonic);
 }
 
 TEST_P(RV32I_Handler_ISA, CodeGroup)
 {
     auto& p = GetParam();
     auto& impl = p.instance;
-    ASSERT_EQ(impl->get_code_base(), p.code)
+    ASSERT_EQ(impl->getGroupId(), p.code)
         << "Expected: " << get_op_id(p.code)
-        << " / Actual: "  << get_code_id(impl->get_code_base());
+        << " / Actual: "  << get_code_id(impl->getGroupId());
 }
 
 } // namespace tests::rv32i

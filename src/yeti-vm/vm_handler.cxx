@@ -6,15 +6,15 @@ namespace vm
 
 bool registry::register_handler(HandlerInterface::ptr handler)
 {
-    auto& id = handler->get_id();
+    auto& id = handler->getId();
     auto [it, ok] = handlers.try_emplace(id, handler);
 
-    ensure(ok, it->second->get_mnemonic());
+    ensure(ok, it->second->mnemonic());
 
-    if (handler->get_func_a() != NoFuncA)
-        func_a.insert(handler->get_code_base());
-    if (handler->get_func_b() != NoFuncB)
-        func_b.insert(handler->get_code_base() | (handler->get_func_a() << 8));
+    if (handler->getFuncA() != NoFuncA)
+        func_a.insert(handler->getGroupId());
+    if (handler->getFuncB() != NoFuncB)
+        func_b.insert(handler->getGroupId() | (handler->getFuncA() << 8));
 
     return ok;
 }

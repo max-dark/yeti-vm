@@ -85,33 +85,33 @@ struct HandlerInterface
 
     /// get ID of instruction handled by this object
     [[nodiscard]]
-    virtual const InstructionId& get_id() const = 0;
+    virtual const InstructionId& getId() const = 0;
 
     /// get opcode group ID
     [[nodiscard]]
-    virtual opcode::opcode_t get_code_base() const = 0;
+    virtual opcode::opcode_t getGroupId() const = 0;
 
     /// get opcode "func A" ID
     [[nodiscard]]
-    virtual opcode::opcode_t get_func_a() const = 0;
+    virtual opcode::opcode_t getFuncA() const = 0;
     /// get opcode "func B" ID
     [[nodiscard]]
-    virtual opcode::opcode_t get_func_b() const = 0;
+    virtual opcode::opcode_t getFuncB() const = 0;
     /// get instruction mnemonic
     [[nodiscard]]
-    virtual std::string_view get_mnemonic() const = 0;
-    /// disasm arguments
+    virtual std::string_view mnemonic() const = 0;
+    /// disassembly arguments
     [[nodiscard]]
-    virtual std::string get_args(const opcode::Decoder* code) const
+    virtual std::string disassemblyArgs(const opcode::Decoder* code) const
     {
-        return get_args(code->code);
+        return disassemblyArgs(code->code);
     }
-    /// disasm arguments
+    /// disassembly arguments
     [[nodiscard]]
-    virtual std::string get_args(opcode::opcode_t code) const = 0;
+    virtual std::string disassemblyArgs(opcode::opcode_t code) const = 0;
     /// get encoding type
     [[nodiscard]]
-    virtual opcode::BaseFormat get_type() const = 0;
+    virtual opcode::BaseFormat getEncodingFormat() const = 0;
 
     /**
      * execute instruction
@@ -141,10 +141,10 @@ template
         InstructionId::FunctionId FuncA = InstructionId::NoFuncA,
         InstructionId::FunctionId FuncB = InstructionId::NoFuncB
 >
-struct instruction_base : public HandlerInterface
+struct GenericHandler : public HandlerInterface
 {
     [[nodiscard]]
-    const InstructionId& get_id() const final
+    const InstructionId& getId() const final
     {
         static const InstructionId id{
                 BaseGroupId, Format, FuncA, FuncB
@@ -154,36 +154,36 @@ struct instruction_base : public HandlerInterface
     }
 
     [[nodiscard]]
-    opcode::opcode_t get_code_base() const final
+    opcode::opcode_t getGroupId() const final
     {
         return BaseGroupId;
     }
 
     [[nodiscard]]
-    opcode::opcode_t get_func_a() const final
+    opcode::opcode_t getFuncA() const final
     {
         return FuncA;
     }
 
     [[nodiscard]]
-    opcode::opcode_t get_func_b() const final
+    opcode::opcode_t getFuncB() const final
     {
         return FuncB;
     }
 
     [[nodiscard]]
-    std::string_view get_mnemonic() const override
+    std::string_view mnemonic() const override
     {
-        auto code = opcode::OpcodeType{get_code_base()};
+        auto code = opcode::OpcodeType{getGroupId()};
         return opcode::get_op_id(code);
     }
     [[nodiscard]]
-    std::string get_args(opcode::opcode_t code) const override
+    std::string disassemblyArgs(opcode::opcode_t code) const override
     {
         return opcode::to_hex(opcode::get_bits(code, 8, 32));
     }
     [[nodiscard]]
-    opcode::BaseFormat get_type() const final
+    opcode::BaseFormat getEncodingFormat() const final
     {
         return Format;
     }

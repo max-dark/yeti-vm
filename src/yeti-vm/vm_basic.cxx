@@ -207,8 +207,8 @@ void basic_vm::run_step()
     {
         std::cout
                 << std::setw( 8) << std::setfill('0') << std::right << get_pc() << ' '
-                << std::setw(10) << std::setfill(' ') << std::left << handler->get_mnemonic()
-                << std::setw(20) << std::setfill(' ') << std::left << handler->get_args(current)
+                << std::setw(10) << std::setfill(' ') << std::left << handler->mnemonic()
+                << std::setw(20) << std::setfill(' ') << std::left << handler->disassemblyArgs(current)
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rd())
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rs1())
                 << std::setw(10) << std::right << std::hex << get_register(current->get_rs2())
@@ -468,7 +468,7 @@ void basic_vm::dump_state(std::ostream &dump) const
                 ;
             if (handler)
             {
-                dump << "\tdecoded: " << handler->get_mnemonic() << "\t" << handler->get_args(code) << std::endl;
+                dump << "\tdecoded: " << handler->mnemonic() << "\t" << handler->disassemblyArgs(code) << std::endl;
             }
         }
         else

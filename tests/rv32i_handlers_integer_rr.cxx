@@ -38,7 +38,7 @@ protected:
     /// TODO: use threads(?)
     static void commonTest(const vm::HandlerInterface* impl, Code funcA, Code funcB, const TestStep& step)
     {
-        ASSERT_TRUE(impl->get_id().equal(expectedId(funcA, funcB)));
+        ASSERT_TRUE(impl->getId().equal(expectedId(funcA, funcB)));
 
         for (RegId id_dst = 0; id_dst < vm::register_count; ++id_dst)
         for (RegId id_lhs = 0; id_lhs < vm::register_count; ++id_lhs)

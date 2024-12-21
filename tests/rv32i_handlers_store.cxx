@@ -45,7 +45,7 @@ protected:
     using StoreTest = void(MockVM &, vm::register_t, Address);
     static void testStore(vm::HandlerInterface *impl, Code funcA, StoreTest storeTest)
     {
-        ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
+        ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
 
         for (Offset offset: {-8, -4, 0, +4, +8})
         {
