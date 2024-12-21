@@ -50,8 +50,10 @@
     sw _R, 4(_S);                            \
     LI(_R, _I);                              \
     sw _R, 8(_S);                            \
-    j  _assert_failed;                       \
-    LBL_OK(_S, _R, _I, _L):                      \
+    LI(_R, _L);                              \
+    sw _R, 12(_S);                                    \
+    j  _assert_failed;                                \
+    LBL_OK(_S, _R, _I, _L):                           \
 
 #define RVMODEL_IO_ASSERT_GPR_EQ(_S, _R, _I) \
     RVMODEL_IO_ASSERT_GPR_EQ_IMPL(_S, _R, _I, __LINE__); \
