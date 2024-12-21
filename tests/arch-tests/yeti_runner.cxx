@@ -61,13 +61,16 @@ protected:
         if (set_dev)
         {
             dump_state(std::cerr);
+            auto fill_c = std::cerr.fill();
+            std::cerr << std::dec;
             std::cerr << "set_dev == true " << std::endl;
             std::cerr << "DEV MEM: " << std::endl;
             for(auto v: dev_mem)
             {
                 std::cerr << "\t" << std::hex << std::setfill('0') << std::setw(8) << v << std::endl;
             }
-            std::cerr << "\t:DEV MEM" << std::dec << std::endl;
+            std::cerr << "\t:DEV MEM" << std::endl;
+            std::cerr << std::dec << std::setfill(fill_c);
             halt();
         }
         return basic_vm::debug();
@@ -130,12 +133,12 @@ int main(int argc, char ** argv)
         vm::yeti_runner::Runner yetiVM;
         if (!yetiVM.initProgram(testIdx, argv))
         {
-            std::cerr << "Unable init: " << testIdx << " " << argv[testIdx] << std::endl;
+            std::cerr << "Unable init: " << std::dec << testIdx << " " << argv[testIdx] << std::endl;
             return EXIT_FAILURE;
         }
         if (!yetiVM.exec(argc == 2)) // single file - enable debug output
         {
-            std::cerr << "Fail: " << testIdx << " " << argv[testIdx] << std::endl;
+            std::cerr << "Fail: " << std::dec << testIdx << " " << argv[testIdx] << std::endl;
             ++numFails;
         }
     }
