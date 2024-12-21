@@ -4,6 +4,18 @@
 
 RISC V 32bit virtual machine
 
+### release/v0.0.4
+
+At this moment VM can execute `riscv-non-isa/riscv-arch-test` subsets:
+ * `rv32i_m/I`
+ * `rv32i_m/M`
+ * `rv32i_m/privilege`(pass `ecall/ebreack`, throws exception on misaligned access)
+
+#### Changes
+
+ * add integration for [RISC-V Architecture Test](tests/arch-tests/readme.md)
+ * fix IntMath handlers
+
 ### release/v0.0.3
 
 #### Changes
