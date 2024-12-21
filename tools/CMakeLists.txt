@@ -41,3 +41,5 @@ target_link_libraries(
 )
 
 add_executable(make_dummy make_dummy.cxx)
+
+add_executable(yeti_gdb yeti_gdb.cxx)
