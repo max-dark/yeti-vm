@@ -42,8 +42,8 @@ protected:
     }
 
 protected:
-    static constexpr ExtId NoFuncA = vm::no_func_a;
-    static constexpr ExtId NoFuncB = vm::no_func_b;
+    static constexpr ExtId NoFuncA = vm::NoFuncA;
+    static constexpr ExtId NoFuncB = vm::NoFuncB;
 
     template<Implementation Type>
     [[nodiscard]]

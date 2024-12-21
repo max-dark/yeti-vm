@@ -8,56 +8,74 @@ namespace vm
 {
 struct vm_interface;
 
-/// function ID for "no function"
-inline constexpr opcode::opcode_t no_func_a = 1 << 4;
-/// function ID for "no function"
-inline constexpr opcode::opcode_t no_func_b = 1 << 8;
-
 /// Instruction ID
 struct InstructionId
 {
-private:
-    /// basic OPCODE
-    opcode::opcode_t code = 0;
-    /// encoding format
-    opcode::BaseFormat format = opcode::UNKNOWN;
-    /// function ID
-    opcode::opcode_t funcA = no_func_a;
-    /// function ID
-    opcode::opcode_t funcB = no_func_b;
+    using GroupId = opcode::opcode_t;
+    using Format = opcode::BaseFormat;
+    using FunctionId = opcode::opcode_t;
 
-    opcode::opcode_t id = 0;
+    /// function ID for "no function"
+    static constexpr FunctionId NoFuncA = 1 << 4;
+    /// function ID for "no function"
+    static constexpr FunctionId NoFuncB = 1 << 8;
+
+private:
+    using InternalId = opcode::opcode_t;
+
+    /// basic OPCODE group
+    const GroupId groupId = 0;
+    /// encoding format
+    const Format format = Format::UNKNOWN;
+    /// function ID / A
+    const FunctionId funcA = NoFuncA;
+    /// function ID / B
+    const FunctionId funcB = NoFuncB;
+
+    const InternalId id = 0;
 public:
+    constexpr
     InstructionId(
-            opcode::opcode_t group,
-            opcode::BaseFormat fmt,
-            opcode::opcode_t func_a,
-            opcode::opcode_t func_b
+            GroupId group,
+            Format fmt,
+            FunctionId func_a,
+            FunctionId func_b
         )
-        : code{group}
+        : groupId{group}
         , format{fmt}
         , funcA{func_a}
         , funcB{func_b}
-    {
-        id = code | (funcA << 8) | (funcB << 16);
-    }
+        , id{ groupId | (funcA << 8) | (funcB << 16) }
+    {}
     /// comparator for std::map
-    friend auto operator<=>(const InstructionId& lhs, const InstructionId& rhs) noexcept
+    friend constexpr auto operator<=>(const InstructionId& lhs, const InstructionId& rhs) noexcept
     {
         return lhs.id <=> rhs.id;
     }
 
-    // Strict EQ
-    [[nodiscard]]
-    bool equal(const InstructionId& rhs) const noexcept
+    /// Hash function for std::unordered_map / std::unordered_set
+    friend constexpr std::size_t hash_id(const InstructionId& key)
     {
-        return code == rhs.code
+        return key.id;
+    }
+
+    /// Strict EQ
+    [[nodiscard]]
+    constexpr bool equal(const InstructionId& rhs) const noexcept
+    {
+        return groupId == rhs.groupId
             && format == rhs.format
             && funcA == rhs.funcA
             && funcB == rhs.funcB
             ;
     }
 };
+
+/// function ID for "no function"
+inline constexpr auto NoFuncA = InstructionId::NoFuncA;
+/// function ID for "no function"
+inline constexpr auto NoFuncB = InstructionId::NoFuncB;
+
 
 /// Handler interface
 struct HandlerInterface
@@ -111,17 +129,17 @@ struct HandlerInterface
 
 /**
  * generic implementation of OPCODE handler
- * @tparam CodeBase OPCODE group ID
+ * @tparam BaseGroupId OPCODE group ID
  * @tparam Format encoding format
  * @tparam FuncA "func A" ID
  * @tparam FuncB "func B" ID
  */
 template
 <
-        opcode::opcode_t CodeBase,
-        opcode::BaseFormat Format,
-        opcode::opcode_t FuncA = no_func_a,
-        opcode::opcode_t FuncB = no_func_b
+        InstructionId::GroupId BaseGroupId,
+        InstructionId::Format Format,
+        InstructionId::FunctionId FuncA = InstructionId::NoFuncA,
+        InstructionId::FunctionId FuncB = InstructionId::NoFuncB
 >
 struct instruction_base : public HandlerInterface
 {
@@ -129,7 +147,7 @@ struct instruction_base : public HandlerInterface
     const InstructionId& get_id() const final
     {
         static const InstructionId id{
-            CodeBase, Format, FuncA, FuncB
+                BaseGroupId, Format, FuncA, FuncB
         };
 
         return id;
@@ -138,7 +156,7 @@ struct instruction_base : public HandlerInterface
     [[nodiscard]]
     opcode::opcode_t get_code_base() const final
     {
-        return CodeBase;
+        return BaseGroupId;
     }
 
     [[nodiscard]]
