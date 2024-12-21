@@ -6,6 +6,9 @@
 
 // Supports rv32
 #define XLEN 32
+// float32
+#define FLEN 32
+
 #define ALIGNMENT 2
 
 #define TEST_CASE_1
