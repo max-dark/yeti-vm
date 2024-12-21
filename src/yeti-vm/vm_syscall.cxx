@@ -22,7 +22,7 @@ syscall_registry::handler_ptr syscall_registry::find_handler(syscall_registry::s
     return nullptr;
 }
 
-syscall_registry::syscall_id syscall_registry::get_syscall_id(const vm_interface *vm) const
+syscall_registry::syscall_id syscall_registry::get_syscall_id(const MachineInterface *vm) const
 {
     return vm->get_register(RegAlias::a7);
 }

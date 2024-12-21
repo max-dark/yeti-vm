@@ -190,18 +190,18 @@ void init_syscalls(vm::syscall_registry &sys)
 {
     using vm::RegAlias;
     using call = vm::syscall_functor;
-    sys.register_handler(call::create(1024, "open", [](vm::vm_interface* m){
+    sys.register_handler(call::create(1024, "open", [](vm::MachineInterface* m){
         auto name_ptr = m->get_register(vm::a0);
         auto flags = m->get_register(vm::a1);
         std::cout << "open " << vm::to_signed(name_ptr) << " " << flags << std::endl;
         m->set_register(vm::a0, 0);
     }));
-    sys.register_handler(call::create(63, "read", [](vm::vm_interface* m){
+    sys.register_handler(call::create(63, "read", [](vm::MachineInterface* m){
         auto file_id = m->get_register(vm::a0);
         auto buff_ptr = m->get_register(vm::a1);
         auto buff_sz = m->get_register(vm::a2);
 
-        for (vm::vm_interface::address_t i = 0; i < buff_sz; i+= sizeof(vm::register_t))
+        for (vm::MachineInterface::address_t i = 0; i < buff_sz; i+= sizeof(vm::register_t))
         {
             m->write_memory(buff_ptr + i, sizeof(vm::register_t), i * i);
         }
@@ -209,23 +209,23 @@ void init_syscalls(vm::syscall_registry &sys)
         std::cout << "read " << file_id << " " << vm::to_signed(buff_ptr) << " " << buff_sz << std::endl;
         m->set_register(vm::a0, 0);
     }));
-    sys.register_handler(call::create(57, "close", [](vm::vm_interface* m){
+    sys.register_handler(call::create(57, "close", [](vm::MachineInterface* m){
         auto file_id = m->get_register(vm::a0);
         std::cout << "close " << file_id << std::endl;
         m->set_register(vm::a0, 0);
     }));
-    sys.register_handler(call::create(11, "put_char", [](vm::vm_interface* m){
+    sys.register_handler(call::create(11, "put_char", [](vm::MachineInterface* m){
         auto value = m->get_register(vm::a0);
         auto data = reinterpret_cast<const char*>(&value);
         std::cout << *data;
         m->set_register(vm::a0, 0);
     }));
-    sys.register_handler(call::create(1, "put_int", [](vm::vm_interface* m){
+    sys.register_handler(call::create(1, "put_int", [](vm::MachineInterface* m){
         auto value = m->get_register(vm::a0);
         std::cout << vm::to_signed(value);
         m->set_register(vm::a0, 0);
     }));
-    sys.register_handler(call::create(10, "exit", [](vm::vm_interface* m){
+    sys.register_handler(call::create(10, "exit", [](vm::MachineInterface* m){
         m->halt();
         std::cout << "exit" << std::endl;
         m->set_register(vm::a0, 0);

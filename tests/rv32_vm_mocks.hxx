@@ -8,7 +8,7 @@
 namespace tests::rv32_vm
 {
 
-struct MockVM: public vm::vm_interface
+struct MockVM: public vm::MachineInterface
 {
     MOCK_METHOD(void, halt, (), (override));
 

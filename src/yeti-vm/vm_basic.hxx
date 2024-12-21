@@ -17,7 +17,7 @@ namespace vm
 /**
  * basic implementation of rv32 VM
  */
-struct basic_vm: public vm_interface
+struct basic_vm: public MachineInterface
 {
     struct unknown_instruction: std::domain_error {
         explicit unknown_instruction(const std::string& message): std::domain_error{message} {}

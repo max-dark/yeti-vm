@@ -9,7 +9,7 @@ struct syscall_interface
 {
     using ptr = std::shared_ptr<syscall_interface>;
 
-    virtual void exec(vm_interface* vm) = 0;
+    virtual void exec(MachineInterface* vm) = 0;
 
     [[nodiscard]]
     virtual register_t get_id() const = 0;
@@ -22,7 +22,7 @@ struct syscall_interface
 
 struct syscall_functor final: public syscall_interface
 {
-    using callback_type = std::function<void(vm_interface* vm)>;
+    using callback_type = std::function<void(MachineInterface* vm)>;
 
     syscall_functor(register_t id, std::string name, callback_type callback)
         : id{id}
@@ -35,7 +35,7 @@ struct syscall_functor final: public syscall_interface
         return std::make_shared<syscall_functor>(id, std::move(name), std::move(callback));
     }
 
-    void exec(vm_interface* vm) final
+    void exec(MachineInterface* vm) final
     {
         callback(vm);
     }
@@ -82,7 +82,7 @@ struct syscall_registry
     [[nodiscard]]
     handler_ptr find_handler(syscall_id id) const;
     /// get syscall handler ID
-    syscall_id get_syscall_id(const vm_interface* vm) const;
+    syscall_id get_syscall_id(const MachineInterface* vm) const;
 
     handler_map handlers;
 };

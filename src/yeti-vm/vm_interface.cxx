@@ -3,6 +3,6 @@
 namespace vm
 {
 
-vm_interface::~vm_interface() = default;
+MachineInterface::~MachineInterface() = default;
 
 }// namespace vm

@@ -29,12 +29,12 @@ struct Runner: protected vm::basic_vm
         auto& sys = get_syscalls();
         bool ok = sys.register_handler(
                 call::create(10, "exit"
-                             , [this](vm::vm_interface* m)
+                             , [this](vm::MachineInterface* m)
                              { return do_exit(m); }));
 
         return ok;
     }
-    void do_exit(vm::vm_interface*)
+    void do_exit(vm::MachineInterface*)
     {
         basic_vm::halt();
     }

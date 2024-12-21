@@ -6,7 +6,7 @@ namespace vm
 {
 
 /// Virtual machine interface
-struct vm_interface
+struct MachineInterface
 {
     /// address in memory
     using address_t = std::uint32_t;
@@ -57,7 +57,7 @@ struct vm_interface
     [[nodiscard]]
     virtual register_t get_pc() const = 0;
 
-    virtual ~vm_interface();
+    virtual ~MachineInterface();
 };
 
 }// namespace vm

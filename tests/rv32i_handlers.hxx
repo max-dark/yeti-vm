@@ -20,8 +20,8 @@ using ExtId = Code;
 
 using RegId = vm::register_no;
 using RegAlias = vm::RegAlias;
-using Address = vm::vm_interface::address_t;
-using Offset = vm::vm_interface::offset_t;
+using Address = vm::MachineInterface::address_t;
+using Offset = vm::MachineInterface::offset_t;
 
 using HandlerPtr = std::unique_ptr<vm::HandlerInterface>;
 

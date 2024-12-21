@@ -32,7 +32,7 @@ struct math: public GenericHandler<opcode::OP, opcode::R_TYPE, Type, 0b000'0001>
     }
     [[nodiscard]]
     virtual register_t calculate(register_t lhs, register_t rhs) const = 0;
-    void exec(vm_interface *vm, const opcode::Decoder* current) const override
+    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto lhs = vm->get_register(current->get_rs1());
