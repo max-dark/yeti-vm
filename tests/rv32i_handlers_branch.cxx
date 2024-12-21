@@ -39,7 +39,7 @@ protected:
     }
 
     using CompareTest = void(MockVM&, vm::register_t, vm::register_t, Offset);
-    static void branch(vm::interface* impl, Code funcA, CompareTest compareTest)
+    static void branch(vm::HandlerInterface* impl, Code funcA, CompareTest compareTest)
     {
         ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
 

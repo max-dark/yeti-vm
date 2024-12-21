@@ -60,10 +60,10 @@ public:
 };
 
 /// Handler interface
-struct interface
+struct HandlerInterface
 {
-    using ptr = std::shared_ptr<interface>;
-    virtual ~interface() = default;
+    using ptr = std::shared_ptr<HandlerInterface>;
+    virtual ~HandlerInterface() = default;
 
     /// get ID of instruction handled by this object
     [[nodiscard]]
@@ -123,7 +123,7 @@ template
         opcode::opcode_t FuncA = no_func_a,
         opcode::opcode_t FuncB = no_func_b
 >
-struct instruction_base : public interface
+struct instruction_base : public HandlerInterface
 {
     [[nodiscard]]
     const InstructionId& get_id() const final
@@ -179,8 +179,8 @@ struct instruction_base : public interface
  */
 struct registry
 {
-    using handler_ptr = const interface*;
-    using handler_map = std::map<InstructionId, interface::ptr>;
+    using handler_ptr = const HandlerInterface*;
+    using handler_map = std::map<InstructionId, HandlerInterface::ptr>;
 
     /**
      * register handler by type
@@ -189,11 +189,11 @@ struct registry
     template<typename Handler>
     inline bool register_handler()
     {
-        static_assert(std::is_base_of_v<interface, Handler>, "Wrong type of Handler");
+        static_assert(std::is_base_of_v<HandlerInterface, Handler>, "Wrong type of Handler");
         return register_handler(std::make_shared<Handler>());
     }
     /// register handler by pointer
-    bool register_handler(interface::ptr handler);
+    bool register_handler(HandlerInterface::ptr handler);
 
     /// find handler by instruction code
     handler_ptr find_handler(const opcode::Decoder* code) const;

@@ -28,7 +28,7 @@ struct TestImpl
 {
     using TestInfo = ::testing::TestParamInfo<TestImpl>;
     std::string_view id;
-    vm::interface::ptr instance;
+    vm::HandlerInterface::ptr instance;
     std::string_view mnemonic;
     GroupId code;
 

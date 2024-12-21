@@ -4,7 +4,7 @@
 namespace vm
 {
 
-bool registry::register_handler(interface::ptr handler)
+bool registry::register_handler(HandlerInterface::ptr handler)
 {
     auto& id = handler->get_id();
     auto [it, ok] = handlers.try_emplace(id, handler);

@@ -28,7 +28,7 @@ using Code = vm::opcode::opcode_t;
 using ExtId = Code;
 
 template<class Handler>
-concept Implementation = std::is_base_of_v<vm::interface, Handler>;
+concept Implementation = std::is_base_of_v<vm::HandlerInterface, Handler>;
 
 /**
  * "M" Extension for Integer Multiplication and Division
@@ -62,7 +62,7 @@ protected:
         return std::make_unique<Type>();
     }
 
-    static void integrationTest(vm::interface* impl, ExtId extId)
+    static void integrationTest(vm::HandlerInterface* impl, ExtId extId)
     {
         ASSERT_TRUE(impl->get_id().equal(expectedId(extId)));
 

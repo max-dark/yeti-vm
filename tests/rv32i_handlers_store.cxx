@@ -43,7 +43,7 @@ protected:
     }
 
     using StoreTest = void(MockVM &, vm::register_t, Address);
-    static void testStore(vm::interface *impl, Code funcA, StoreTest storeTest)
+    static void testStore(vm::HandlerInterface *impl, Code funcA, StoreTest storeTest)
     {
         ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
 

@@ -44,7 +44,7 @@ protected:
     }
 
     using LoadTest = vm::register_t(MockVM&, Sequence&, vm::register_t, Address);
-    static void testLoad(vm::interface* impl, Code funcA, LoadTest loadTest)
+    static void testLoad(vm::HandlerInterface* impl, Code funcA, LoadTest loadTest)
     {
         ASSERT_TRUE(impl->get_id().equal(expectedId(funcA)));
 

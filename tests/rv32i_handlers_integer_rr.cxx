@@ -36,7 +36,7 @@ protected:
 
     using TestStep = std::function<Code(Code lhs, Code rhs)>;
     /// TODO: use threads(?)
-    static void commonTest(const vm::interface* impl, Code funcA, Code funcB, const TestStep& step)
+    static void commonTest(const vm::HandlerInterface* impl, Code funcA, Code funcB, const TestStep& step)
     {
         ASSERT_TRUE(impl->get_id().equal(expectedId(funcA, funcB)));
 

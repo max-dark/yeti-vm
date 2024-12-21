@@ -25,8 +25,8 @@ using Offset = vm::vm_interface::offset_t;
 
 
 template<class Handler>
-concept Implementation = std::is_base_of_v<vm::interface, Handler>;
-using HandlerPtr = std::unique_ptr<vm::interface>;
+concept Implementation = std::is_base_of_v<vm::HandlerInterface, Handler>;
+using HandlerPtr = std::unique_ptr<vm::HandlerInterface>;
 
 class RV32I_Handler : public ::testing::Test
 {
@@ -47,14 +47,14 @@ protected:
 
     template<Implementation Type>
     [[nodiscard]]
-    vm::interface *create()
+    vm::HandlerInterface *create()
     {
         ptr = std::make_unique<Type>();
         return ptr.get();
     }
 
     [[nodiscard]]
-    vm::interface *get() const
+    vm::HandlerInterface *get() const
     {
         return ptr.get();
     }

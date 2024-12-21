@@ -60,7 +60,7 @@ protected:
     {
         return make_id(GroupId::OP_IMM, format, funcA, funcB);
     }
-    static void AssertId(const vm::interface* impl, const vm::InstructionId& expected)
+    static void AssertId(const vm::HandlerInterface* impl, const vm::InstructionId& expected)
     {
         ASSERT_TRUE(impl->get_id().equal(expected));
     }
@@ -79,13 +79,13 @@ protected:
         vm::register_t src;
     };
 
-    using TestStep = std::function<TestValues(const vm::interface* impl, const TestParams* thisTest)>;
-    static void commonTest(const vm::interface* impl, Code funcA, const TestStep& step)
+    using TestStep = std::function<TestValues(const vm::HandlerInterface* impl, const TestParams* thisTest)>;
+    static void commonTest(const vm::HandlerInterface* impl, Code funcA, const TestStep& step)
     {
         return commonTest(impl, expectedId(funcA), step);
     }
     
-    static void shiftTest(const vm::interface* impl, Code funcA, const TestStep& step, bool isArithmetic)
+    static void shiftTest(const vm::HandlerInterface* impl, Code funcA, const TestStep& step, bool isArithmetic)
     {
         // EXPECT_EQ(impl->get_type(), Format::I_TYPE); // TODO: Shifts should be I-type
         auto expected_id = expectedId
@@ -95,7 +95,7 @@ protected:
                 );
         return commonTest(impl, expected_id, step);
     }
-    static void commonTest(const vm::interface* impl, vm::InstructionId expected, const TestStep& step)
+    static void commonTest(const vm::HandlerInterface* impl, vm::InstructionId expected, const TestStep& step)
     {
         ASSERT_TRUE(impl->get_id().equal(expected));
 
@@ -143,7 +143,7 @@ TEST_F(RV32I_Handler_RI, AddImmediate)
 {
     static constexpr Code funcA = 0b0000;
     auto impl = create<addi>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encode(p->dest, p->src, p->data, funcA);
@@ -160,7 +160,7 @@ TEST_F(RV32I_Handler_RI, SetLessThanImmediate)
 {
     static constexpr Code funcA = 0b0010;
     auto impl = create<slti>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encode(p->dest, p->src, p->data, funcA);
@@ -177,7 +177,7 @@ TEST_F(RV32I_Handler_RI, SetLessThanImmediateUnsigned)
 {
     static constexpr Code funcA = 0b0011;
     auto impl = create<sltiu>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encode(p->dest, p->src, p->data, funcA);
@@ -196,7 +196,7 @@ TEST_F(RV32I_Handler_RI, XorImmediate)
 {
     static constexpr Code funcA = 0b0100;
     auto impl = create<xori>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encode(p->dest, p->src, p->data, funcA);
@@ -213,7 +213,7 @@ TEST_F(RV32I_Handler_RI, OrImmediate)
 {
     static constexpr Code funcA = 0b0110;
     auto impl = create<ori>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encode(p->dest, p->src, p->data, funcA);
@@ -230,7 +230,7 @@ TEST_F(RV32I_Handler_RI, AndImmediate)
 {
     static constexpr Code funcA = 0b0111;
     auto impl = create<andi>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encode(p->dest, p->src, p->data, funcA);
@@ -248,7 +248,7 @@ TEST_F(RV32I_Handler_RI, ShiftLeftLogicalImmediate)
     constexpr Code funcA = 0b0001;
     constexpr bool haveB = false;
     auto impl = create<slli>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encodeShift(p->dest, p->src, p->data, funcA, haveB);
@@ -265,7 +265,7 @@ TEST_F(RV32I_Handler_RI, ShiftRightLogicalImmediate)
     constexpr Code funcA = 0b0101;
     constexpr bool haveB = false;
     auto impl = create<srli>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encodeShift(p->dest, p->src, p->data, funcA, haveB);
@@ -282,7 +282,7 @@ TEST_F(RV32I_Handler_RI, ShiftRightArithmeticImmediate)
     constexpr Code funcA = 0b0101;
     constexpr bool haveB = true;
     auto impl = create<srai>();
-    TestStep step = [](const vm::interface* impl, const TestParams* p) -> TestValues
+    TestStep step = [](const vm::HandlerInterface* impl, const TestParams* p) -> TestValues
     {
         TestValues r{};
         r.code = encodeShift(p->dest, p->src, p->data, funcA, haveB);
