@@ -154,6 +154,8 @@ int main(int argc, char ** argv)
                         output = char(GDB_ACK) + make_answer(""); // NOLINT(bugprone-branch-clone)
                     else if (cmd.starts_with("vMustReplyEmpty"))
                         output = char(GDB_ACK) + make_answer("");
+                    else if (cmd.starts_with(">vKill"))
+                        output = char(GDB_ACK) + make_answer("OK");
                     else
                         output = char(GDB_NAK) + make_answer("E01");
                     break;
@@ -170,7 +172,7 @@ int main(int argc, char ** argv)
                 }
                 case GP_REG_GET: // get all GP registers
                 {
-                    output = char(GDB_ACK) + make_answer(std::string(8*32, '0'));
+                    output = char(GDB_ACK) + make_answer(std::string(2*32, '0'));
                     break;
                 }
                 case REG_GET: // pHH - get register 0xHH
