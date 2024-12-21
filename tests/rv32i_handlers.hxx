@@ -23,9 +23,6 @@ using RegAlias = vm::RegAlias;
 using Address = vm::vm_interface::address_t;
 using Offset = vm::vm_interface::offset_t;
 
-
-template<class Handler>
-concept Implementation = std::is_base_of_v<vm::HandlerInterface, Handler>;
 using HandlerPtr = std::unique_ptr<vm::HandlerInterface>;
 
 class RV32I_Handler : public ::testing::Test
@@ -45,7 +42,7 @@ protected:
     static constexpr ExtId NoFuncA = vm::NoFuncA;
     static constexpr ExtId NoFuncB = vm::NoFuncB;
 
-    template<Implementation Type>
+    template<vm::HandlerImplementation Type>
     [[nodiscard]]
     vm::HandlerInterface *create()
     {

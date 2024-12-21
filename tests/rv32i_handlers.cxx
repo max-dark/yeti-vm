@@ -47,7 +47,7 @@ struct TestImpl
     }
 };
 
-template<Implementation Impl>
+template<vm::HandlerImplementation Impl>
 TestImpl impl(std::string_view id, GroupId code)
 {
     return {

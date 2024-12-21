@@ -192,6 +192,9 @@ struct GenericHandler : public HandlerInterface
     bool skip() const override { return false; }
 };
 
+template<class Handler>
+concept HandlerImplementation = std::is_base_of_v<vm::HandlerInterface, Handler>;
+
 /**
  * registry of instruction handlers
  */
@@ -204,7 +207,7 @@ struct registry
      * register handler by type
      * @tparam Handler
      */
-    template<typename Handler>
+    template<HandlerImplementation Handler>
     inline bool register_handler()
     {
         static_assert(std::is_base_of_v<HandlerInterface, Handler>, "Wrong type of Handler");
