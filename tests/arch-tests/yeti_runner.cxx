@@ -24,6 +24,7 @@ struct Runner: protected vm::basic_vm
     }
     bool initSysCalls()
     {
+        syscall_should_throw(false);
         using call = vm::syscall_functor;
         auto& sys = get_syscalls();
         bool ok = sys.register_handler(

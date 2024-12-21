@@ -49,6 +49,10 @@ void basic_vm::syscall()
     auto handler = syscalls.find_handler(syscall_id);
     if (handler == nullptr) [[unlikely]]
     {
+        if (!syscall_throw_on_error)
+        {
+            return;
+        }
         throw unknown_syscall{
                 std::format("unknown syscall #{:08x}", syscall_id)
         };
@@ -483,6 +487,10 @@ void basic_vm::dump_state(std::ostream &dump) const
             << std::setw(10) << std::hex << get_register(i) << std::endl;
     }
 
+}
+
+void basic_vm::syscall_should_throw(bool enable) {
+    syscall_throw_on_error = enable;
 }
 
 } // namespace vm
