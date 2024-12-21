@@ -891,6 +891,6 @@ struct csrrci: csr<0b0111> {
 };
 
 /// register RV32i set in registry
-bool register_rv32i_set(registry* r);
+bool register_rv32i_set(HandlerRegistry* r);
 
 } // namespace vm::rv32i

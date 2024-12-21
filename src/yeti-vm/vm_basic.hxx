@@ -211,7 +211,7 @@ private:
     [[nodiscard]]
     bool have_data_block() const;
 
-    registry opcodes;
+    HandlerRegistry opcodes;
     syscall_registry syscalls;
     memory_management_unit mmu;
 

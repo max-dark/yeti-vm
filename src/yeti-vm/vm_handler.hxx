@@ -219,7 +219,7 @@ concept HandlerImplementation = std::is_base_of_v<vm::HandlerInterface, Handler>
 /**
  * registry of instruction handlers
  */
-struct registry
+struct HandlerRegistry
 {
     using handler_ptr = const HandlerInterface*;
     using handler_map = InstructionId::Map<HandlerInterface::ptr>;

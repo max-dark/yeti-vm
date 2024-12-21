@@ -4,7 +4,7 @@ namespace vm::rv32i
 {
 namespace // static
 {
-void add_branch(registry *r, bool& ok)
+void add_branch(HandlerRegistry *r, bool& ok)
 {
     ok = ok && r->register_handler<beq>();
     ok = ok && r->register_handler<bne>();
@@ -14,7 +14,7 @@ void add_branch(registry *r, bool& ok)
     ok = ok && r->register_handler<bgeu>();
 }
 
-void add_load(registry *r, bool& ok)
+void add_load(HandlerRegistry *r, bool& ok)
 {
     ok = ok && r->register_handler<lb>();
     ok = ok && r->register_handler<lh>();
@@ -23,14 +23,14 @@ void add_load(registry *r, bool& ok)
     ok = ok && r->register_handler<lhu>();
 }
 
-void add_store(registry *r, bool& ok)
+void add_store(HandlerRegistry *r, bool& ok)
 {
     ok = ok && r->register_handler<sb>();
     ok = ok && r->register_handler<sh>();
     ok = ok && r->register_handler<sw>();
 }
 
-void add_int_imm(registry *r, bool& ok)
+void add_int_imm(HandlerRegistry *r, bool& ok)
 {
     ok = ok && r->register_handler<addi>();
     ok = ok && r->register_handler<slti>();
@@ -40,14 +40,14 @@ void add_int_imm(registry *r, bool& ok)
     ok = ok && r->register_handler<andi>();
 }
 
-void add_shift_imm(registry *r, bool& ok)
+void add_shift_imm(HandlerRegistry *r, bool& ok)
 {
     ok = ok && r->register_handler<slli>();
     ok = ok && r->register_handler<srli>();
     ok = ok && r->register_handler<srai>();
 }
 
-void add_int(registry *r, bool& ok)
+void add_int(HandlerRegistry *r, bool& ok)
 {
     ok = ok && r->register_handler<add_r>();
     ok = ok && r->register_handler<sub_r>();
@@ -61,13 +61,13 @@ void add_int(registry *r, bool& ok)
     ok = ok && r->register_handler<and_r>();
 }
 
-void add_misc(registry *r, bool& ok)
+void add_misc(HandlerRegistry *r, bool& ok)
 {
     ok = ok && r->register_handler<fence>();
     ok = ok && r->register_handler<fence_i>();
 }
 
-void add_system(registry *r, bool& ok)
+void add_system(HandlerRegistry *r, bool& ok)
 {
     ok = ok && r->register_handler<env_call>();
     ok = ok && r->register_handler<csrrw>();
@@ -80,7 +80,7 @@ void add_system(registry *r, bool& ok)
 
 } // namespace // static
 
-bool register_rv32i_set(registry *r)
+bool register_rv32i_set(HandlerRegistry *r)
 {
     bool ok = true;
 

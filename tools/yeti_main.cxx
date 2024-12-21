@@ -236,7 +236,7 @@ void disasm(const vm::program_code_t &code)
 {
     using namespace std::literals;
     using vm::opcode::Decoder;
-    vm::registry registry;
+    vm::HandlerRegistry registry;
     bool rv32i_ok = vm::rv32i::register_rv32i_set(&registry);
     bool rv32m_ok = vm::rv32m::register_rv32m_set(&registry);
 

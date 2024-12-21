@@ -4,7 +4,7 @@
 namespace vm
 {
 
-bool registry::register_handler(HandlerInterface::ptr handler)
+bool HandlerRegistry::register_handler(HandlerInterface::ptr handler)
 {
     auto& id = handler->getId();
     auto [it, ok] = handlers.try_emplace(id, handler);
@@ -20,7 +20,7 @@ bool registry::register_handler(HandlerInterface::ptr handler)
     return ok;
 }
 
-registry::handler_ptr registry::find_handler(const opcode::Decoder *code) const
+HandlerRegistry::handler_ptr HandlerRegistry::find_handler(const opcode::Decoder *code) const
 {
     auto op = code->get_code();
     auto funcA = func_a.contains(op) ? code->get_func3() : NoFuncA;

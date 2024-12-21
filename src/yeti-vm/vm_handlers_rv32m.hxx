@@ -156,5 +156,5 @@ struct remu: math<0b0111> {
 };
 
 /// register RV32M set in registry
-bool register_rv32m_set(registry* r);
+bool register_rv32m_set(HandlerRegistry* r);
 } // namespace vm::rv32m

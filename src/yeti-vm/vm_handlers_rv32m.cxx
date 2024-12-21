@@ -3,7 +3,7 @@
 namespace vm::rv32m
 {
 
-bool register_rv32m_set(registry *r)
+bool register_rv32m_set(HandlerRegistry *r)
 {
     bool ok =  r->register_handler<mul>();
     ok = ok && r->register_handler<mulh>();
