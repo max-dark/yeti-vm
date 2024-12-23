@@ -178,7 +178,7 @@ int main(int argc, char ** argv)
             ++state;
             using namespace gdb_remote;
             char buff[1], crc_buf[2];
-            std::string input, output, args;
+            std::string input, output;
 
             bool ctrl_c = false;
             do
@@ -195,11 +195,14 @@ int main(int argc, char ** argv)
                 continue;
             }
 
-            input = '$';
             bool esc = false;
-            do // TODO: calc checksum here
+            uint8_t crc_c = 0;
+            while (true)
             {
                 asio::read(client, asio::buffer(buff));
+                if (buff[0] == GDB_END)
+                    break;
+                crc_c += buff[0];
                 if (esc)
                 {
                     buff[0] ^= Protocol::GDB_XOR;
@@ -211,23 +214,19 @@ int main(int argc, char ** argv)
                     continue;
                 }
                 input += buff[0];
-            } while (buff[0]!= '#');
+            }
 
             asio::read(client, asio::buffer(crc_buf));
             std::string_view crc_view{crc_buf, 2};
 
-            auto b_pos = input.find(Protocol::GDB_BEG);
-            auto cmd = input.substr(b_pos);
-            auto e_pos = cmd.find(Protocol::GDB_END);
-            cmd = cmd.substr(1, e_pos - 1);
+            std::string_view cmd = input;
             uint8_t crc_i = (vm::from_hex(crc_buf[0]) << 4) | (vm::from_hex(crc_buf[1]) << 0);
-            uint8_t crc_c = calc_crc(cmd); // FIXME: should be calculated on unescaped data(raw payload)
             bool crc_ok = crc_c == crc_i;
 
-            std::cout << std::format("{:04} -> [{}{}][ok={}]: {}",  state, input, crc_view, crc_ok,  cmd) << std::endl;
+            std::cout << std::format("{:04} -> [${}#{}][ok={}]: {}",  state, input, crc_view, crc_ok,  cmd) << std::endl;
             if (cmd.empty())
                 continue;
-            args = cmd.substr(1);
+            std::string args{cmd.substr(1)};
             switch (cmd[0])
             {
                 case GENERIC_Q_GET:
