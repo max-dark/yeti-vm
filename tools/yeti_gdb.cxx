@@ -392,7 +392,17 @@ int main(int argc, char ** argv)
                     if (cmd.starts_with("qSupported:")) // qSupported (supported-packets)
                         output = make_ack("PacketSize=2048;hwbreak+;swbreak+"); // 'PacketSize' is required
                     else if (cmd == "qOffsets")
-                        output = make_ack("Text=0;Data=400000;Bss=800000"); // Note: hex(?) values
+                    {
+                        // gdb supports two formats:
+                        // 0. empty response - command is not supported
+                        // 1. Sections: Text=TTT;Data=DDD;Bss=BBB
+                        //      Data must be equal Bss
+                        //      All fields required
+                        // 2. Segments: TextSeg=TTT[;DataSeg=DDD]
+                        //      DataSeg can be omitted
+                        // field values encoded in hex
+                        output = make_ack("Text=0;Data=400000;Bss=400000"); // Note: hex values
+                    }
 //                    else if (cmd.starts_with("qTStatus"))
 //                        output = make_ack("");
 //                    else if (cmd.starts_with("qSymbol:"))
