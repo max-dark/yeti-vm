@@ -24,176 +24,6 @@
 
 using asio::ip::tcp;
 
-/*
-+$qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386#72
-+$vCont?#49
-+$vMustReplyEmpty#3a
-$vMustReplyEmpty#3a
-+$vMustReplyEmpty#3a
-+$vMustReplyEmpty#3a
-++$Hg0#df
-$Hg0#df
-+$Hg0#df
-+$Hg0#df
-++$qTStatus#49
-$qTStatus#49
-+$qTStatus#49
-+$qTStatus#49
-++$?#3f
-$?#3f
-+$?#3f
-+$?#3f
-++$qfThreadInfo#bb
-$qfThreadInfo#bb
-+$qfThreadInfo#bb
-+$qfThreadInfo#bb
-++$qL1200000000000000000#50
-$qL1200000000000000000#50
-+$qL1200000000000000000#50
-+$qL1200000000000000000#50
-++$Hc-1#09
-$Hc-1#09
-+$Hc-1#09
-+$Hc-1#09
-++$qC#b4
-$qC#b4
-+$qC#b4
-+$qC#b4
-++$qAttached#8f
-$qAttached#8f
-+$qAttached#8f
-+$qAttached#8f
-
- */
-
-/*
----------------------------------------------------
-wait for connection
-1:+$qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386#72
-1-> [+$qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386#72]:qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386
-1<- [+$#00]
-2-> [+$vCont?#49]:vCont?
-2<- [+$#00]
-3-> [+$vMustReplyEmpty#3a]:vMustReplyEmpty
-3<- [+$#00]
-4-> [+$Hg0#df]:Hg0
-4<- [+$#00]
-5-> [+$qTStatus#49]:qTStatus
-5<- [+$#00]
-6-> [+$?#3f]:?
-6<- [+$S05#B8]
-7-> [+$qfThreadInfo#bb]:qfThreadInfo
-7<- [+$#00]
-8-> [+$qL1160000000000000000#55]:qL1160000000000000000
-8<- [+$#00]
-9-> [+$Hc-1#09]:Hc-1
-9<- [+$#00]
-10-> [+$qC#b4]:qC
-10<- [+$#00]
-11-> [+$qAttached#8f]:qAttached
-11<- [+$#00]
-12-> [+$qOffsets#4b]:qOffsets
-12<- [+$#00]
-13-> [+$g#67]:g
-13<- [+$0000000000000000000000000000000000000000000000000000000000000000#00]
-14-> [+$p20#d2]:p20
-14<- [+$00000000#80]
-15-> [+$qL1160000000000000000#55]:qL1160000000000000000
-15<- [+$#00]
-16-> [+$m0,4#fd]:m0,4
-16<- [+$00000000#80]
-17-> [+$mfffffffc,4#fa]:mfffffffc,4
-17<- [+$00000000#80]
-18-> [+$qSymbol::#5b]:qSymbol::
-18<- [+$#00]
-19-> [+$vKill;a410#33]:vKill;a410
-19<- [+$OK#9A]
-
----------------------------------------------------
-(gdb) set debug remote 1
-(gdb) target remote :4321
-Remote debugging using :4321
-[remote] start_remote_1: enter
-  [remote] Sending packet: $qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386#72
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] packet_ok: Packet qSupported (supported-packets) is NOT supported
-  [remote] Sending packet: $vCont?#49
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] packet_ok: Packet vCont (verbose-resume) is NOT supported
-  [remote] Sending packet: $vMustReplyEmpty#3a
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] Sending packet: $Hg0#df
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] Sending packet: $qTStatus#49
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] packet_ok: Packet qTStatus (trace-status) is NOT supported
-  [remote] Sending packet: $?#3f
-  [remote] Received Ack
-  [remote] Packet received: S05
-  [remote] Sending packet: $qfThreadInfo#bb
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] Sending packet: $qL1160000000000000000#55
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] Sending packet: $Hc-1#09
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] Sending packet: $qC#b4
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] Sending packet: $qAttached#8f
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] packet_ok: Packet qAttached (query-attached) is NOT supported
-  [remote] Sending packet: $qOffsets#4b
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] wait: enter
-    [remote] select_thread_for_ambiguous_stop_reply: enter
-      [remote] select_thread_for_ambiguous_stop_reply: process_wide_stop = 0
-      [remote] select_thread_for_ambiguous_stop_reply: first resumed thread is Thread <main>
-      [remote] select_thread_for_ambiguous_stop_reply: is this guess ambiguous? = 0
-    [remote] select_thread_for_ambiguous_stop_reply: exit
-  [remote] wait: exit
-  [remote] Sending packet: $g#67
-  [remote] Received Ack
-  [remote] Packet received: 0000000000000000000000000000000000000000000000000000000000000000
-  [remote] Sending packet: $p20#d2
-  [remote] Received Ack
-  [remote] Packet received: 00000000
-  [remote] packet_ok: Packet p (fetch-register) is supported
-  [remote] Sending packet: $qL1160000000000000000#55
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] Sending packet: $m0,4#fd
-  [remote] Received Ack
-  [remote] Packet received: 00000000
-  [remote] Sending packet: $mfffffffc,4#fa
-  [remote] Received Ack
-  [remote] Packet received: 00000000
-0x00000000 in rvtest_init ()
-  [remote] Sending packet: $qSymbol::#5b
-  [remote] Received Ack
-  [remote] Packet received:
-  [remote] packet_ok: Packet qSymbol (symbol-lookup) is NOT supported
-[remote] start_remote_1: exit
-(gdb) k
-Kill the program being debugged? (y or n) y
-[remote] Sending packet: $vKill;a410#33
-[remote] Received Ack
-[remote] Packet received: OK
-[remote] packet_ok: Packet vKill (kill) is supported
-[Inferior 1 (Remote target) killed]
-
-
-*/
-
 // https://sourceware.org/gdb/current/onlinedocs/gdb.html/Packets.html#Packets
 // https://ftp.gnu.org/old-gnu/Manuals/gdb/html_node/gdb_129.html
 namespace gdb_remote
@@ -255,8 +85,10 @@ namespace gdb_remote
         GDB_ACK = '+',
         /// checksum error
         GDB_NAK = '-',
-        /// data start mark
+        /// cmd start mark
         GDB_BEG = '$',
+        /// notify start mark
+        GDB_NOTIFY = '%',
         /// data end mark
         GDB_END = '#',
         /// next char is escaped and XOR-ed with 0x20
@@ -266,6 +98,7 @@ namespace gdb_remote
         /// RLE encoded, next char - length
         GDB_RLE_MARK = '*',
         /// rle_length = c - 28
+        /// in gdb source: repeat = c - ' ' + 3
         GDB_RLE_LENGTH = 28,
         /// ctr+C - user request interrupt
         GDB_BREAK = 0x03,
@@ -280,7 +113,7 @@ int main(int argc, char ** argv)
     // note: gdb assumes that PC is regs[32]. how to change this?
     std::array<uint32_t, 32 + 1> regs{}; // registers: GP + PC
     std::vector<uint8_t> ram;
-    ram.resize(0x800'0000, 0);
+    ram.resize(0x8000000, 0); // 8MiB
 
     // fill mem with NOP
     auto mem_code = std::span(reinterpret_cast<uint32_t*>(ram.data()), 16);
@@ -364,7 +197,7 @@ int main(int argc, char ** argv)
 
             input = '$';
             bool esc = false;
-            do
+            do // TODO: calc checksum here
             {
                 asio::read(client, asio::buffer(buff));
                 if (esc)
@@ -388,7 +221,7 @@ int main(int argc, char ** argv)
             auto e_pos = cmd.find(Protocol::GDB_END);
             cmd = cmd.substr(1, e_pos - 1);
             uint8_t crc_i = (vm::from_hex(crc_buf[0]) << 4) | (vm::from_hex(crc_buf[1]) << 0);
-            uint8_t crc_c = calc_crc(cmd);
+            uint8_t crc_c = calc_crc(cmd); // FIXME: should be calculated on unescaped data(raw payload)
             bool crc_ok = crc_c == crc_i;
 
             std::cout << std::format("{:04} -> [{}{}][ok={}]: {}",  state, input, crc_view, crc_ok,  cmd) << std::endl;
@@ -414,14 +247,14 @@ int main(int argc, char ** argv)
 //                        // field values encoded in hex
 //                        output = make_ack("Text=0;Data=400000;Bss=400000"); // Note: hex values
 //                    }
-////                    else if (cmd.starts_with("qTStatus"))
-////                        output = make_ack("");
-////                    else if (cmd.starts_with("qSymbol:"))
-////                        output = make_ack("OK");
+//                    else if (cmd.starts_with("qTStatus"))
+//                        output = make_ack("");
+//                    else if (cmd.starts_with("qSymbol:"))
+//                        output = make_ack("OK");
 //                    else if (cmd.starts_with("qfThreadInfo")) // threads info / replacement for 'qL'
 //                        output = make_ack("l"); // no threads
-////                    else if (cmd == "qAttached")
-////                        output = make_ack("");
+//                    else if (cmd == "qAttached")
+//                        output = make_ack("");
 //                    else if (cmd == "qC")
 //                        output = make_ack("-1");
 //                    else
@@ -432,7 +265,7 @@ int main(int argc, char ** argv)
                 {
                     std::cout << "QUERY_V" << std::endl;
 //                    if (cmd == "vCont?") // vCont (verbose-resume)
-//                        output = make_ack("vCont:no"); // The stub must support ‘vCont’ if it reports support for multiprocess extensions
+//                        output = make_ack("vCont;c;C;"); // both 'c'/'C' is required
 //                    else if (cmd.starts_with("vCtrlC"))
 //                        output = make_ack("OK"); // NOLINT(bugprone-branch-clone)
 //                    else if (cmd.starts_with("vKill"))
@@ -559,7 +392,7 @@ int main(int argc, char ** argv)
                 case BREAK_SET:
                 {
                     std::cout << "BREAKPOINT: " << args << std::endl;
-                    output = make_ack("");
+                    output = make_ack(""); // not supported
                     break;
                 }
                 case STEP_s:
@@ -567,14 +400,14 @@ int main(int argc, char ** argv)
                 {
                     std::cout << "STEP: " << args << std::endl;
                     //output = make_ack("S03"); // SIGQUIT
-                    output = make_ack("");
+                    output = make_ack(""); // not supported
                     break;
                 }
                 case CONTINUE_C:
                 {
                     std::cout << "CONTINUE: " << args << std::endl;
                     //output = make_ack("S06"); // SIGABRT
-                    output = make_ack(""); // SIGABRT
+                    output = make_ack(""); // not supported
                     break;
                 }
                 case CONTINUE_c: // exec until next stop
