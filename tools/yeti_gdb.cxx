@@ -190,20 +190,29 @@ namespace gdb_remote
         STEP_s = 's', // single step
         STEP_S = 'S', // step with signal
         DETACH = 'D',
+        /// get all registers
         GP_REG_GET = 'g',
+        /// set registers
         GP_REG_SET = 'G',
         KILL_TGT = 'k',
         /// read memory: m<addr>,<size>
         MEM_GET = 'm',
+        /// write memory: m<addr>,<size>:data
         MEM_SET = 'M',
+        /// read memory, binary
+        MEM_BIN_GET = 'x',
+        /// write memory, binary
+        MEM_BIN_SET = 'X',
+        /// get register pHH
         REG_GET = 'p',
+        /// set register PHH=xx...
         REG_SET = 'P',
+        /// generic query, get value
         GENERIC_Q_GET = 'q',
+        /// generic query, set value
         GENERIC_Q_SET = 'Q',
         /// multi-letter query
         QUERY_V = 'v',
-        /// write memory, binary
-        LOAD_BIN = 'X',
         /// remove breakpoint/watchpoint: z<type>,<addr>,<length>
         BREAK_CLR = 'z',
         /// insert breakpoint/watchpoint: z<type>,<addr>,<length>
@@ -229,7 +238,7 @@ namespace gdb_remote
         /// RLE encoded, next char - length
         GDB_RLE_MARK = '*',
         /// rle_length = c - 28
-        GDB_RLE_LENGTH = 28, // '('
+        GDB_RLE_LENGTH = 28,
         /// ctr+C - user request interrupt
         GDB_BREAK = 0x03,
     };
@@ -296,44 +305,44 @@ int main(int argc, char ** argv)
             {
                 case GENERIC_Q_GET:
                 {
-                    if (cmd.starts_with("qSupported"))
-                        output = make_ack(""); // NOLINT(bugprone-branch-clone)
+                    if (cmd.starts_with("qSupported:")) // qSupported (supported-packets)
+                        output = make_ack("PacketSize=2048;swbreak+;hwbreak+"); // 'PacketSize' is required
                     else if (cmd == "qOffsets")
                         output = make_ack("Text=0;Data=400000;Bss=800000"); // Note: hex(?) values
 //                    else if (cmd.starts_with("qTStatus"))
 //                        output = make_ack("");
-//                    else if (cmd.starts_with("qOffsets"))
-//                        output = make_ack("");
 //                    else if (cmd.starts_with("qSymbol:"))
 //                        output = make_ack("OK");
-//                    else if (cmd.starts_with("qfThreadInfo")) // threads info / replacement for 'qL'
-//                        output = make_ack("l"); // no threads
+                    else if (cmd.starts_with("qfThreadInfo")) // threads info / replacement for 'qL'
+                        output = make_ack("l"); // no threads
 //                    else if (cmd == "qAttached")
 //                        output = make_ack("");
-//                    else if (cmd == "qC")
-//                        output = make_ack("");
+                    else if (cmd == "qC")
+                        output = make_ack("-1");
                     else
                         output = make_ack(""); // should return "$#00' if command is unknown
                     break;
                 }
-                case QUERY_V:
+                case QUERY_V: // not supported
                 {
-                    if (cmd.starts_with("vCont?"))
-                        output = make_ack(""); // NOLINT(bugprone-branch-clone)
-                    else if (cmd.starts_with("vKill"))
-                        output = make_ack("OK");
-                    else
+//                    if (cmd == "vCont?") // vCont (verbose-resume)
+//                        output = make_ack("vCont:no"); // The stub must support ‘vCont’ if it reports support for multiprocess extensions
+//                    else if (cmd.starts_with("vCtrlC"))
+//                        output = make_ack("OK"); // NOLINT(bugprone-branch-clone)
+//                    else if (cmd.starts_with("vKill"))
+//                        output = make_ack("OK");
+//                    else
                         output = make_ack("");
                     break;
                 }
                 case LAST_SIGNAL:
                 {
-                    output = make_ack("S05");
+                    output = make_ack(std::format("S{:02X}", SIGTRAP));
                     break;
                 }
                 case THREAD_SET:
                 {
-                    output = make_ack("");
+                    output = make_ack("OK");
                     break;
                 }
                 case GP_REG_GET: // get all GP registers
@@ -367,9 +376,18 @@ int main(int argc, char ** argv)
                     output = make_ack("");
                     break;
                 }
+                case STEP_s:
+                case STEP_S:
+                case CONTINUE_C:
+                    output = make_ack("E01");
+                    break;
                 case CONTINUE_c: // exec until next stop
                 {
-                    output = make_ack("OK");
+                    // stop cause:
+                    // SAA - signal AA received
+                    // WAA - exit with code AA
+                    // XAA - terminated with AA signal
+                    output = make_ack("S05"); // S05 == SIGTRAP
                     break;
                 }
                 case DETACH: // debugger detached, exit
