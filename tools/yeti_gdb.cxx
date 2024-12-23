@@ -49,6 +49,134 @@ $qAttached#8f
 
  */
 
+/*
+---------------------------------------------------
+wait for connection
+1:+$qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386#72
+1-> [+$qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386#72]:qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386
+1<- [+$#00]
+2-> [+$vCont?#49]:vCont?
+2<- [+$#00]
+3-> [+$vMustReplyEmpty#3a]:vMustReplyEmpty
+3<- [+$#00]
+4-> [+$Hg0#df]:Hg0
+4<- [+$#00]
+5-> [+$qTStatus#49]:qTStatus
+5<- [+$#00]
+6-> [+$?#3f]:?
+6<- [+$S05#B8]
+7-> [+$qfThreadInfo#bb]:qfThreadInfo
+7<- [+$#00]
+8-> [+$qL1160000000000000000#55]:qL1160000000000000000
+8<- [+$#00]
+9-> [+$Hc-1#09]:Hc-1
+9<- [+$#00]
+10-> [+$qC#b4]:qC
+10<- [+$#00]
+11-> [+$qAttached#8f]:qAttached
+11<- [+$#00]
+12-> [+$qOffsets#4b]:qOffsets
+12<- [+$#00]
+13-> [+$g#67]:g
+13<- [+$0000000000000000000000000000000000000000000000000000000000000000#00]
+14-> [+$p20#d2]:p20
+14<- [+$00000000#80]
+15-> [+$qL1160000000000000000#55]:qL1160000000000000000
+15<- [+$#00]
+16-> [+$m0,4#fd]:m0,4
+16<- [+$00000000#80]
+17-> [+$mfffffffc,4#fa]:mfffffffc,4
+17<- [+$00000000#80]
+18-> [+$qSymbol::#5b]:qSymbol::
+18<- [+$#00]
+19-> [+$vKill;a410#33]:vKill;a410
+19<- [+$OK#9A]
+
+---------------------------------------------------
+(gdb) set debug remote 1
+(gdb) target remote :4321
+Remote debugging using :4321
+[remote] start_remote_1: enter
+  [remote] Sending packet: $qSupported:multiprocess+;swbreak+;hwbreak+;qRelocInsn+;fork-events+;vfork-events+;exec-events+;vContSupported+;QThreadEvents+;QThreadOptions+;no-resumed+;memory-tagging+;xmlRegisters=i386#72
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] packet_ok: Packet qSupported (supported-packets) is NOT supported
+  [remote] Sending packet: $vCont?#49
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] packet_ok: Packet vCont (verbose-resume) is NOT supported
+  [remote] Sending packet: $vMustReplyEmpty#3a
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] Sending packet: $Hg0#df
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] Sending packet: $qTStatus#49
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] packet_ok: Packet qTStatus (trace-status) is NOT supported
+  [remote] Sending packet: $?#3f
+  [remote] Received Ack
+  [remote] Packet received: S05
+  [remote] Sending packet: $qfThreadInfo#bb
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] Sending packet: $qL1160000000000000000#55
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] Sending packet: $Hc-1#09
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] Sending packet: $qC#b4
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] Sending packet: $qAttached#8f
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] packet_ok: Packet qAttached (query-attached) is NOT supported
+  [remote] Sending packet: $qOffsets#4b
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] wait: enter
+    [remote] select_thread_for_ambiguous_stop_reply: enter
+      [remote] select_thread_for_ambiguous_stop_reply: process_wide_stop = 0
+      [remote] select_thread_for_ambiguous_stop_reply: first resumed thread is Thread <main>
+      [remote] select_thread_for_ambiguous_stop_reply: is this guess ambiguous? = 0
+    [remote] select_thread_for_ambiguous_stop_reply: exit
+  [remote] wait: exit
+  [remote] Sending packet: $g#67
+  [remote] Received Ack
+  [remote] Packet received: 0000000000000000000000000000000000000000000000000000000000000000
+  [remote] Sending packet: $p20#d2
+  [remote] Received Ack
+  [remote] Packet received: 00000000
+  [remote] packet_ok: Packet p (fetch-register) is supported
+  [remote] Sending packet: $qL1160000000000000000#55
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] Sending packet: $m0,4#fd
+  [remote] Received Ack
+  [remote] Packet received: 00000000
+  [remote] Sending packet: $mfffffffc,4#fa
+  [remote] Received Ack
+  [remote] Packet received: 00000000
+0x00000000 in rvtest_init ()
+  [remote] Sending packet: $qSymbol::#5b
+  [remote] Received Ack
+  [remote] Packet received:
+  [remote] packet_ok: Packet qSymbol (symbol-lookup) is NOT supported
+[remote] start_remote_1: exit
+(gdb) k
+Kill the program being debugged? (y or n) y
+[remote] Sending packet: $vKill;a410#33
+[remote] Received Ack
+[remote] Packet received: OK
+[remote] packet_ok: Packet vKill (kill) is supported
+[Inferior 1 (Remote target) killed]
+
+
+*/
+
 // https://sourceware.org/gdb/current/onlinedocs/gdb.html/Packets.html#Packets
 // https://ftp.gnu.org/old-gnu/Manuals/gdb/html_node/gdb_129.html
 namespace gdb_remote
@@ -107,8 +235,8 @@ int main(int argc, char ** argv)
     tcp::acceptor server(ctx, tcp::endpoint(tcp::v4(), 4321));
 
     tcp::socket client(ctx);
-    server.accept(client);
     std::cout << "wait for connection" << std::endl;
+    server.accept(client);
     try
     {
         tcp::iostream stream;
@@ -121,16 +249,18 @@ int main(int argc, char ** argv)
             return std::format("${}#{:02X}", data, sum);
         };
 
-        auto make_ack = [&make_answer](const std::string& data)
+        auto make_ack = [&make_answer](const std::string& data, bool with_mark = true)
         {
             using namespace gdb_remote;
-            return char(GDB_ACK) + make_answer(data);
+            if (with_mark) return char(GDB_ACK) + make_answer(data);
+            return make_answer(data);
         };
 
-        auto make_nack = [&make_answer](const std::string& data = "")
+        auto make_nack = [&make_answer](const std::string& data = "", bool with_mark = true)
         {
             using namespace gdb_remote;
-            return char(GDB_NAK) + make_answer(data);
+            if (with_mark) return char(GDB_NAK) + make_answer(data);
+            return make_answer(data);
         };
 
         int state = 0;
@@ -141,13 +271,11 @@ int main(int argc, char ** argv)
             std::string input, output;
 
             asio::read_until(client, asio::dynamic_buffer(input), "#");
-            //client.read_some(asio::buffer(input));
-            std::cout << state << ':' << input << std::endl;
             auto b_pos = input.find(Protocol::GDB_BEG);
             auto cmd = input.substr(b_pos);
             auto e_pos = cmd.find(Protocol::GDB_END);
             cmd = cmd.substr(1, e_pos - 1);
-            std::cout << state << '>' << cmd << std::endl;
+            std::cout << state << "-> [" << input << "]:" << cmd << std::endl;
             // TODO: calc checksum
             if (cmd.empty())
                 continue;
@@ -157,44 +285,42 @@ int main(int argc, char ** argv)
                 {
                     if (cmd.starts_with("qSupported"))
                         output = make_ack(""); // NOLINT(bugprone-branch-clone)
-                    else if (cmd.starts_with("qTStatus"))
-                        output = make_ack("");
-                    else if (cmd.starts_with("qOffsets"))
-                        output = make_ack("");
-                    else if (cmd.starts_with("qSymbol::"))
-                        output = make_ack("");
-                    else if (cmd.starts_with("qfThreadInfo")) // threads info / replacement for 'qL'
-                        output = make_ack("l"); // no threads
-                    else if (cmd.starts_with("qTStatus"))
-                        output = make_ack("");
-                    else if (cmd == "qAttached")
-                        output = make_ack("");
-                    else if (cmd == "qC")
-                        output = make_ack("");
+//                    else if (cmd.starts_with("qTStatus"))
+//                        output = make_ack("");
+//                    else if (cmd.starts_with("qOffsets"))
+//                        output = make_ack("");
+//                    else if (cmd.starts_with("qSymbol"))
+//                        output = make_ack("");
+//                    else if (cmd.starts_with("qfThreadInfo")) // threads info / replacement for 'qL'
+//                        output = make_ack("l"); // no threads
+//                    else if (cmd == "qAttached")
+//                        output = make_ack("");
+//                    else if (cmd == "qC")
+//                        output = make_ack("");
                     else
-                        output = make_nack(); // should return "$#00' if command is unknown
+                        output = make_ack(""); // should return "$#00' if command is unknown
                     break;
                 }
                 case QUERY_V:
                 {
                     if (cmd.starts_with("vCont?"))
                         output = make_ack(""); // NOLINT(bugprone-branch-clone)
-                    else if (cmd.starts_with("vMustReplyEmpty"))
-                        output = make_ack("");
+//                    else if (cmd.starts_with("vMustReplyEmpty"))
+//                        output = make_ack("");
                     else if (cmd.starts_with("vKill"))
                         output = make_ack("OK");
                     else
-                        output = make_nack();
+                        output = make_ack("");
                     break;
                 }
                 case LAST_SIGNAL:
                 {
-                    output = char(GDB_ACK) + make_answer("S05");
+                    output = make_ack("S05");
                     break;
                 }
                 case THREAD_SET:
                 {
-                    output = make_ack("OK");
+                    output = make_ack("");
                     break;
                 }
                 case GP_REG_GET: // get all GP registers
@@ -221,6 +347,7 @@ int main(int argc, char ** argv)
                     output = make_nack();
                     break;
             }
+            std::cout << state << "<- [" << output << "]" << std::endl;
             asio::write(client, asio::buffer(output));
         } while (run);
     }
