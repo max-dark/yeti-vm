@@ -266,7 +266,8 @@ int main(int argc, char ** argv)
     using namespace vm::opcode;
     asio::io_context ctx;
 
-    std::array<uint32_t, 33> regs{};
+    // note: gdb assumes that PC is regs[32]. how to change this?
+    std::array<uint32_t, 32 + 1> regs{}; // registers: GP + PC
     std::vector<uint8_t> ram;
     ram.resize(0x800'0000, 0);
 
@@ -378,7 +379,7 @@ int main(int argc, char ** argv)
                 case LAST_SIGNAL:
                 {
                     std::cout << "LAST_SIGNAL" << std::endl;
-                    output = make_ack(std::format("S{:02X}", SIGTRAP));
+                    output = make_ack("S05"); // SIGTRAP
                     break;
                 }
                 case THREAD_SET:
@@ -408,7 +409,14 @@ int main(int argc, char ** argv)
                 {
                     auto rid = std::stoul(args, nullptr, 16);
                     std::cout << "REG_GET: " << rid << std::endl;
-                    output = make_ack(encode_reg(regs[rid])); // note: encoded in target byteorder
+                    if (rid < regs.size())
+                    {
+                        output = make_ack(encode_reg(regs[rid])); // note: encoded in target byteorder
+                    }
+                    else
+                    {
+                        output = make_ack("xxxxxxxx"); // value not available
+                    }
                     break;
                 }
                 case REG_SET: // pHH=value - set register 0xHH
@@ -440,7 +448,7 @@ int main(int argc, char ** argv)
                     std::cout << "MEM_GET: " << std::hex << addr << ":" << std::dec << size << std::endl;
                     if ((addr + size) >= ram.size())
                     {
-                        output = make_ack("");
+                        output = make_ack(std::string(size * 2, 'x')); // value not available
                     }
                     else
                     {
@@ -463,7 +471,7 @@ int main(int argc, char ** argv)
                     std::cout << "MEM_SET: " << std::hex << addr << ":" << std::dec << size << std::endl;
                     if ((addr + size) >= ram.size())
                     {
-                        output = make_ack("");
+                        output = make_ack(".E_SET");
                     }
                     else
                     {
