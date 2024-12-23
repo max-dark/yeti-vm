@@ -550,20 +550,22 @@ int main(int argc, char ** argv)
                 case BREAK_SET:
                 {
                     std::cout << "BREAKPOINT: " << args << std::endl;
-                    output = make_ack("OK");
+                    output = make_ack("");
                     break;
                 }
                 case STEP_s:
                 case STEP_S:
                 {
                     std::cout << "STEP: " << args << std::endl;
-                    output = make_ack("S03"); // SIGQUIT
+                    //output = make_ack("S03"); // SIGQUIT
+                    output = make_ack("");
                     break;
                 }
                 case CONTINUE_C:
                 {
                     std::cout << "CONTINUE: " << args << std::endl;
-                    output = make_ack("S06"); // SIGABRT
+                    //output = make_ack("S06"); // SIGABRT
+                    output = make_ack(""); // SIGABRT
                     break;
                 }
                 case CONTINUE_c: // exec until next stop
@@ -573,8 +575,9 @@ int main(int argc, char ** argv)
                     // SAA - signal AA received
                     // WAA - exit with code AA
                     // XAA - terminated with AA signal
-                    regs.back() += 4; // simulate PC increment
-                    output = make_ack("S05"); // S05 == SIGTRAP
+                    //regs.back() += 4; // simulate PC increment
+                    //output = make_ack("S05"); // S05 == SIGTRAP
+                    output = make_ack(""); // S05 == SIGTRAP
                     break;
                 }
                 case DETACH: // debugger detached, exit
