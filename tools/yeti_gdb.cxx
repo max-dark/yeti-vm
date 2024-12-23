@@ -290,13 +290,14 @@ int main(int argc, char ** argv)
         {
             ++state;
             using namespace gdb_remote;
-            std::string input, output;
+            std::string input, output, args;
 
             asio::read_until(client, asio::dynamic_buffer(input), "#");
             auto b_pos = input.find(Protocol::GDB_BEG);
             auto cmd = input.substr(b_pos);
             auto e_pos = cmd.find(Protocol::GDB_END);
             cmd = cmd.substr(1, e_pos - 1);
+            args = cmd.substr(1);
             std::cout << state << "-> [" << input << "]:" << cmd << std::endl;
             // TODO: calc checksum
             if (cmd.empty())
@@ -305,8 +306,9 @@ int main(int argc, char ** argv)
             {
                 case GENERIC_Q_GET:
                 {
+                    std::cout << "GENERIC_Q_GET" << std::endl;
                     if (cmd.starts_with("qSupported:")) // qSupported (supported-packets)
-                        output = make_ack("PacketSize=2048;swbreak+;hwbreak+"); // 'PacketSize' is required
+                        output = make_ack("PacketSize=2048;hwbreak+;swbreak+"); // 'PacketSize' is required
                     else if (cmd == "qOffsets")
                         output = make_ack("Text=0;Data=400000;Bss=800000"); // Note: hex(?) values
 //                    else if (cmd.starts_with("qTStatus"))
@@ -325,6 +327,7 @@ int main(int argc, char ** argv)
                 }
                 case QUERY_V: // not supported
                 {
+                    std::cout << "QUERY_V" << std::endl;
 //                    if (cmd == "vCont?") // vCont (verbose-resume)
 //                        output = make_ack("vCont:no"); // The stub must support ‘vCont’ if it reports support for multiprocess extensions
 //                    else if (cmd.starts_with("vCtrlC"))
@@ -337,52 +340,78 @@ int main(int argc, char ** argv)
                 }
                 case LAST_SIGNAL:
                 {
+                    std::cout << "LAST_SIGNAL" << std::endl;
                     output = make_ack(std::format("S{:02X}", SIGTRAP));
                     break;
                 }
                 case THREAD_SET:
                 {
+                    std::cout << "THREAD_SET" << std::endl;
                     output = make_ack("OK");
                     break;
                 }
                 case GP_REG_GET: // get all GP registers
                 {
+                    std::cout << "GP_REG_GET" << std::endl;
                     auto rx8 = encode_rle('0', 8*8);
                     output = make_ack(rx8 + rx8 + rx8 + rx8);
                     break;
                 }
                 case GP_REG_SET: // set GP registers
                 {
-                    output = make_ack("");
+                    std::cout << "GP_REG_SET" << std::endl;
+                    output = make_ack("E01");
                     break;
                 }
                 case REG_GET: // pHH - get register 0xHH
                 {
-                    output = make_ack(encode_rle('0', 8));
+                    std::cout << "REG_GET: " << std::stoul(args, nullptr, 16) << std::endl;
+                    output = make_ack(std::string(2 * sizeof(uint32_t), '0'));
                     break;
                 }
                 case REG_SET: // pHH=value - set register 0xHH
                 {
-                    output = make_ack("");
+                    std::cout << "REG_SET: "
+                        << std::stoul(args, nullptr, 16) << std::endl;
+                    output = make_ack("E02");
                     break;
                 }
                 case MEM_GET: // mADR,SZ - read memory
                 {
-                    output = make_ack(encode_rle('0', 8));
+                    size_t idx_addr = 0;
+                    size_t idx_size = 0;
+                    uint32_t addr = std::stoul(args, &idx_addr, 16);
+                    uint32_t size = std::stoul(args.substr(idx_addr + 1), &idx_size, 16);
+                    std::cout << "MEM_GET: " << std::hex << addr << ":" << std::dec << size << std::endl;
+                    output = make_ack(std::string(2 * size, '0'));
                     break;
                 }
                 case MEM_SET: // mADR,SZ:data - write memory
                 {
-                    output = make_ack("");
+                    size_t idx_addr = 0;
+                    size_t idx_size = 0;
+                    uint32_t addr = std::stoul(args, &idx_addr, 16);
+                    uint32_t size = std::stoul(args.substr(idx_addr + 1), &idx_size, 16);
+                    std::cout << "MEM_SET: " << std::hex << addr << ":" << std::dec << size << std::endl;
+                    output = make_ack("E03");
                     break;
                 }
                 case STEP_s:
                 case STEP_S:
-                case CONTINUE_C:
-                    output = make_ack("E01");
+                {
+                    std::cout << "STEP: " << args << std::endl;
+                    output = make_ack("S03"); // SIGQUIT
                     break;
+                }
+                case CONTINUE_C:
+                {
+                    std::cout << "CONTINUE: " << args << std::endl;
+                    output = make_ack("S06"); // SIGABRT
+                    break;
+                }
                 case CONTINUE_c: // exec until next stop
                 {
+                    std::cout << "CONTINUE" << std::endl;
                     // stop cause:
                     // SAA - signal AA received
                     // WAA - exit with code AA
@@ -391,10 +420,17 @@ int main(int argc, char ** argv)
                     break;
                 }
                 case DETACH: // debugger detached, exit
+                    std::cout << "DETACH" << std::endl;
+                    output = make_ack("OK");
+                    run = false;
+                    break;
+                case KILL_TGT: // stop execution, exit
+                    std::cout << "KILL_TGT" << std::endl;
                     output = make_ack("OK");
                     run = false;
                     break;
                 default: // "unknown command"
+                    std::cout << "unknown command, ignored" << std::endl;
                     output = make_ack("");
                     break;
             }
