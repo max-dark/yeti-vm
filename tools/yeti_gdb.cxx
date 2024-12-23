@@ -219,8 +219,10 @@ namespace gdb_remote
         /// stop execution
         KILL_TGT = 'k',
         /// read memory: m<addr>,<size>
+        /// reply: 'HH...'(success, hex data) or 'ENN'(error, NN - hex digits)
         MEM_GET = 'm',
         /// write memory: m<addr>,<size>:data
+        /// reply: 'OK'(success) or 'ENN'(error, NN - hex digits)
         MEM_SET = 'M',
         /// read memory, binary
         MEM_BIN_GET = 'x',
@@ -499,10 +501,10 @@ int main(int argc, char ** argv)
                     size_t idx_size = 0;
                     size_t addr = std::stoul(args, &idx_addr, 16);
                     size_t size = std::stoul(args.substr(idx_addr + 1), &idx_size, 16);
-                    std::cout << "MEM_GET: " << std::hex << addr << ":" << std::dec << size << std::endl;
+                    std::cout << std::format("MEM_GET: <{:08X}:{}>", addr, size) << std::endl;
                     if ((addr + size) >= ram.size())
                     {
-                        output = make_ack(std::string(size * 2, 'x')); // value not available
+                        output = make_ack("E03"); // value not available
                     }
                     else
                     {
@@ -520,16 +522,27 @@ int main(int argc, char ** argv)
                 {
                     size_t idx_addr = 0;
                     size_t idx_size = 0;
-                    uint32_t addr = std::stoul(args, &idx_addr, 16);
-                    uint32_t size = std::stoul(args.substr(idx_addr + 1), &idx_size, 16);
-                    std::cout << "MEM_SET: " << std::hex << addr << ":" << std::dec << size << std::endl;
+                    size_t addr = std::stoul(args, &idx_addr, 16);
+                    size_t size = std::stoul(args.substr(idx_addr + 1), &idx_size, 16);
+                    std::string_view args_view = args;
+                    std::string_view data_view = args_view.substr( idx_addr + 1 + idx_size + 1);
+                    std::cout << std::format("MEM_SET: <{:08X}:{}> = [{}]", addr, size, data_view) << std::endl;
                     if ((addr + size) >= ram.size())
                     {
-                        output = make_ack(".E_SET");
+                        output = make_ack("E04"); // out of range
                     }
                     else
                     {
-                        output = make_ack("OK");
+                        auto data_raw = vm::from_hex(data_view);
+                        if (data_view.size() == (data_raw.size() * 2))
+                        {
+                            std::copy_n(data_raw.data(), data_raw.size(), ram.data() + addr);
+                            output = make_ack("OK");
+                        }
+                        else
+                        {
+                            output = make_ack("E05"); // data length error
+                        }
                     }
                     break;
                 }
