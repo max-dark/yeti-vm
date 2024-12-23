@@ -237,6 +237,7 @@ int main(int argc, char ** argv)
     tcp::socket client(ctx);
     std::cout << "wait for connection" << std::endl;
     server.accept(client);
+    std::cout << "new connection" << std::endl;
     try
     {
         tcp::iostream stream;
