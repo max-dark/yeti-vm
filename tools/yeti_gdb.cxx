@@ -347,11 +347,20 @@ int main(int argc, char ** argv)
             char buff[1], crc_buf[2];
             std::string input, output, args;
 
+            bool ctrl_c = false;
             do
             {
                 asio::read(client, asio::buffer(buff));
                 std::cout << std::format(">>{:02X}[{}]", buff[0], (std::isprint(buff[0]) ? buff[0]: '?') ) << std::endl;
-            } while (buff[0]!= '$');
+                ctrl_c = buff[0] == GDB_BREAK;
+            } while (buff[0]!= '$' && (!ctrl_c));
+
+            if (ctrl_c) // user request stop
+            {
+                std::cout << "ctrl+c: SIGINT" << std::endl;
+                asio::write(client, asio::buffer(make_ack("S02")));
+                continue;
+            }
 
             input = '$';
             bool esc = false;
