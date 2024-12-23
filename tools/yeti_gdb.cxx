@@ -193,15 +193,20 @@ namespace gdb_remote
         GP_REG_GET = 'g',
         GP_REG_SET = 'G',
         KILL_TGT = 'k',
+        /// read memory: m<addr>,<size>
         MEM_GET = 'm',
         MEM_SET = 'M',
         REG_GET = 'p',
         REG_SET = 'P',
         GENERIC_Q_GET = 'q',
         GENERIC_Q_SET = 'Q',
+        /// multi-letter query
         QUERY_V = 'v',
+        /// write memory, binary
         LOAD_BIN = 'X',
+        /// remove breakpoint/watchpoint: z<type>,<addr>,<length>
         BREAK_CLR = 'z',
+        /// insert breakpoint/watchpoint: z<type>,<addr>,<length>
         BREAK_SET = 'Z',
         /// H<cmd><thread> set current thread for command
         THREAD_SET = 'H',
@@ -209,9 +214,9 @@ namespace gdb_remote
 
     enum Protocol: char
     {
-        /// command accepted
+        /// checksum ok
         GDB_ACK = '+',
-        /// command rejected
+        /// checksum error
         GDB_NAK = '-',
         /// data start mark
         GDB_BEG = '$',
@@ -224,7 +229,9 @@ namespace gdb_remote
         /// RLE encoded, next char - length
         GDB_RLE_MARK = '*',
         /// rle_length = c - 0x28
-        GDB_RLE_LENGTH = 0x28,
+        GDB_RLE_LENGTH = 0x28, // '('
+        /// ctr+C - user request interrupt
+        GDB_BREAK = 0x03,
     };
 } // namespace gdb_remote
 
@@ -290,8 +297,8 @@ int main(int argc, char ** argv)
 //                        output = make_ack("");
 //                    else if (cmd.starts_with("qOffsets"))
 //                        output = make_ack("");
-//                    else if (cmd.starts_with("qSymbol"))
-//                        output = make_ack("");
+//                    else if (cmd.starts_with("qSymbol:"))
+//                        output = make_ack("OK");
 //                    else if (cmd.starts_with("qfThreadInfo")) // threads info / replacement for 'qL'
 //                        output = make_ack("l"); // no threads
 //                    else if (cmd == "qAttached")
@@ -306,8 +313,6 @@ int main(int argc, char ** argv)
                 {
                     if (cmd.starts_with("vCont?"))
                         output = make_ack(""); // NOLINT(bugprone-branch-clone)
-//                    else if (cmd.starts_with("vMustReplyEmpty"))
-//                        output = make_ack("");
                     else if (cmd.starts_with("vKill"))
                         output = make_ack("OK");
                     else
@@ -329,9 +334,19 @@ int main(int argc, char ** argv)
                     output = make_ack(std::string(2*32, '0'));
                     break;
                 }
+                case GP_REG_SET: // set GP registers
+                {
+                    output = make_ack("");
+                    break;
+                }
                 case REG_GET: // pHH - get register 0xHH
                 {
                     output = make_ack("00000000");
+                    break;
+                }
+                case REG_SET: // pHH=value - set register 0xHH
+                {
+                    output = make_ack("");
                     break;
                 }
                 case MEM_GET: // mADR,SZ - read memory
@@ -339,13 +354,22 @@ int main(int argc, char ** argv)
                     output = make_ack("00000000");
                     break;
                 }
+                case MEM_SET: // mADR,SZ:data - write memory
+                {
+                    output = make_ack("");
+                    break;
+                }
                 case CONTINUE_c: // exec until next stop
                 {
                     output = make_ack("OK");
                     break;
                 }
-                default:
-                    output = make_nack();
+                case DETACH: // debugger detached, exit
+                    output = make_ack("OK");
+                    run = false;
+                    break;
+                default: // "unknown command"
+                    output = make_ack("");
                     break;
             }
             std::cout << state << "<- [" << output << "]" << std::endl;
