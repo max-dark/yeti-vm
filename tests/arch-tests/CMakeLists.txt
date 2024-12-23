@@ -53,6 +53,7 @@ block()
             set(_hex_file "${_out_dir}/${_subset}_${_test_name}.hex")
             list(APPEND _build_args
                     "${YETI_VM_ARCH_ARGS}"
+                    -g
                     "${ARCH_TEST_INCLUDE_DIRS}"
                     -T "${CMAKE_CURRENT_LIST_DIR}/config/link.ld"
                     "${_input_file}"
