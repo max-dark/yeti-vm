@@ -450,7 +450,7 @@ int main(int argc, char ** argv)
                 case THREAD_SET:
                 {
                     std::cout << "THREAD_SET" << std::endl;
-                    output = make_ack("OK");
+                    output = make_ack(""); // no threads
                     break;
                 }
                 case GP_REG_GET: // get all GP registers
