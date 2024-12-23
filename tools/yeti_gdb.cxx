@@ -19,6 +19,8 @@
 #include <cstdint>
 #include <bit>
 
+#include <yeti-vm/vm_opcode.hxx>
+
 using asio::ip::tcp;
 
 /*
@@ -260,11 +262,21 @@ namespace gdb_remote
 
 int main(int argc, char ** argv)
 {
+    using namespace vm::opcode;
     asio::io_context ctx;
 
     std::array<uint32_t, 33> regs{};
     std::vector<uint8_t> ram;
     ram.resize(0x800'0000, 0);
+
+    // fill mem with NOP
+    auto mem_code = std::span(reinterpret_cast<uint32_t*>(ram.data()), 16);
+    for (auto& c: mem_code)
+    {
+        c = Encoder::i_type(OP_IMM, 0, 0, 0, 0); // nop; // addi x0, x0, 0
+    }
+    // jump to start
+    mem_code.back() = Encoder::i_type(JALR, 0, 0, 0, 0); // jalr x0, 0(x0);
 
     tcp::acceptor server(ctx, tcp::endpoint(tcp::v4(), 4321));
 
