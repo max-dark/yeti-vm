@@ -121,6 +121,18 @@ int main(int argc, char ** argv)
             return std::format("${}#{:02X}", data, sum);
         };
 
+        auto make_ack = [&make_answer](const std::string& data)
+        {
+            using namespace gdb_remote;
+            return char(GDB_ACK) + make_answer(data);
+        };
+
+        auto make_nack = [&make_answer](const std::string& data = "")
+        {
+            using namespace gdb_remote;
+            return char(GDB_NAK) + make_answer(data);
+        };
+
         int state = 0;
         do
         {
@@ -144,35 +156,35 @@ int main(int argc, char ** argv)
                 case GENERIC_Q_GET:
                 {
                     if (cmd.starts_with("qSupported"))
-                        output = char(GDB_ACK) + make_answer(""); // NOLINT(bugprone-branch-clone)
+                        output = make_ack(""); // NOLINT(bugprone-branch-clone)
                     else if (cmd.starts_with("qTStatus"))
-                        output = char(GDB_ACK) + make_answer("");
+                        output = make_ack("");
                     else if (cmd.starts_with("qOffsets"))
-                        output = char(GDB_ACK) + make_answer("");
+                        output = make_ack("");
                     else if (cmd.starts_with("qSymbol::"))
-                        output = char(GDB_ACK) + make_answer("");
+                        output = make_ack("");
                     else if (cmd.starts_with("qfThreadInfo")) // threads info / replacement for 'qL'
-                        output = char(GDB_ACK) + make_answer("l"); // no threads
+                        output = make_ack("l"); // no threads
                     else if (cmd.starts_with("qTStatus"))
-                        output = char(GDB_ACK) + make_answer("");
+                        output = make_ack("");
                     else if (cmd == "qAttached")
-                        output = char(GDB_ACK) + make_answer("");
+                        output = make_ack("");
                     else if (cmd == "qC")
-                        output = char(GDB_ACK) + make_answer("");
+                        output = make_ack("");
                     else
-                        output = char(GDB_NAK) + make_answer("E01");
+                        output = make_nack(); // should return "$#00' if command is unknown
                     break;
                 }
                 case QUERY_V:
                 {
                     if (cmd.starts_with("vCont?"))
-                        output = char(GDB_ACK) + make_answer(""); // NOLINT(bugprone-branch-clone)
+                        output = make_ack(""); // NOLINT(bugprone-branch-clone)
                     else if (cmd.starts_with("vMustReplyEmpty"))
-                        output = char(GDB_ACK) + make_answer("");
+                        output = make_ack("");
                     else if (cmd.starts_with("vKill"))
-                        output = char(GDB_ACK) + make_answer("OK");
+                        output = make_ack("OK");
                     else
-                        output = char(GDB_NAK) + make_answer("E01");
+                        output = make_nack();
                     break;
                 }
                 case LAST_SIGNAL:
@@ -182,31 +194,31 @@ int main(int argc, char ** argv)
                 }
                 case THREAD_SET:
                 {
-                    output = char(GDB_ACK) + make_answer("OK");
+                    output = make_ack("OK");
                     break;
                 }
                 case GP_REG_GET: // get all GP registers
                 {
-                    output = char(GDB_ACK) + make_answer(std::string(2*32, '0'));
+                    output = make_ack(std::string(2*32, '0'));
                     break;
                 }
                 case REG_GET: // pHH - get register 0xHH
                 {
-                    output = char(GDB_ACK) + make_answer("00000000");
+                    output = make_ack("00000000");
                     break;
                 }
                 case MEM_GET: // mADR,SZ - read memory
                 {
-                    output = char(GDB_ACK) + make_answer("00000000");
+                    output = make_ack("00000000");
                     break;
                 }
                 case CONTINUE_c: // exec until next stop
                 {
-                    output = char(GDB_ACK) + make_answer("OK");
+                    output = make_ack("OK");
                     break;
                 }
                 default:
-                    output = char(GDB_NAK) + make_answer("");
+                    output = make_nack();
                     break;
             }
             asio::write(client, asio::buffer(output));
