@@ -299,11 +299,16 @@ int main(int argc, char ** argv)
     {
         tcp::iostream stream;
         bool run = true;
-        auto make_answer = [](const std::string& data)
+        auto calc_crc = [](const std::string& data)
         {
             uint8_t sum = 0;
             for (uint8_t c: data)
                 sum += c;
+            return sum;
+        };
+        auto make_answer = [&calc_crc](const std::string& data)
+        {
+            uint8_t sum = calc_crc(data);
             return std::format("${}#{:02X}", data, sum);
         };
 
@@ -337,18 +342,48 @@ int main(int argc, char ** argv)
         {
             ++state;
             using namespace gdb_remote;
+            char buff[1], crc_buf[2];
             std::string input, output, args;
 
-            asio::read_until(client, asio::dynamic_buffer(input), "#");
+            do
+            {
+                asio::read(client, asio::buffer(buff));
+                std::cout << std::format(">>{:02X}[{}]", buff[0], (std::isprint(buff[0]) ? buff[0]: '?') ) << std::endl;
+            } while (buff[0]!= '$');
+
+            input = '$';
+            bool esc = false;
+            do
+            {
+                asio::read(client, asio::buffer(buff));
+                if (esc)
+                {
+                    buff[0] ^= Protocol::GDB_XOR;
+                    esc = false;
+                }
+                else if (buff[0] == Protocol::GDB_ESC)
+                {
+                    esc = true;
+                    continue;
+                }
+                input += buff[0];
+            } while (buff[0]!= '#');
+
+            asio::read(client, asio::buffer(crc_buf));
+            std::string_view crc_view{crc_buf, 2};
+
             auto b_pos = input.find(Protocol::GDB_BEG);
             auto cmd = input.substr(b_pos);
             auto e_pos = cmd.find(Protocol::GDB_END);
             cmd = cmd.substr(1, e_pos - 1);
-            args = cmd.substr(1);
-            std::cout << state << "-> [" << input << "]:" << cmd << std::endl;
-            // TODO: calc checksum
+            uint8_t crc_i = (vm::from_hex(crc_buf[0]) << 4) | (vm::from_hex(crc_buf[1]) << 0);
+            uint8_t crc_c = calc_crc(cmd);
+            bool crc_ok = crc_c == crc_i;
+
+            std::cout << std::format("{:04} -> [{}{}][ok={}]: {}",  state, input, crc_view, crc_ok,  cmd) << std::endl;
             if (cmd.empty())
                 continue;
+            args = cmd.substr(1);
             switch (cmd[0])
             {
                 case GENERIC_Q_GET:
@@ -530,11 +565,11 @@ int main(int argc, char ** argv)
                     run = false;
                     break;
                 default: // "unknown command"
-                    std::cout << "unknown command, ignored" << std::endl;
+                    std::cout << "[WARN]: unknown command, ignored" << std::endl;
                     output = make_ack("");
                     break;
             }
-            std::cout << state << "<- [" << output << "]" << std::endl;
+            std::cout << std::format("{:04} <- [{}]", state, output) << std::endl;
             asio::write(client, asio::buffer(output));
         } while (run);
     }
