@@ -228,8 +228,8 @@ namespace gdb_remote
         GDB_XOR = 0x20, // just ' ' - space
         /// RLE encoded, next char - length
         GDB_RLE_MARK = '*',
-        /// rle_length = c - 0x28
-        GDB_RLE_LENGTH = 0x28, // '('
+        /// rle_length = c - 28
+        GDB_RLE_LENGTH = 28, // '('
         /// ctr+C - user request interrupt
         GDB_BREAK = 0x03,
     };
@@ -271,6 +271,11 @@ int main(int argc, char ** argv)
             return make_answer(data);
         };
 
+        auto encode_rle = [](char c, char cnt)
+        {
+            return std::format("{}*{}", c, char(cnt + 28));
+        };
+
         int state = 0;
         do
         {
@@ -293,6 +298,8 @@ int main(int argc, char ** argv)
                 {
                     if (cmd.starts_with("qSupported"))
                         output = make_ack(""); // NOLINT(bugprone-branch-clone)
+                    else if (cmd == "qOffsets")
+                        output = make_ack("Text=0;Data=400000;Bss=800000"); // Note: hex(?) values
 //                    else if (cmd.starts_with("qTStatus"))
 //                        output = make_ack("");
 //                    else if (cmd.starts_with("qOffsets"))
@@ -331,7 +338,8 @@ int main(int argc, char ** argv)
                 }
                 case GP_REG_GET: // get all GP registers
                 {
-                    output = make_ack(std::string(2*32, '0'));
+                    auto rx8 = encode_rle('0', 8*8);
+                    output = make_ack(rx8 + rx8 + rx8 + rx8);
                     break;
                 }
                 case GP_REG_SET: // set GP registers
@@ -341,7 +349,7 @@ int main(int argc, char ** argv)
                 }
                 case REG_GET: // pHH - get register 0xHH
                 {
-                    output = make_ack("00000000");
+                    output = make_ack(encode_rle('0', 8));
                     break;
                 }
                 case REG_SET: // pHH=value - set register 0xHH
@@ -351,7 +359,7 @@ int main(int argc, char ** argv)
                 }
                 case MEM_GET: // mADR,SZ - read memory
                 {
-                    output = make_ack("00000000");
+                    output = make_ack(encode_rle('0', 8));
                     break;
                 }
                 case MEM_SET: // mADR,SZ:data - write memory
