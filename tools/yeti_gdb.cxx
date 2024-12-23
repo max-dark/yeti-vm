@@ -480,7 +480,7 @@ int main(int argc, char ** argv)
                     }
                     else
                     {
-                        output = make_ack("xxxxxxxx"); // value not available
+                        output = make_ack("E02"); // value not available
                     }
                     break;
                 }
