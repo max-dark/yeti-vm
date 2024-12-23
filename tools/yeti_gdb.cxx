@@ -20,6 +20,7 @@
 #include <bit>
 
 #include <yeti-vm/vm_opcode.hxx>
+#include <yeti-vm/vm_utility.hxx>
 
 using asio::ip::tcp;
 
@@ -394,7 +395,7 @@ int main(int argc, char ** argv)
                     {
                         rx += encode_reg(r);
                     }
-                    output = make_ack(rx);
+                    output = make_ack(rx); // note: encoded in target byteorder
                     break;
                 }
                 case GP_REG_SET: // set GP registers
@@ -407,14 +408,27 @@ int main(int argc, char ** argv)
                 {
                     auto rid = std::stoul(args, nullptr, 16);
                     std::cout << "REG_GET: " << rid << std::endl;
-                    output = make_ack(encode_reg(regs[rid]));
+                    output = make_ack(encode_reg(regs[rid])); // note: encoded in target byteorder
                     break;
                 }
                 case REG_SET: // pHH=value - set register 0xHH
                 {
+                    size_t idx = 0;
+                    auto rid = std::stoul(args, &idx, 16);
+                    // assume args[idx] == '='
+                    auto val = vm::from_hex(args.substr(idx + 1));
                     std::cout << "REG_SET: "
-                        << std::stoul(args, nullptr, 16) << std::endl;
-                    output = make_ack("E02");
+                        << rid << " := " << val.size() << std::endl;
+                    if (rid < regs.size() && val.size() == 4)
+                    {
+                        // note: encoded in target byteorder
+                        regs[rid] = *reinterpret_cast<const uint32_t *>(val.data());
+                        output = make_ack("OK");
+                    }
+                    else
+                    {
+                        output = make_ack("E02");
+                    }
                     break;
                 }
                 case MEM_GET: // mADR,SZ - read memory
