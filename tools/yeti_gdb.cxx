@@ -586,7 +586,7 @@ int main(int argc, char ** argv)
                     // XAA - terminated with AA signal
                     //regs.back() += 4; // simulate PC increment
                     //output = make_ack("S05"); // S05 == SIGTRAP
-                    output = make_ack(""); // S05 == SIGTRAP
+                    output = char(GDB_ACK); // send 'ACK'. should send 'stop' later
                     break;
                 }
                 case DETACH: // debugger detached, exit
@@ -605,7 +605,10 @@ int main(int argc, char ** argv)
                     break;
             }
             std::cout << std::format("{:04} <- [{}]", state, output) << std::endl;
-            asio::write(client, asio::buffer(output));
+            if (!output.empty())
+            {
+                asio::write(client, asio::buffer(output));
+            }
         } while (run);
     }
     catch (...)
