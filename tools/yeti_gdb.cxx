@@ -1,9 +1,23 @@
+/*
+ * enable protocol debug
+ * (gdb) set debug remote 1
+ * set arch
+ * (gdb) set architecture riscv:rv32
+ * compressed code is not supported
+ * (gdb) set riscv use-compressed-breakpoints off
+ * connect to vm
+ * (gdb) target remote :4321
+ */
+
 #include <asio.hpp>
 
 #include <iostream>
 #include <format>
 #include <string>
 #include <vector>
+#include <array>
+#include <cstdint>
+#include <bit>
 
 using asio::ip::tcp;
 
@@ -248,6 +262,10 @@ int main(int argc, char ** argv)
 {
     asio::io_context ctx;
 
+    std::array<uint32_t, 33> regs{};
+    std::vector<uint8_t> ram;
+    ram.resize(0x800'0000, 0);
+
     tcp::acceptor server(ctx, tcp::endpoint(tcp::v4(), 4321));
 
     tcp::socket client(ctx);
@@ -283,6 +301,12 @@ int main(int argc, char ** argv)
         auto encode_rle = [](char c, char cnt)
         {
             return std::format("{}*{}", c, char(cnt + 28));
+        };
+
+        auto encode_reg = [](uint32_t r)
+        {
+            auto v = reinterpret_cast<const uint8_t*>(&r);
+            return std::format("{:02X}{:02X}{:02X}{:02X}", v[0], v[1], v[2], v[3]);
         };
 
         int state = 0;
@@ -353,8 +377,12 @@ int main(int argc, char ** argv)
                 case GP_REG_GET: // get all GP registers
                 {
                     std::cout << "GP_REG_GET" << std::endl;
-                    auto rx8 = encode_rle('0', 8*8);
-                    output = make_ack(rx8 + rx8 + rx8 + rx8);
+                    std::string rx;
+                    for (auto r: regs)
+                    {
+                        rx += encode_reg(r);
+                    }
+                    output = make_ack(rx);
                     break;
                 }
                 case GP_REG_SET: // set GP registers
@@ -365,8 +393,9 @@ int main(int argc, char ** argv)
                 }
                 case REG_GET: // pHH - get register 0xHH
                 {
-                    std::cout << "REG_GET: " << std::stoul(args, nullptr, 16) << std::endl;
-                    output = make_ack(std::string(2 * sizeof(uint32_t), '0'));
+                    auto rid = std::stoul(args, nullptr, 16);
+                    std::cout << "REG_GET: " << rid << std::endl;
+                    output = make_ack(encode_reg(regs[rid]));
                     break;
                 }
                 case REG_SET: // pHH=value - set register 0xHH
@@ -380,10 +409,23 @@ int main(int argc, char ** argv)
                 {
                     size_t idx_addr = 0;
                     size_t idx_size = 0;
-                    uint32_t addr = std::stoul(args, &idx_addr, 16);
-                    uint32_t size = std::stoul(args.substr(idx_addr + 1), &idx_size, 16);
+                    size_t addr = std::stoul(args, &idx_addr, 16);
+                    size_t size = std::stoul(args.substr(idx_addr + 1), &idx_size, 16);
                     std::cout << "MEM_GET: " << std::hex << addr << ":" << std::dec << size << std::endl;
-                    output = make_ack(std::string(2 * size, '0'));
+                    if ((addr + size) >= ram.size())
+                    {
+                        output = make_ack("");
+                    }
+                    else
+                    {
+                        std::string res;
+                        res.reserve(size * 2);
+                        for (auto b: std::span(ram.data() + addr, size))
+                        {
+                            res += std::format("{:02X}", b);
+                        }
+                        output = make_ack(res);
+                    }
                     break;
                 }
                 case MEM_SET: // mADR,SZ:data - write memory
@@ -393,7 +435,21 @@ int main(int argc, char ** argv)
                     uint32_t addr = std::stoul(args, &idx_addr, 16);
                     uint32_t size = std::stoul(args.substr(idx_addr + 1), &idx_size, 16);
                     std::cout << "MEM_SET: " << std::hex << addr << ":" << std::dec << size << std::endl;
-                    output = make_ack("E03");
+                    if ((addr + size) >= ram.size())
+                    {
+                        output = make_ack("");
+                    }
+                    else
+                    {
+                        output = make_ack("OK");
+                    }
+                    break;
+                }
+                case BREAK_CLR:
+                case BREAK_SET:
+                {
+                    std::cout << "BREAKPOINT: " << args << std::endl;
+                    output = make_ack("OK");
                     break;
                 }
                 case STEP_s:
@@ -416,6 +472,7 @@ int main(int argc, char ** argv)
                     // SAA - signal AA received
                     // WAA - exit with code AA
                     // XAA - terminated with AA signal
+                    regs.back() += 4; // simulate PC increment
                     output = make_ack("S05"); // S05 == SIGTRAP
                     break;
                 }
