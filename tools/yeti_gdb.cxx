@@ -200,17 +200,23 @@ namespace gdb_remote
 {
     enum Command: char
     {
-        /// Indicate the reason the target halted. The reply is the same as for step and continue.
+        /// Indicate the reason the target halted.
         LAST_SIGNAL = '?',
+        /// (?)
         CONTINUE_c = 'c', // continue
+        /// (?)
         CONTINUE_C = 'C', // continue with signal
+        /// (?)
         STEP_s = 's', // single step
+        /// (?)
         STEP_S = 'S', // step with signal
+        /// stop debugging
         DETACH = 'D',
         /// get all registers
         GP_REG_GET = 'g',
         /// set registers
         GP_REG_SET = 'G',
+        /// stop execution
         KILL_TGT = 'k',
         /// read memory: m<addr>,<size>
         MEM_GET = 'm',
@@ -221,8 +227,11 @@ namespace gdb_remote
         /// write memory, binary
         MEM_BIN_SET = 'X',
         /// get register pHH
+        /// note: value encoded in target byte order
+        /// return 'xx'*sizeof(reg) if register not available
         REG_GET = 'p',
-        /// set register PHH=xx...
+        /// set register PHH=hh...
+        /// note: value encoded in target byte order
         REG_SET = 'P',
         /// generic query, get value
         GENERIC_Q_GET = 'q',
@@ -232,7 +241,7 @@ namespace gdb_remote
         QUERY_V = 'v',
         /// remove breakpoint/watchpoint: z<type>,<addr>,<length>
         BREAK_CLR = 'z',
-        /// insert breakpoint/watchpoint: z<type>,<addr>,<length>
+        /// insert breakpoint/watchpoint: Z<type>,<addr>,<length>
         BREAK_SET = 'Z',
         /// H<cmd><thread> set current thread for command
         THREAD_SET = 'H',
