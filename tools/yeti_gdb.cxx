@@ -86,7 +86,7 @@ namespace gdb_remote
         /// checksum error
         GDB_NAK = '-',
         /// cmd start mark
-        GDB_BEG = '$',
+        GDB_COMMAND = '$',
         /// notify start mark
         GDB_NOTIFY = '%',
         /// data end mark
@@ -134,39 +134,41 @@ int main(int argc, char ** argv)
     {
         tcp::iostream stream;
         bool run = true;
-        auto calc_crc = [](const std::string& data)
+        static auto calc_crc = [](const std::string& data)
         {
             uint8_t sum = 0;
             for (uint8_t c: data)
                 sum += c;
             return sum;
         };
-        auto make_answer = [&calc_crc](const std::string& data)
+        static auto reply = [](const std::string& data)
         {
             uint8_t sum = calc_crc(data);
             return std::format("${}#{:02X}", data, sum);
         };
 
-        auto make_ack = [&make_answer](const std::string& data, bool with_mark = true)
+        static auto notify = [](const std::string& data)
         {
-            using namespace gdb_remote;
-            if (with_mark) return char(GDB_ACK) + make_answer(data);
-            return make_answer(data);
+            uint8_t sum = calc_crc(data);
+            return std::format("%{}#{:02X}", data, sum);
         };
 
-        auto make_nack = [&make_answer](const std::string& data = "", bool with_mark = true)
+        static auto accepted = []()
         {
-            using namespace gdb_remote;
-            if (with_mark) return char(GDB_NAK) + make_answer(data);
-            return make_answer(data);
+            return std::string{gdb_remote::GDB_ACK};
         };
 
-        auto encode_rle = [](char c, char cnt)
+        static auto rejected = []()
+        {
+            return std::string{gdb_remote::GDB_NAK};
+        };
+
+        static auto encode_rle = [](char c, char cnt)
         {
             return std::format("{}*{}", c, char(cnt + 28));
         };
 
-        auto encode_reg = [](uint32_t r)
+        static auto encode_reg = [](uint32_t r)
         {
             auto v = reinterpret_cast<const uint8_t*>(&r);
             return std::format("{:02X}{:02X}{:02X}{:02X}", v[0], v[1], v[2], v[3]);
@@ -180,20 +182,22 @@ int main(int argc, char ** argv)
             char buff[1], crc_buf[2];
             std::string input, output;
 
-            bool ctrl_c = false;
             do
             {
+                bool ctrl_c = false;
                 asio::read(client, asio::buffer(buff));
                 std::cout << std::format(">>{:02X}[{}]", buff[0], (std::isprint(buff[0]) ? buff[0]: '?') ) << std::endl;
                 ctrl_c = buff[0] == GDB_BREAK;
-            } while (buff[0]!= '$' && (!ctrl_c));
+                if (ctrl_c) // user request stop
+                {
+                    std::cout << "ctrl+c: SIGINT" << std::endl;
+                    asio::write(client, asio::buffer(accepted()));
+                    //asio::write(client, asio::buffer(notify("Stop:S02"))); // SIGINT
+                    asio::write(client, asio::buffer(reply("S02"))); // SIGINT
+                    continue;
+                }
+            } while (buff[0]!= GDB_COMMAND);
 
-            if (ctrl_c) // user request stop
-            {
-                std::cout << "ctrl+c: SIGINT" << std::endl;
-                asio::write(client, asio::buffer(make_ack("S02")));
-                continue;
-            }
 
             bool esc = false;
             uint8_t crc_c = 0;
@@ -223,6 +227,13 @@ int main(int argc, char ** argv)
             uint8_t crc_i = (vm::from_hex(crc_buf[0]) << 4) | (vm::from_hex(crc_buf[1]) << 0);
             bool crc_ok = crc_c == crc_i;
 
+            if (!crc_ok)
+            {
+                asio::write(client, asio::buffer(rejected()));
+                continue;
+            }
+            asio::write(client, asio::buffer(accepted()));
+
             std::cout << std::format("{:04} -> [${}#{}][ok={}]: {}",  state, input, crc_view, crc_ok,  cmd) << std::endl;
             if (cmd.empty())
                 continue;
@@ -232,20 +243,20 @@ int main(int argc, char ** argv)
                 case GENERIC_Q_GET:
                 {
                     std::cout << "GENERIC_Q_GET" << std::endl;
-//                    if (cmd.starts_with("qSupported:")) // qSupported (supported-packets)
-//                        output = make_ack("PacketSize=2048;hwbreak+;swbreak+"); // 'PacketSize' is required
-//                    else if (cmd == "qOffsets")
-//                    {
-//                        // gdb supports two formats:
-//                        // 0. empty response - command is not supported
-//                        // 1. Sections: Text=TTT;Data=DDD;Bss=BBB
-//                        //      Data must be equal Bss
-//                        //      All fields required
-//                        // 2. Segments: TextSeg=TTT[;DataSeg=DDD]
-//                        //      DataSeg can be omitted
-//                        // field values encoded in hex
-//                        output = make_ack("Text=0;Data=400000;Bss=400000"); // Note: hex values
-//                    }
+                    if (cmd.starts_with("qSupported:")) // qSupported (supported-packets)
+                        output = ("PacketSize=1000;hwbreak+;swbreak+;vContSupported+;xmlRegisters=rv32i"); // 'PacketSize' is required
+                    else if (cmd == "qOffsets")
+                    {
+                        // gdb supports two formats:
+                        // 0. empty response - command is not supported
+                        // 1. Sections: Text=TTT;Data=DDD;Bss=BBB
+                        //      Data must be equal Bss
+                        //      All fields required
+                        // 2. Segments: TextSeg=TTT[;DataSeg=DDD]
+                        //      DataSeg can be omitted
+                        // field values encoded in hex
+                        output = ("Text=0;Data=400000;Bss=400000"); // Note: hex values
+                    }
 //                    else if (cmd.starts_with("qTStatus"))
 //                        output = make_ack("");
 //                    else if (cmd.starts_with("qSymbol:"))
@@ -257,32 +268,39 @@ int main(int argc, char ** argv)
 //                    else if (cmd == "qC")
 //                        output = make_ack("-1");
 //                    else
-                        output = make_ack(""); // should return "$#00' if command is unknown
+//                        output = make_ack(""); // should return "$#00' if command is unknown
                     break;
                 }
                 case QUERY_V: // not supported
                 {
-                    std::cout << "QUERY_V" << std::endl;
-//                    if (cmd == "vCont?") // vCont (verbose-resume)
-//                        output = make_ack("vCont;c;C;"); // both 'c'/'C' is required
-//                    else if (cmd.starts_with("vCtrlC"))
-//                        output = make_ack("OK"); // NOLINT(bugprone-branch-clone)
+                    std::cout << "QUERY_V: " << args << std::endl;
+                    if (cmd == "vCont?") // vCont (verbose-resume)
+                        output = ("vCont;c;C;s;S"); // both 'c'/'C' is required
+                    else if (cmd.starts_with("vCont;"))
+                        output = ("OK"); // NOLINT(bugprone-branch-clone)
+                    else if (cmd.starts_with("vCtrlC"))
+                        output = ("OK"); // NOLINT(bugprone-branch-clone)
 //                    else if (cmd.starts_with("vKill"))
 //                        output = make_ack("OK");
 //                    else
-                        output = make_ack("");
+//                        output = make_ack("");
                     break;
                 }
                 case LAST_SIGNAL:
                 {
-                    std::cout << "LAST_SIGNAL" << std::endl;
-                    output = make_ack("S05"); // SIGTRAP
+                    std::cout << "LAST_SIGNAL(Why stopped?)" << std::endl;
+                    // stop cause:
+                    // SAA - signal AA received
+                    // WAA - exit with code AA
+                    // XAA - terminated with AA signal
+                    output = ("S05"); // SIGTRAP
+                    //output = ("W00"); // normal exit
                     break;
                 }
                 case THREAD_SET:
                 {
                     std::cout << "THREAD_SET" << std::endl;
-                    output = make_ack(""); // no threads
+                    //output = (""); // no threads
                     break;
                 }
                 case GP_REG_GET: // get all GP registers
@@ -293,13 +311,13 @@ int main(int argc, char ** argv)
                     {
                         rx += encode_reg(r);
                     }
-                    output = make_ack(rx); // note: encoded in target byteorder
+                    output = (rx); // note: encoded in target byteorder
                     break;
                 }
                 case GP_REG_SET: // set GP registers
                 {
                     std::cout << "GP_REG_SET" << std::endl;
-                    output = make_ack("E01");
+                    output = ("E01");
                     break;
                 }
                 case REG_GET: // pHH - get register 0xHH
@@ -308,11 +326,11 @@ int main(int argc, char ** argv)
                     std::cout << "REG_GET: " << rid << std::endl;
                     if (rid < regs.size())
                     {
-                        output = make_ack(encode_reg(regs[rid])); // note: encoded in target byteorder
+                        output = (encode_reg(regs[rid])); // note: encoded in target byteorder
                     }
                     else
                     {
-                        output = make_ack("E02"); // value not available
+                        output = ("E02"); // value not available
                     }
                     break;
                 }
@@ -328,11 +346,11 @@ int main(int argc, char ** argv)
                     {
                         // note: encoded in target byteorder
                         regs[rid] = *reinterpret_cast<const uint32_t *>(val.data());
-                        output = make_ack("OK");
+                        output = ("OK");
                     }
                     else
                     {
-                        output = make_ack("E02");
+                        output = ("E02");
                     }
                     break;
                 }
@@ -345,7 +363,7 @@ int main(int argc, char ** argv)
                     std::cout << std::format("MEM_GET: <{:08X}:{}>", addr, size) << std::endl;
                     if ((addr + size) >= ram.size())
                     {
-                        output = make_ack("E03"); // value not available
+                        output = ("E03"); // value not available
                     }
                     else
                     {
@@ -355,7 +373,7 @@ int main(int argc, char ** argv)
                         {
                             res += std::format("{:02X}", b);
                         }
-                        output = make_ack(res);
+                        output = (res);
                     }
                     break;
                 }
@@ -370,7 +388,7 @@ int main(int argc, char ** argv)
                     std::cout << std::format("MEM_SET: <{:08X}:{}> = [{}]", addr, size, data_view) << std::endl;
                     if ((addr + size) >= ram.size())
                     {
-                        output = make_ack("E04"); // out of range
+                        output = ("E04"); // out of range
                     }
                     else
                     {
@@ -378,67 +396,66 @@ int main(int argc, char ** argv)
                         if (data_view.size() == (data_raw.size() * 2))
                         {
                             std::copy_n(data_raw.data(), data_raw.size(), ram.data() + addr);
-                            output = make_ack("OK");
+                            output = ("OK");
                         }
                         else
                         {
-                            output = make_ack("E05"); // data length error
+                            output = ("E05"); // data length error
                         }
                     }
+                    break;
+                }
+                case MEM_BIN_GET:
+                {
+                    std::cout << "MEM_BIN_GET: " << args << std::endl;
+                    break;
+                }
+                case MEM_BIN_SET:
+                {
+                    std::cout << "MEM_BIN_SET: " << args << std::endl;
                     break;
                 }
                 case BREAK_CLR:
                 case BREAK_SET:
                 {
                     std::cout << "BREAKPOINT: " << args << std::endl;
-                    output = make_ack(""); // not supported
                     break;
                 }
                 case STEP_s:
                 case STEP_S:
                 {
                     std::cout << "STEP: " << args << std::endl;
-                    //output = make_ack("S03"); // SIGQUIT
-                    output = make_ack(""); // not supported
                     break;
                 }
                 case CONTINUE_C:
                 {
                     std::cout << "CONTINUE: " << args << std::endl;
-                    //output = make_ack("S06"); // SIGABRT
-                    output = make_ack(""); // not supported
                     break;
                 }
                 case CONTINUE_c: // exec until next stop
                 {
                     std::cout << "CONTINUE" << std::endl;
-                    // stop cause:
-                    // SAA - signal AA received
-                    // WAA - exit with code AA
-                    // XAA - terminated with AA signal
-                    //regs.back() += 4; // simulate PC increment
-                    //output = make_ack("S05"); // S05 == SIGTRAP
-                    output = char(GDB_ACK); // send 'ACK'. should send 'stop' later
+                    output = "OK";
+                    // should send 'stop' notify later
                     break;
                 }
                 case DETACH: // debugger detached, exit
                     std::cout << "DETACH" << std::endl;
-                    output = make_ack("OK");
+                    output = ("OK");
                     run = false;
                     break;
                 case KILL_TGT: // stop execution, exit
                     std::cout << "KILL_TGT" << std::endl;
-                    output = make_ack("OK");
+                    output = "OK";
                     run = false;
                     break;
                 default: // "unknown command"
                     std::cout << "[WARN]: unknown command, ignored" << std::endl;
-                    output = make_ack("");
                     break;
             }
-            std::cout << std::format("{:04} <- [{}]", state, output) << std::endl;
-            if (!output.empty())
             {
+                output = reply(output);
+                std::cout << std::format("{:04} <- [{}]", state, output) << std::endl;
                 asio::write(client, asio::buffer(output));
             }
         } while (run);
