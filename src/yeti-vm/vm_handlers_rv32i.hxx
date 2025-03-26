@@ -849,7 +849,7 @@ struct env_call: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, 0b0000> {
 /// @see Control and Status Register Instructions
 template<opcode::opcode_t Type>
 struct csr: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, Type> {
-    virtual void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst) const = 0;
+    virtual void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const = 0;
     void exec(MachineInterface *vm, const opcode::Decoder* current) const override
     {
         auto src_id = current->get_rs1();
@@ -862,9 +862,15 @@ struct csr: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, Type> {
 
 /// atomic read and write
 struct csrrw : csr<0b0001> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst) const override
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
-        // TODO
+        if (dst_id != 0)
+        {
+            register_t value;
+            vm->control_get(csr_id, value);
+            vm->set_register(dst_id, value);
+        }
+        vm->control_set(csr_id, vm->get_register(src_id));
     }
     [[nodiscard]]
     std::string_view mnemonic() const final
@@ -875,7 +881,7 @@ struct csrrw : csr<0b0001> {
 
 /// atomic read and set
 struct csrrs : csr<0b0010> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst) const override
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         // TODO
     }
@@ -888,7 +894,7 @@ struct csrrs : csr<0b0010> {
 
 /// atomic read and clear
 struct csrrc : csr<0b0011> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst) const override
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         // TODO
     }
@@ -901,7 +907,7 @@ struct csrrc : csr<0b0011> {
 
 /// unsigned(?) atomic read and write
 struct csrrwi: csr<0b0101> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst) const override
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         // TODO
     }
@@ -914,7 +920,7 @@ struct csrrwi: csr<0b0101> {
 
 /// unsigned(?) atomic read and set
 struct csrrsi: csr<0b0110> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst) const override
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         // TODO
     }
@@ -927,7 +933,7 @@ struct csrrsi: csr<0b0110> {
 
 /// unsigned(?) atomic read and clear
 struct csrrci: csr<0b0111> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst) const override
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         // TODO
     }
