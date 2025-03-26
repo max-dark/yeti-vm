@@ -8,6 +8,24 @@
 namespace vm::rv32i
 {
 
+/// basic CSR IDs, Read Only
+enum CSR_IDS: vm::register_t
+{
+    /// Cycle counter for RDCYCLE instruction.
+    CSR_cycle   = 0xC00,
+    /// Timer for RDTIME instruction.
+    CSR_time    = 0xC01,
+    /// Instructions-retired counter for RDINSTRET instruction.
+    CSR_instret = 0xC02,
+
+    /// Upper 32 bits of "cycle", RV32I only.
+    CSR_cycleh   = 0xC80,
+    /// Upper 32 bits of "time", RV32I only.
+    CSR_timeh    = 0xC81,
+    /// Upper 32 bits of "instret", RV32I only.
+    CSR_instreth = 0xC82,
+};
+
 /// load upper immediate
 /// asm: lui dest, const
 struct lui: public GenericHandler<opcode::LUI, opcode::U_TYPE> {
