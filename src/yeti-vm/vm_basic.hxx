@@ -56,8 +56,6 @@ struct basic_vm: public MachineInterface
     /// debug break
     void debug() override;
 
-    /// CSR operations
-    void control() override;
     /// get CSR value
     void control_get(address_t csr_id, register_t& value) override;
     /// set CSR value

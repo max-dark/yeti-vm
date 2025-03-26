@@ -832,7 +832,7 @@ template<opcode::opcode_t Type>
 struct csr: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, Type> {
     void exec(MachineInterface *vm, const opcode::Decoder* current) const override
     {
-        vm->control();
+        throw std::logic_error{"unimplemented"};
     }
 };
 

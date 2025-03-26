@@ -34,10 +34,6 @@ struct MachineInterface
     /// debug break
     virtual void debug() = 0;
 
-    /// CSR operations
-    [[deprecated]]
-    virtual void control() = 0;
-
     /// get CSR value
     virtual void control_get(address_t csr_id, register_t& value) = 0;
 

@@ -7,6 +7,7 @@ using namespace vm::rv32i;
 
 using ::testing::_;
 using ::testing::Return;
+using ::testing::Sequence;
 
 
 class RV32I_Handler_System
@@ -64,7 +65,11 @@ TEST_F(RV32I_Handler_System, CSR_RW)
     auto code = encode(funcA, 0, 0, 0);
     MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
+    Sequence csr;
+    EXPECT_CALL(mockVm, control_get(_, _))
+        .InSequence(csr);
+    EXPECT_CALL(mockVm, control_set(_, _))
+        .InSequence(csr);
     impl->exec(&mockVm, &code);
 }
 
@@ -77,7 +82,11 @@ TEST_F(RV32I_Handler_System, CSR_RS)
     auto code = encode(funcA, 0, 0, 0);
     MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
+    Sequence csr;
+    EXPECT_CALL(mockVm, control_get(_, _))
+            .InSequence(csr);
+    EXPECT_CALL(mockVm, control_set(_, _))
+            .InSequence(csr);
     impl->exec(&mockVm, &code);
 }
 
@@ -90,7 +99,11 @@ TEST_F(RV32I_Handler_System, CSR_RC)
     auto code = encode(funcA, 0, 0, 0);
     MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
+    Sequence csr;
+    EXPECT_CALL(mockVm, control_get(_, _))
+            .InSequence(csr);
+    EXPECT_CALL(mockVm, control_set(_, _))
+            .InSequence(csr);
     impl->exec(&mockVm, &code);
 }
 
@@ -103,7 +116,11 @@ TEST_F(RV32I_Handler_System, CSR_RW_I)
     auto code = encode(funcA, 0, 0, 0);
     MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
+    Sequence csr;
+    EXPECT_CALL(mockVm, control_get(_, _))
+            .InSequence(csr);
+    EXPECT_CALL(mockVm, control_set(_, _))
+            .InSequence(csr);
     impl->exec(&mockVm, &code);
 }
 
@@ -116,7 +133,11 @@ TEST_F(RV32I_Handler_System, CSR_RS_I)
     auto code = encode(funcA, 0, 0, 0);
     MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
+    Sequence csr;
+    EXPECT_CALL(mockVm, control_get(_, _))
+            .InSequence(csr);
+    EXPECT_CALL(mockVm, control_set(_, _))
+            .InSequence(csr);
     impl->exec(&mockVm, &code);
 }
 
@@ -129,7 +150,11 @@ TEST_F(RV32I_Handler_System, CSR_RC_I)
     auto code = encode(funcA, 0, 0, 0);
     MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
+    Sequence csr;
+    EXPECT_CALL(mockVm, control_get(_, _))
+            .InSequence(csr);
+    EXPECT_CALL(mockVm, control_set(_, _))
+            .InSequence(csr);
     impl->exec(&mockVm, &code);
 }
 

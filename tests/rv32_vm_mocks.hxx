@@ -19,7 +19,6 @@ struct MockVM: public vm::MachineInterface
 
     MOCK_METHOD(void, syscall, (), (override));
     MOCK_METHOD(void, debug, (), (override));
-    MOCK_METHOD(void, control, (), (override));
     MOCK_METHOD(void, control_get, (address_t csr_id, vm::register_t& value), (override));
     MOCK_METHOD(void, control_set, (address_t csr_id, vm::register_t value), (override));
     MOCK_METHOD(void, barrier, (), (override));

@@ -65,12 +65,6 @@ void basic_vm::debug()
     inc_pc();
 }
 
-void basic_vm::control()
-{
-    inc_pc();
-}
-
-
 void basic_vm::control_get(address_t csr_id, register_t& value)
 {
     throw control_access_error("not supported");
