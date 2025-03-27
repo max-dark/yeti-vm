@@ -7,6 +7,7 @@ using namespace vm::rv32i;
 
 using ::testing::_;
 using ::testing::Return;
+using ::testing::SetArgReferee;
 using ::testing::Sequence;
 
 
@@ -64,21 +65,26 @@ TEST_F(RV32I_Handler_System, CSR_RW)
     ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
     for (register_no dst = 0; dst < vm::register_count; ++dst)
     {
-        auto code = encode(funcA, dst, 0, 0);
+        vm::register_t csr_id = 0;
+        vm::register_t csr_val = 0;
+        vm::register_t src_val = 0;
+        register_no src = RegAlias::t0;
+        auto code = encode(funcA, dst, src, csr_id);
         MockVM mockVm;
 
         Sequence csr;
         if (dst > 0) // should do not read CSR if dst == "zero"
         {
-            EXPECT_CALL(mockVm, control_get(_, _))
-                    .InSequence(csr);
-            EXPECT_CALL(mockVm, set_register(_, _))
+            EXPECT_CALL(mockVm, control_get(csr_id, _))
+                    .InSequence(csr)
+                    .WillOnce(SetArgReferee<1>(csr_val));
+            EXPECT_CALL(mockVm, set_register(dst, csr_val))
                     .InSequence(csr);
         }
-        EXPECT_CALL(mockVm, get_register(_))
+        EXPECT_CALL(mockVm, get_register(src))
                 .InSequence(csr)
-                .WillRepeatedly(Return(0));
-        EXPECT_CALL(mockVm, control_set(_, _))
+                .WillRepeatedly(Return(src_val));
+        EXPECT_CALL(mockVm, control_set(csr_id, src_val))
                 .InSequence(csr);
         impl->exec(&mockVm, &code);
     }
@@ -126,21 +132,20 @@ TEST_F(RV32I_Handler_System, CSR_RW_I)
     ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
     for (register_no dst = 0; dst < vm::register_count; ++dst)
     {
-        auto code = encode(funcA, dst, 0, 0);
+        vm::register_t csr_id = 0;
+        register_no src = 0xef;
+        auto code = encode(funcA, dst, src, csr_id);
         MockVM mockVm;
 
         Sequence csr;
         if (dst > 0) // should do not read CSR if dst == "zero"
         {
-            EXPECT_CALL(mockVm, control_get(_, _))
+            EXPECT_CALL(mockVm, control_get(csr_id, _))
                     .InSequence(csr);
-            EXPECT_CALL(mockVm, set_register(_, _))
+            EXPECT_CALL(mockVm, set_register(dst, _))
                     .InSequence(csr);
         }
-        EXPECT_CALL(mockVm, get_register(_))
-                .InSequence(csr)
-                .WillRepeatedly(Return(0));
-        EXPECT_CALL(mockVm, control_set(_, _))
+        EXPECT_CALL(mockVm, control_set(csr_id, src))
                 .InSequence(csr);
         impl->exec(&mockVm, &code);
     }
