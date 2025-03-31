@@ -133,7 +133,7 @@ TEST_F(RV32I_Handler_System, CSR_RW_I)
     for (register_no dst = 0; dst < vm::register_count; ++dst)
     {
         vm::register_t csr_id = 0;
-        register_no src = 0xef;
+        register_no src = 0xef & 0b0001'1111; // uImm[4:0]
         auto code = encode(funcA, dst, src, csr_id);
         MockVM mockVm;
 

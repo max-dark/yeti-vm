@@ -909,7 +909,13 @@ struct csrrc : csr<0b0011> {
 struct csrrwi: csr<0b0101> {
     void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
-        // TODO
+        if (dst_id != 0)
+        {
+            register_t value;
+            vm->control_get(csr_id, value);
+            vm->set_register(dst_id, value);
+        }
+        vm->control_set(csr_id, src_id);
     }
     [[nodiscard]]
     std::string_view mnemonic() const final
