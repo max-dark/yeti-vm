@@ -62,17 +62,20 @@ void basic_vm::syscall()
 
 void basic_vm::debug()
 {
-    inc_pc();
 }
 
-void basic_vm::control()
+void basic_vm::control_get(address_t csr_id, register_t& value)
 {
-    inc_pc();
+    throw control_access_error("not supported");
+}
+
+void basic_vm::control_set(address_t csr_id, register_t value)
+{
+    throw control_access_error("not supported");
 }
 
 void basic_vm::barrier()
 {
-    inc_pc();
 }
 
 void basic_vm::read_memory(basic_vm::address_t from, uint8_t size, register_t &value)

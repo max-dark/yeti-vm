@@ -8,6 +8,24 @@
 namespace vm::rv32i
 {
 
+/// basic CSR IDs, Read Only
+enum CSR_IDS: vm::register_t
+{
+    /// Cycle counter for RDCYCLE instruction.
+    CSR_cycle   = 0xC00,
+    /// Timer for RDTIME instruction.
+    CSR_time    = 0xC01,
+    /// Instructions-retired counter for RDINSTRET instruction.
+    CSR_instret = 0xC02,
+
+    /// Upper 32 bits of "cycle", RV32I only.
+    CSR_cycleh   = 0xC80,
+    /// Upper 32 bits of "time", RV32I only.
+    CSR_timeh    = 0xC81,
+    /// Upper 32 bits of "instret", RV32I only.
+    CSR_instreth = 0xC82,
+};
+
 /// load upper immediate
 /// asm: lui dest, const
 struct lui: public GenericHandler<opcode::LUI, opcode::U_TYPE> {
@@ -828,16 +846,32 @@ struct env_call: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, 0b0000> {
 };
 
 /// CSR instructions
+/// @see Control and Status Register Instructions
 template<opcode::opcode_t Type>
 struct csr: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, Type> {
+    virtual void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const = 0;
     void exec(MachineInterface *vm, const opcode::Decoder* current) const override
     {
-        vm->control();
+        auto src_id = current->get_rs1();
+        auto dst_id = current->get_rd();
+        auto csr_id = current->decode_i_u();
+
+        return exec(vm, csr_id, src_id, dst_id);
     }
 };
 
 /// atomic read and write
 struct csrrw : csr<0b0001> {
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    {
+        if (dst_id != 0)
+        {
+            register_t value;
+            vm->control_get(csr_id, value);
+            vm->set_register(dst_id, value);
+        }
+        vm->control_set(csr_id, vm->get_register(src_id));
+    }
     [[nodiscard]]
     std::string_view mnemonic() const final
     {
@@ -847,6 +881,17 @@ struct csrrw : csr<0b0001> {
 
 /// atomic read and set
 struct csrrs : csr<0b0010> {
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    {
+        register_t value;
+        vm->control_get(csr_id, value);
+        vm->set_register(dst_id, value);
+        if (src_id != 0)
+        {
+            value = value | vm->get_register(src_id);
+            vm->control_set(csr_id, value);
+        }
+    }
     [[nodiscard]]
     std::string_view mnemonic() const final
     {
@@ -856,6 +901,18 @@ struct csrrs : csr<0b0010> {
 
 /// atomic read and clear
 struct csrrc : csr<0b0011> {
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    {
+        register_t value;
+        vm->control_get(csr_id, value);
+        vm->set_register(dst_id, value);
+        if (src_id != 0)
+        {
+            register_t mask = vm->get_register(src_id);
+            value = value & (~mask);
+            vm->control_set(csr_id, value);
+        }
+    }
     [[nodiscard]]
     std::string_view mnemonic() const final
     {
@@ -865,6 +922,16 @@ struct csrrc : csr<0b0011> {
 
 /// unsigned(?) atomic read and write
 struct csrrwi: csr<0b0101> {
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    {
+        if (dst_id != 0)
+        {
+            register_t value;
+            vm->control_get(csr_id, value);
+            vm->set_register(dst_id, value);
+        }
+        vm->control_set(csr_id, src_id);
+    }
     [[nodiscard]]
     std::string_view mnemonic() const final
     {
@@ -874,6 +941,17 @@ struct csrrwi: csr<0b0101> {
 
 /// unsigned(?) atomic read and set
 struct csrrsi: csr<0b0110> {
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    {
+        register_t value;
+        vm->control_get(csr_id, value);
+        vm->set_register(dst_id, value);
+        if (src_id != 0)
+        {
+            value = value | src_id;
+            vm->control_set(csr_id, value);
+        }
+    }
     [[nodiscard]]
     std::string_view mnemonic() const final
     {
@@ -883,6 +961,18 @@ struct csrrsi: csr<0b0110> {
 
 /// unsigned(?) atomic read and clear
 struct csrrci: csr<0b0111> {
+    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    {
+        register_t value;
+        vm->control_get(csr_id, value);
+        vm->set_register(dst_id, value);
+        if (src_id != 0)
+        {
+            register_t mask = src_id;
+            value = value & (~mask);
+            vm->control_set(csr_id, value);
+        }
+    }
     [[nodiscard]]
     std::string_view mnemonic() const final
     {

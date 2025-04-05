@@ -7,6 +7,9 @@ using namespace vm::rv32i;
 
 using ::testing::_;
 using ::testing::Return;
+using ::testing::SetArgReferee;
+using ::testing::Sequence;
+using ::testing::Expectation;
 
 
 class RV32I_Handler_System
@@ -61,11 +64,31 @@ TEST_F(RV32I_Handler_System, CSR_RW)
     constexpr Code funcA = 0b0001;
 
     ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
-    auto code = encode(funcA, 0, 0, 0);
-    MockVM mockVm;
+    for (register_no dst = 0; dst < vm::register_count; ++dst)
+    {
+        vm::register_t csr_id = 0;
+        vm::register_t csr_val = 0;
+        vm::register_t src_val = 0;
+        register_no src = RegAlias::t0;
+        auto code = encode(funcA, dst, src, csr_id);
+        MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
-    impl->exec(&mockVm, &code);
+        Sequence csr;
+        if (dst > 0) // should do not read CSR if dst == "zero"
+        {
+            EXPECT_CALL(mockVm, control_get(csr_id, _))
+                    .InSequence(csr)
+                    .WillOnce(SetArgReferee<1>(csr_val));
+            EXPECT_CALL(mockVm, set_register(dst, csr_val))
+                    .InSequence(csr);
+        }
+        EXPECT_CALL(mockVm, get_register(src))
+                .InSequence(csr)
+                .WillRepeatedly(Return(src_val));
+        EXPECT_CALL(mockVm, control_set(csr_id, src_val))
+                .InSequence(csr);
+        impl->exec(&mockVm, &code);
+    }
 }
 
 TEST_F(RV32I_Handler_System, CSR_RS)
@@ -74,11 +97,35 @@ TEST_F(RV32I_Handler_System, CSR_RS)
     constexpr Code funcA = 0b0010;
 
     ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
-    auto code = encode(funcA, 0, 0, 0);
-    MockVM mockVm;
+    for (register_no src = 0; src < vm::register_count; ++src) {
+        vm::register_t csr_id = 0;
+        vm::register_t csr_val = 0;
+        vm::register_t src_val = 0;
+        register_no dst = RegAlias::t0;
+        auto code = encode(funcA, dst, src, csr_id);
+        MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
-    impl->exec(&mockVm, &code);
+        Sequence csr_get, csr_set;
+        Expectation was_read = EXPECT_CALL(mockVm, control_get(csr_id, _))
+                .InSequence(csr_get);
+        EXPECT_CALL(mockVm, set_register(dst, _))
+                .InSequence(csr_get);
+        if (src == 0)
+        {
+            EXPECT_CALL(mockVm, control_set(_, _))
+                .Times(0);
+        }
+        else
+        {
+            EXPECT_CALL(mockVm, get_register(src))
+                    .InSequence(csr_set)
+                    .WillOnce(Return(0));
+            EXPECT_CALL(mockVm, control_set(csr_id, _))
+                    .InSequence(csr_set)
+                    .After(was_read);
+        }
+        impl->exec(&mockVm, &code);
+    }
 }
 
 TEST_F(RV32I_Handler_System, CSR_RC)
@@ -87,11 +134,35 @@ TEST_F(RV32I_Handler_System, CSR_RC)
     constexpr Code funcA = 0b0011;
 
     ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
-    auto code = encode(funcA, 0, 0, 0);
-    MockVM mockVm;
+    for (register_no src = 0; src < vm::register_count; ++src) {
+        vm::register_t csr_id = 0;
+        vm::register_t csr_val = 0;
+        vm::register_t src_val = 0;
+        register_no dst = RegAlias::t0;
+        auto code = encode(funcA, dst, src, csr_id);
+        MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
-    impl->exec(&mockVm, &code);
+        Sequence csr_get, csr_set;
+        Expectation was_read = EXPECT_CALL(mockVm, control_get(csr_id, _))
+                .InSequence(csr_get);
+        EXPECT_CALL(mockVm, set_register(dst, _))
+                .InSequence(csr_get);
+        if (src == 0)
+        {
+            EXPECT_CALL(mockVm, control_set(_, _))
+                    .Times(0);
+        }
+        else
+        {
+            EXPECT_CALL(mockVm, get_register(src))
+                    .InSequence(csr_set)
+                    .WillOnce(Return(0));
+            EXPECT_CALL(mockVm, control_set(csr_id, _))
+                    .InSequence(csr_set)
+                    .After(was_read);
+        }
+        impl->exec(&mockVm, &code);
+    }
 }
 
 TEST_F(RV32I_Handler_System, CSR_RW_I)
@@ -100,11 +171,25 @@ TEST_F(RV32I_Handler_System, CSR_RW_I)
     constexpr Code funcA = 0b0101;
 
     ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
-    auto code = encode(funcA, 0, 0, 0);
-    MockVM mockVm;
+    for (register_no dst = 0; dst < vm::register_count; ++dst)
+    {
+        vm::register_t csr_id = 0;
+        register_no src = 0xef & 0b0001'1111; // uImm[4:0]
+        auto code = encode(funcA, dst, src, csr_id);
+        MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
-    impl->exec(&mockVm, &code);
+        Sequence csr;
+        if (dst > 0) // should do not read CSR if dst == "zero"
+        {
+            EXPECT_CALL(mockVm, control_get(csr_id, _))
+                    .InSequence(csr);
+            EXPECT_CALL(mockVm, set_register(dst, _))
+                    .InSequence(csr);
+        }
+        EXPECT_CALL(mockVm, control_set(csr_id, src))
+                .InSequence(csr);
+        impl->exec(&mockVm, &code);
+    }
 }
 
 TEST_F(RV32I_Handler_System, CSR_RS_I)
@@ -113,11 +198,31 @@ TEST_F(RV32I_Handler_System, CSR_RS_I)
     constexpr Code funcA = 0b0110;
 
     ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
-    auto code = encode(funcA, 0, 0, 0);
-    MockVM mockVm;
+    for (register_no src = 0; src < vm::register_count; ++src) {
+        vm::register_t csr_id = 0;
+        vm::register_t csr_val = 0;
+        vm::register_t src_val = 0;
+        register_no dst = RegAlias::t0;
+        auto code = encode(funcA, dst, src, csr_id);
+        MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
-    impl->exec(&mockVm, &code);
+        Sequence csr_get;
+        Expectation was_read = EXPECT_CALL(mockVm, control_get(csr_id, _))
+                .InSequence(csr_get);
+        EXPECT_CALL(mockVm, set_register(dst, _))
+                .InSequence(csr_get);
+        if (src == 0)
+        {
+            EXPECT_CALL(mockVm, control_set(_, _))
+                    .Times(0);
+        }
+        else
+        {
+            EXPECT_CALL(mockVm, control_set(csr_id, _))
+                    .After(was_read);
+        }
+        impl->exec(&mockVm, &code);
+    }
 }
 
 TEST_F(RV32I_Handler_System, CSR_RC_I)
@@ -126,11 +231,31 @@ TEST_F(RV32I_Handler_System, CSR_RC_I)
     constexpr Code funcA = 0b0111;
 
     ASSERT_TRUE(impl->getId().equal(expectedId(funcA)));
-    auto code = encode(funcA, 0, 0, 0);
-    MockVM mockVm;
+    for (register_no src = 0; src < vm::register_count; ++src) {
+        vm::register_t csr_id = 0;
+        vm::register_t csr_val = 0;
+        vm::register_t src_val = 0;
+        register_no dst = RegAlias::t0;
+        auto code = encode(funcA, dst, src, csr_id);
+        MockVM mockVm;
 
-    EXPECT_CALL(mockVm, control());
-    impl->exec(&mockVm, &code);
+        Sequence csr_get;
+        Expectation was_read = EXPECT_CALL(mockVm, control_get(csr_id, _))
+                .InSequence(csr_get);
+        EXPECT_CALL(mockVm, set_register(dst, _))
+                .InSequence(csr_get);
+        if (src == 0)
+        {
+            EXPECT_CALL(mockVm, control_set(_, _))
+                    .Times(0);
+        }
+        else
+        {
+            EXPECT_CALL(mockVm, control_set(csr_id, _))
+                    .After(was_read);
+        }
+        impl->exec(&mockVm, &code);
+    }
 }
 
 

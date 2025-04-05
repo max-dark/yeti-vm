@@ -31,6 +31,9 @@ struct basic_vm: public MachineInterface
     struct data_access_error: std::domain_error {
         explicit data_access_error(const std::string& message): std::domain_error{message} {}
     };
+    struct control_access_error: std::domain_error {
+        explicit control_access_error(const std::string& message): std::domain_error{message} {}
+    };
 
     /// stop VM
     void halt() final;
@@ -53,8 +56,10 @@ struct basic_vm: public MachineInterface
     /// debug break
     void debug() override;
 
-    /// CSR operations
-    void control() override;
+    /// get CSR value
+    void control_get(address_t csr_id, register_t& value) override;
+    /// set CSR value
+    void control_set(address_t csr_id, register_t value) override;
 
     /// memory barrier
     void barrier() override;

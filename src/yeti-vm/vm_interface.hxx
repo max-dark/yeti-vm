@@ -34,8 +34,11 @@ struct MachineInterface
     /// debug break
     virtual void debug() = 0;
 
-    /// CSR operations
-    virtual void control() = 0;
+    /// get CSR value
+    virtual void control_get(address_t csr_id, register_t& value) = 0;
+
+    /// set CSR value
+    virtual void control_set(address_t csr_id, register_t value) = 0;
 
     /// memory barriers
     virtual void barrier() = 0;
