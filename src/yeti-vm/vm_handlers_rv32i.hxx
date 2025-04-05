@@ -883,7 +883,14 @@ struct csrrw : csr<0b0001> {
 struct csrrs : csr<0b0010> {
     void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
-        // TODO
+        register_t value;
+        vm->control_get(csr_id, value);
+        vm->set_register(dst_id, value);
+        if (src_id != 0)
+        {
+            value = value | vm->get_register(src_id);
+            vm->control_set(csr_id, value);
+        }
     }
     [[nodiscard]]
     std::string_view mnemonic() const final
@@ -928,7 +935,14 @@ struct csrrwi: csr<0b0101> {
 struct csrrsi: csr<0b0110> {
     void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
-        // TODO
+        register_t value;
+        vm->control_get(csr_id, value);
+        vm->set_register(dst_id, value);
+        if (src_id != 0)
+        {
+            value = value | src_id;
+            vm->control_set(csr_id, value);
+        }
     }
     [[nodiscard]]
     std::string_view mnemonic() const final
