@@ -4,6 +4,18 @@
 
 RISC V 32bit virtual machine
 
+### release/v0.0.5
+
+#### Changes
+
+ * API changes
+ * Implement logic and tests for CSR instructions
+
+#### TODO
+
+ * add concrete CSR handlers
+ * add events for execution cycle (PRE/POST)
+
 ### release/v0.0.4
 
 At this moment VM can execute `riscv-non-isa/riscv-arch-test` subsets:
