@@ -9,6 +9,8 @@
 // float32
 #define FLEN 32
 
+#define TEST_FLEN 32
+
 #define ALIGNMENT 2
 
 #define TEST_CASE_1

@@ -23,22 +23,22 @@ target_link_libraries(
 add_dependencies(yeti-runner riscv_arch_test)
 
 ExternalProject_Get_Property(riscv_arch_test SOURCE_DIR)
-set(ARCH_TEST_SUITE_DIR "${SOURCE_DIR}/riscv-test-suite")
+set(ARCH_TEST_SUITE_DIR "${SOURCE_DIR}/tests")
 set(ARCH_TEST_SUITE_ENV "${ARCH_TEST_SUITE_DIR}/env")
-set(ARCH_TEST_SUITE_RV32 "${ARCH_TEST_SUITE_DIR}/rv32i_m")
+set(ARCH_TEST_SUITE_RV32 "${ARCH_TEST_SUITE_DIR}/rv32i")
 
 list(APPEND ARCH_TEST_INCLUDE_DIRS
         "-I${ARCH_TEST_SUITE_ENV}"
         "-I${CMAKE_CURRENT_LIST_DIR}/config"
 )
 # list of ISA subsets
-list(APPEND ARCH_TEST_SUBSETS I M privilege)
+list(APPEND ARCH_TEST_SUBSETS I M Misalign)
 list(APPEND YETI_VM_ARCH_ARGS -march=rv32im -mabi=ilp32 -mcmodel=medany -nostdlib -static -nostartfiles)
 # use POST_BUILD step to compile tests
 block()
     set(_out_dir "${CMAKE_CURRENT_BINARY_DIR}")
     foreach (_subset IN LISTS ARCH_TEST_SUBSETS)
-        set(_subset_dir "${ARCH_TEST_SUITE_RV32}/${_subset}/src/")
+        set(_subset_dir "${ARCH_TEST_SUITE_RV32}/${_subset}/")
         file(GLOB _subset_tests RELATIVE "${_subset_dir}" "${_subset_dir}/*.S")
         message(DEBUG "Dir: ${_subset_dir} ... tests: ${_subset_tests}")
 
@@ -64,7 +64,8 @@ block()
                     ARGS "${_build_args}"
                     DEPENDS "${_input_file}"
                         "${CMAKE_CURRENT_LIST_DIR}/config/link.ld"
-                        "${CMAKE_CURRENT_LIST_DIR}/config/model_test.h"
+                        "${CMAKE_CURRENT_LIST_DIR}/config/rvtest_config.h"
+                        "${CMAKE_CURRENT_LIST_DIR}/config/rvmodel_macros.h"
                     BYPRODUCTS "${_elf_file}"
                     COMMAND_EXPAND_LISTS
             )
