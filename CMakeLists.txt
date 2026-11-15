@@ -42,14 +42,18 @@ if (YETI_ENABLE_ARCH_TESTS)
     enable_testing()
 
     ExternalProject_Add(riscv_arch_test
-            GIT_REPOSITORY https://github.com/riscv-non-isa/riscv-arch-test.git
-            GIT_TAG fc32e41d49480fd99ba0a192dfff9c3319b44873 # 3.10.0
+            GIT_REPOSITORY https://github.com/riscv/riscv-arch-test.git
+            GIT_TAG 6e8a45123f14cebfb3df151a0e7b849b4389b33b # tags/4.1.0
             GIT_PROGRESS ON
+            GIT_SHALLOW ON
+            GIT_SUBMODULES ""
             SOURCE_DIR "${DOWNLOAD_BASE_DIR}/riscv-arch-test"
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ""
             BUILD_IN_SOURCE ON
+            USES_TERMINAL_DOWNLOAD TRUE
+            USES_TERMINAL_UPDATE TRUE
     )
 
     add_subdirectory(tests/arch-tests)
