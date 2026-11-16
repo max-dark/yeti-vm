@@ -10,7 +10,7 @@ project(Yeti LANGUAGES CXX
 include(ExternalProject)
 
 option(YETI_ENABLE_TESTS "Build tests" ON)
-option(YETI_ENABLE_ARCH_TESTS "Build riscv-arch-tests tests" ON)
+option(YETI_ENABLE_ARCH_TESTS "Build riscv-arch-tests tests" OFF)
 option(YETI_ENABLE_TOOLS "Build tools" ON)
 option(YETI_ENABLE_EXAMPLES "Build examples" ON)
 option(YETI_ENABLE_INSTALL "Add install targets for libraries" ON)

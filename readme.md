@@ -4,6 +4,14 @@
 
 RISC V 32bit virtual machine
 
+### release/v0.0.6
+
+Freeze current interface 
+
+#### Changes
+
+* set `YETI_ENABLE_ARCH_TESTS` to `OFF` by default
+
 ### release/v0.0.5
 
 #### Changes
