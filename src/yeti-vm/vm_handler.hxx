@@ -6,7 +6,7 @@
 
 namespace vm
 {
-struct MachineInterface;
+struct HartInterface;
 
 /// Instruction ID
 struct InstructionId
@@ -139,7 +139,7 @@ struct HandlerInterface
      * @param vm pointer to VM implementation
      * @param current pointer to current instruction
      */
-    virtual void exec(MachineInterface* vm, const opcode::Decoder* current) const = 0;
+    virtual void exec(HartInterface* vm, const opcode::Decoder* current) const = 0;
 
     /**
      * skip PC increment

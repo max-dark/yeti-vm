@@ -169,7 +169,7 @@ const memory_block *basic_vm::get_ptr_ro(address_t address, uint8_t size) const
     return nullptr;
 }
 
-memory_block *basic_vm::get_ptr_rw(vm::MachineInterface::address_t address, uint8_t size)
+memory_block *basic_vm::get_ptr_rw(vm::HartInterface::address_t address, uint8_t size)
 {
     if (address % size)
     {
@@ -385,7 +385,7 @@ void basic_vm::enable_debugging(bool enable)
     debugging = enable;
 }
 
-bool basic_vm::add_memory(MachineInterface::address_t address, size_t size)
+bool basic_vm::add_memory(HartInterface::address_t address, size_t size)
 {
     return mmu.add_block<vm::generic_memory>(address, size);
 }
@@ -395,7 +395,7 @@ bool basic_vm::add_memory(memory_block::ptr ptr)
     return mmu.add_block(std::move(ptr));
 }
 
-bool basic_vm::add_code_block(MachineInterface::address_t address, size_t size)
+bool basic_vm::add_code_block(HartInterface::address_t address, size_t size)
 {
     if (have_code_block()) return false;
     if (!add_memory(address, size)) return false;
@@ -403,7 +403,7 @@ bool basic_vm::add_code_block(MachineInterface::address_t address, size_t size)
     return true;
 }
 
-bool basic_vm::add_data_block(MachineInterface::address_t address, size_t size)
+bool basic_vm::add_data_block(HartInterface::address_t address, size_t size)
 {
     if (have_data_block()) return false;
     if (!add_memory(address, size)) return false;
@@ -426,7 +426,7 @@ void basic_vm::clear_flag(basic_vm::InitFlag flag)
     initFlags &= ~flag;
 }
 
-bool basic_vm::init_pc(MachineInterface::address_t address)
+bool basic_vm::init_pc(HartInterface::address_t address)
 {
     if (is_flag_set(PC_INITIALIZED)) return false;
     initial_pc = address;

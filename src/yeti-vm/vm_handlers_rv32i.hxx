@@ -40,7 +40,7 @@ struct lui: public GenericHandler<opcode::LUI, opcode::U_TYPE> {
     {
         return "lui";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto data = current->decode_u();
@@ -62,7 +62,7 @@ struct auipc: public GenericHandler<opcode::AUIPC, opcode::U_TYPE> {
     {
         return "auipc";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto data = current->decode_u();
@@ -92,7 +92,7 @@ struct jal: public GenericHandler<opcode::JAL, opcode::J_TYPE> {
     {
         return "jal";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto offset = get_data(current);
@@ -124,7 +124,7 @@ struct jalr: public GenericHandler<opcode::JALR, opcode::I_TYPE, 0b0000> {
     {
         return "jalr";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto src = current->get_rs1();
@@ -159,7 +159,7 @@ struct branch: public GenericHandler<opcode::BRANCH, opcode::B_TYPE, Type> {
 
     [[nodiscard]]
     virtual bool compare(register_t lhs, register_t rhs) const = 0;
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto lhs = vm->get_register(current->get_rs1());
         auto rhs = vm->get_register(current->get_rs2());
@@ -259,7 +259,7 @@ struct load: public GenericHandler<opcode::LOAD, opcode::I_TYPE, Type> {
     {
         return to_signed(current->decode_i());
     }
-    static MachineInterface::address_t get_address(MachineInterface *vm, const opcode::Decoder* current)
+    static HartInterface::address_t get_address(HartInterface *vm, const opcode::Decoder* current)
     {
         auto base = vm->get_register(current->get_rs1());
         return base + get_offset(current);
@@ -271,8 +271,8 @@ struct load: public GenericHandler<opcode::LOAD, opcode::I_TYPE, Type> {
         std::string base{get_register_alias(code->get_rs1())};
         return dest + ", " + base + ", " + std::to_string(get_offset(code));
     }
-    virtual register_t read_memory(MachineInterface* vm, MachineInterface::address_t address) const = 0;
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    virtual register_t read_memory(HartInterface* vm, HartInterface::address_t address) const = 0;
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto address = get_address(vm, current);
         auto value = read_memory(vm, address);
@@ -288,7 +288,7 @@ struct lb : load<0b0000> {
     {
         return "lb";
     }
-    register_t read_memory(MachineInterface* vm, MachineInterface::address_t address) const override
+    register_t read_memory(HartInterface* vm, HartInterface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 1, value);
@@ -305,7 +305,7 @@ struct lh : load<0b0001> {
     {
         return "lh";
     }
-    register_t read_memory(MachineInterface* vm, MachineInterface::address_t address) const override
+    register_t read_memory(HartInterface* vm, HartInterface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 2, value);
@@ -322,7 +322,7 @@ struct lw : load<0b0010> {
     {
         return "lw";
     }
-    register_t read_memory(MachineInterface* vm, MachineInterface::address_t address) const override
+    register_t read_memory(HartInterface* vm, HartInterface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 4, value);
@@ -337,7 +337,7 @@ struct lbu: load<0b0100> {
     {
         return "lbu";
     }
-    register_t read_memory(MachineInterface* vm, MachineInterface::address_t address) const override
+    register_t read_memory(HartInterface* vm, HartInterface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 1, value);
@@ -352,7 +352,7 @@ struct lhu: load<0b0101> {
     {
         return "lhu";
     }
-    register_t read_memory(MachineInterface* vm, MachineInterface::address_t address) const override
+    register_t read_memory(HartInterface* vm, HartInterface::address_t address) const override
     {
         register_t value = 0;
         vm->read_memory(address, 2, value);
@@ -367,7 +367,7 @@ struct store: public GenericHandler<opcode::STORE, opcode::S_TYPE, Type> {
     {
         return to_signed(current->decode_s());
     }
-    static MachineInterface::address_t get_address(MachineInterface *vm, const opcode::Decoder* current)
+    static HartInterface::address_t get_address(HartInterface *vm, const opcode::Decoder* current)
     {
         auto base = vm->get_register(current->get_rs1());
         return base + get_offset(current);
@@ -379,13 +379,13 @@ struct store: public GenericHandler<opcode::STORE, opcode::S_TYPE, Type> {
         std::string src{get_register_alias(code->get_rs2())};
         return src + ", " + base + ", " + std::to_string(get_offset(code));
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto value = vm->get_register(current->get_rs2());
         auto address = get_address(vm, current);
         write_memory(vm, address, value);
     }
-    virtual void write_memory(MachineInterface* vm, MachineInterface::address_t address, register_t value) const = 0;
+    virtual void write_memory(HartInterface* vm, HartInterface::address_t address, register_t value) const = 0;
 };
 
 /// store byte
@@ -395,7 +395,7 @@ struct sb: store<0b0000> {
     {
         return "sb";
     }
-    void write_memory(MachineInterface* vm, MachineInterface::address_t address, register_t value) const override
+    void write_memory(HartInterface* vm, HartInterface::address_t address, register_t value) const override
     {
         vm->write_memory(address, 1, value);
     }
@@ -408,7 +408,7 @@ struct sh: store<0b0001> {
     {
         return "sh";
     }
-    void write_memory(MachineInterface* vm, MachineInterface::address_t address, register_t value) const override
+    void write_memory(HartInterface* vm, HartInterface::address_t address, register_t value) const override
     {
         vm->write_memory(address, 2, value);
     }
@@ -421,7 +421,7 @@ struct sw: store<0b0010> {
     {
         return "sw";
     }
-    void write_memory(MachineInterface* vm, MachineInterface::address_t address, register_t value) const override
+    void write_memory(HartInterface* vm, HartInterface::address_t address, register_t value) const override
     {
         vm->write_memory(address, 4, value);
     }
@@ -451,7 +451,7 @@ struct addi : int_imm<0b0000> {
     {
         return "addi";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto src  = vm->get_register(current->get_rs1());
@@ -469,7 +469,7 @@ struct slti : int_imm<0b0010> {
     {
         return "slti";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = to_signed(vm->get_register(current->get_rs1()));
@@ -494,7 +494,7 @@ struct sltiu: int_imm<0b0011> {
     {
         return "sltiu";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -511,7 +511,7 @@ struct xori: int_imm<0b0100> {
     {
         return "xori";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -527,7 +527,7 @@ struct ori : int_imm<0b0110> {
     {
         return "ori";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -543,7 +543,7 @@ struct andi: int_imm<0b0111> {
     {
         return "andi";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -575,7 +575,7 @@ struct slli: shift_imm<0b0001, 0> {
     {
         return "slli";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -591,7 +591,7 @@ struct srli: shift_imm<0b0101, 0> {
     {
         return "srli";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -608,7 +608,7 @@ struct srai: shift_imm<0b0101, 1> {
     {
         return "srai";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto value = vm->get_register(current->get_rs1());
@@ -630,7 +630,7 @@ struct int_r: public GenericHandler<opcode::OP, opcode::R_TYPE, Type, (Variant <
     }
     [[nodiscard]]
     virtual register_t calculate(register_t lhs, register_t rhs) const = 0;
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto dest = current->get_rd();
         auto lhs = vm->get_register(current->get_rs1());
@@ -794,7 +794,7 @@ struct fence  : misc_mem<0b0000> {
     {
         return "fence";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         vm->barrier();
     }
@@ -807,7 +807,7 @@ struct fence_i: misc_mem<0b0001> {
     {
         return "fence.i";
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         vm->barrier();
     }
@@ -832,7 +832,7 @@ struct env_call: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, 0b0000> {
         }
         return opcode::to_hex(args);
     }
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         if (current->decode_i_u())
         {
@@ -849,8 +849,8 @@ struct env_call: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, 0b0000> {
 /// @see Control and Status Register Instructions
 template<opcode::opcode_t Type>
 struct csr: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, Type> {
-    virtual void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const = 0;
-    void exec(MachineInterface *vm, const opcode::Decoder* current) const override
+    virtual void exec(HartInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const = 0;
+    void exec(HartInterface *vm, const opcode::Decoder* current) const override
     {
         auto src_id = current->get_rs1();
         auto dst_id = current->get_rd();
@@ -862,7 +862,7 @@ struct csr: public GenericHandler<opcode::SYSTEM, opcode::I_TYPE, Type> {
 
 /// atomic read and write
 struct csrrw : csr<0b0001> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    void exec(HartInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         if (dst_id != 0)
         {
@@ -881,7 +881,7 @@ struct csrrw : csr<0b0001> {
 
 /// atomic read and set
 struct csrrs : csr<0b0010> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    void exec(HartInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         register_t value;
         vm->control_get(csr_id, value);
@@ -901,7 +901,7 @@ struct csrrs : csr<0b0010> {
 
 /// atomic read and clear
 struct csrrc : csr<0b0011> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    void exec(HartInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         register_t value;
         vm->control_get(csr_id, value);
@@ -922,7 +922,7 @@ struct csrrc : csr<0b0011> {
 
 /// unsigned(?) atomic read and write
 struct csrrwi: csr<0b0101> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    void exec(HartInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         if (dst_id != 0)
         {
@@ -941,7 +941,7 @@ struct csrrwi: csr<0b0101> {
 
 /// unsigned(?) atomic read and set
 struct csrrsi: csr<0b0110> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    void exec(HartInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         register_t value;
         vm->control_get(csr_id, value);
@@ -961,7 +961,7 @@ struct csrrsi: csr<0b0110> {
 
 /// unsigned(?) atomic read and clear
 struct csrrci: csr<0b0111> {
-    void exec(MachineInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
+    void exec(HartInterface* vm, register_t csr_id, register_no src_id, register_no dst_id) const override
     {
         register_t value;
         vm->control_get(csr_id, value);
