@@ -33,6 +33,7 @@ set(LIB_HEADERS
         yeti-vm/vm_interface.hxx
         yeti-vm/vm_memory.hxx
         yeti-vm/vm_syscall.hxx
+        yeti-vm/vm_hart_base.hxx
         yeti-vm/vm_handlers_rv32i.hxx
         yeti-vm/vm_handlers_rv32m.hxx
 )
@@ -44,6 +45,7 @@ set(LIB_SOURCES
         yeti-vm/vm_interface.cxx
         yeti-vm/vm_memory.cxx
         yeti-vm/vm_syscall.cxx
+        yeti-vm/vm_hart_base.cxx
         yeti-vm/vm_handlers_rv32i.cxx
         yeti-vm/vm_handlers_rv32m.cxx
 )
