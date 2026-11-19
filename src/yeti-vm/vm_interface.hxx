@@ -5,7 +5,7 @@
 namespace vm
 {
 
-/// Virtual machine interface
+/// Virtual HART interface
 struct HartInterface
 {
     /// address in memory

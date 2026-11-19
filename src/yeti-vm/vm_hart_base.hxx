@@ -38,8 +38,6 @@ struct hart_base : public HartInterface
     [[nodiscard]] register_t get_pc() const override;
 
     /// set PC register value
-    virtual void set_pc(register_t value) =0;
-    /// increment PC value
-    void inc_pc();
+    virtual void set_pc(register_t value) = 0;
 };
 } // namespace vm
